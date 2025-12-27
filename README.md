@@ -1,7 +1,7 @@
 
-  # Forcheck Mobile App Design (Copy)
+  # Forcheck Mobile App Design 2.0
 
-  This is a code bundle for Forcheck Mobile App Design (Copy). The original project is available at https://www.figma.com/design/iK3KwkRvkOB5DRID9qbQ9L/Forcheck-Mobile-App-Design--Copy-.
+  This is a code bundle for Forcheck Mobile App Design 2.0. The original project is available at https://www.figma.com/design/iK3KwkRvkOB5DRID9qbQ9L/Forcheck-Mobile-App-Design-2.0.
 
   ## Running the code
 

@@ -34,6 +34,9 @@ export function DailyScreen({
   const [archivedWorkouts, setArchivedWorkouts] = useState<ArchivedWorkout[]>([]);
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [showProgressPicPrompt, setShowProgressPicPrompt] = useState(false);
+  const [showCustomTemplatePrompt, setShowCustomTemplatePrompt] = useState(false);
+  const [customTemplateName, setCustomTemplateName] = useState('');
+  const [activeTemplateName, setActiveTemplateName] = useState<string | null>(null); // Track active template name
   const [progressPicPreview, setProgressPicPreview] = useState<string | null>(null);
   
   // Meal form state
@@ -89,6 +92,7 @@ export function DailyScreen({
       })) as Exercise[];
 
     setExercises([...exercises, ...newExercises]);
+    setActiveTemplateName(template.name); // Track the template name
     setCurrentView('main');
   };
 
@@ -542,6 +546,9 @@ export function DailyScreen({
               <h3 className="flex items-center gap-2 font-bold">
                 <Target className="w-5 h-5 text-blue-400" />
                 Workout ({exercises.length})
+                {activeTemplateName && (
+                  <span className="text-sm font-medium text-blue-400">• {activeTemplateName}</span>
+                )}
               </h3>
               <div className="flex gap-2">
                 <Button

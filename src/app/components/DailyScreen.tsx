@@ -439,8 +439,7 @@ export function DailyScreen({
               onClick={() => handleExerciseAdd(exercise)}
               className="p-4 bg-card border-border hover:bg-white/5 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
             >
-              <div className="flex items-center gap-4">
-                <div className="text-4xl">{exercise.emoji}</div>
+              <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <h4 className="font-bold text-white mb-1">{exercise.name}</h4>
                   <p className="text-sm text-muted-foreground font-medium">
@@ -482,33 +481,41 @@ export function DailyScreen({
       </div>
 
       <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
-        {/* Daily Score */}
+        {/* Daily Score & Streak - Side by Side */}
         {(hasWorkout || hasMeals) && (
-          <Card className={`p-4 border transition-all ${
-            dailyScoreData.score >= 90 
-              ? 'bg-gradient-to-br from-indigo-600/25 to-purple-600/20 border-indigo-400/50 shadow-[0_0_25px_rgba(99,102,241,0.3)]'
-              : dailyScoreData.score >= 80
-              ? 'bg-gradient-to-br from-indigo-600/20 to-purple-600/15 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
-              : 'bg-gradient-to-br from-indigo-600/15 to-purple-600/10 border-indigo-500/30'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Award className="w-5 h-5 text-yellow-400" />
-                  <h3 className="font-bold text-white">Daily Score</h3>
-                </div>
-                <p className="text-sm text-white/70">{dailyScoreData.feedback.message}</p>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-black text-white mb-1">
-                  {dailyScoreData.grade}
-                </div>
-                <div className="text-xl font-bold text-white/90">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Daily Score Box */}
+            <Card className="relative p-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-[0_0_20px_rgba(100,116,139,0.3)] overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+              <div className="relative text-center">
+                <p className="text-sm text-slate-400 font-medium mb-3">Daily Score</p>
+                <div className={`text-6xl font-black ${
+                  dailyScoreData.score >= 90 ? 'text-green-400 drop-shadow-[0_0_20px_rgba(74,222,128,0.6)]' :
+                  dailyScoreData.score >= 80 ? 'text-lime-400 drop-shadow-[0_0_20px_rgba(163,230,53,0.6)]' :
+                  dailyScoreData.score >= 70 ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]' :
+                  dailyScoreData.score >= 60 ? 'text-orange-400 drop-shadow-[0_0_20px_rgba(251,146,60,0.6)]' :
+                  'text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.6)]'
+                }`}>
                   {dailyScoreData.score}
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+
+            {/* Streak Box */}
+            <Card className="relative p-6 bg-gradient-to-br from-orange-900/60 via-amber-900/50 to-orange-950/60 border-orange-800/50 shadow-[0_0_25px_rgba(234,88,12,0.4)] overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent" />
+              <div className="relative text-center">
+                <p className="text-sm text-orange-300/80 font-medium mb-2">Streak</p>
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <span className="text-4xl">🔥</span>
+                  <div className="text-6xl font-black text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.6)]">
+                    7
+                  </div>
+                </div>
+                <p className="text-xs text-orange-300/70 font-medium">days</p>
+              </div>
+            </Card>
+          </div>
         )}
 
         {/* Workout Section */}
@@ -542,118 +549,122 @@ export function DailyScreen({
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Workout Header with Score */}
             <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 font-bold">
-                <Target className="w-5 h-5 text-blue-400" />
-                Workout ({exercises.length})
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">💪</span>
+                <h3 className="font-bold text-blue-400">Workout</h3>
                 {activeTemplateName && (
-                  <span className="text-sm font-medium text-blue-400">• {activeTemplateName}</span>
+                  <span className="text-sm text-muted-foreground">• {activeTemplateName}</span>
                 )}
-              </h3>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSaveAsTemplate}
-                  size="sm"
-                  variant="outline"
-                  className="text-xs"
-                  title="Save as template"
-                >
-                  <Save className="w-3 h-3" />
-                </Button>
-                <Button
-                  onClick={() => setShowProgressPicPrompt(true)}
-                  size="sm"
-                  variant="outline"
-                  className="text-xs"
-                  title="Add progress pic"
-                >
-                  <Camera className="w-3 h-3" />
-                </Button>
-                <Button
-                  onClick={() => setCurrentView('exercise-picker')}
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-600/30 to-purple-600/20 border-blue-500/50"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
               </div>
+              {workoutScoreData.score > 0 && (
+                <div className="text-5xl font-black text-yellow-400">
+                  {workoutScoreData.score}
+                </div>
+              )}
             </div>
 
-            {/* Workout Score */}
+            {/* View Detailed Breakdown Button */}
             {workoutScoreData.score > 0 && (
-              <Card className={`p-4 border transition-all ${
-                workoutScoreData.score >= 90
-                  ? 'bg-gradient-to-br from-green-600/20 to-emerald-600/15 border-green-400/50 shadow-[0_0_20px_rgba(34,197,94,0.2)]'
-                  : workoutScoreData.score >= 80
-                  ? 'bg-gradient-to-br from-green-600/15 to-emerald-600/10 border-green-500/30'
-                  : workoutScoreData.score >= 70
-                  ? 'bg-gradient-to-br from-yellow-600/15 to-orange-600/10 border-yellow-500/30'
-                  : 'bg-gradient-to-br from-orange-600/15 to-red-600/10 border-orange-500/25'
-              }`}>
+              <Card className="p-4 bg-blue-950/30 border-blue-900/50 cursor-pointer hover:bg-blue-950/40 transition-all">
                 <div className="flex items-center justify-between">
-                  <p className={`text-sm font-bold ${workoutFeedback.color}`}>
-                    {workoutFeedback.emoji} {workoutFeedback.message}
-                  </p>
-                  <p className={`text-3xl font-black ${
-                    workoutScoreData.score >= 90 ? 'text-green-400' :
-                    workoutScoreData.score >= 80 ? 'text-green-400' :
-                    workoutScoreData.score >= 70 ? 'text-yellow-400' :
-                    'text-orange-400'
-                  }`}>
-                    {workoutScoreData.score}
-                  </p>
+                  <span className="text-sm font-medium text-blue-300">View detailed breakdown</span>
+                  <ChevronRight className="w-5 h-5 text-blue-400" />
                 </div>
               </Card>
             )}
 
             {/* Exercise List */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {exercises.map((exercise, index) => {
-                const exerciseData = exerciseDatabase.find(ex => ex.name === exercise.name);
                 const isRated = exercise.score !== null && exercise.score !== undefined;
+                
+                // Cycle through background gradients and name colors
+                const bgGradients = [
+                  'from-blue-950/50 to-blue-900/40 border-blue-900/60',
+                  'from-amber-950/50 to-amber-900/40 border-amber-900/60',
+                  'from-green-950/50 to-green-900/40 border-green-900/60',
+                  'from-purple-950/50 to-purple-900/40 border-purple-900/60',
+                  'from-orange-950/50 to-orange-900/40 border-orange-900/60',
+                ];
+                const bgGradient = bgGradients[index % bgGradients.length];
+                
+                const nameColors = ['text-blue-300', 'text-yellow-400', 'text-green-400', 'text-purple-400', 'text-orange-400'];
+                const nameColor = nameColors[index % nameColors.length];
                 
                 return (
                   <Card 
                     key={index} 
                     onClick={() => !isRated && handleRateExercise(index)}
-                    className={`p-3 ${isRated ? 'bg-card' : 'bg-gradient-to-r from-purple-600/20 to-blue-600/10'} border-border ${!isRated ? 'cursor-pointer hover:bg-purple-600/25' : ''} transition-all`}
+                    className={`p-4 bg-gradient-to-br ${bgGradient} ${!isRated ? 'cursor-pointer hover:scale-[1.01]' : ''} transition-all`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl">{exerciseData?.emoji || '💪'}</div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-white text-sm">{exercise.name}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {exercise.sets} × {exercise.reps}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {isRated ? (
-                          <p className={`text-lg font-bold ${
-                            exercise.score! >= 90 ? 'text-green-400' : 
-                            exercise.score! >= 80 ? 'text-yellow-400' : 
-                            'text-orange-400'
-                          }`}>
+                    {/* Header with name */}
+                    <div className="mb-3">
+                      <h4 className={`font-bold text-lg mb-1 ${nameColor}`}>
+                        {exercise.name}
+                      </h4>
+                      <p className="text-xs text-gray-400">
+                        {exercise.sets} sets × {exercise.reps} reps
+                      </p>
+                    </div>
+
+                    {isRated ? (
+                      <div className="space-y-3">
+                        {/* Score Display */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-400">Score:</span>
+                          <div className="text-4xl font-black text-green-400">
                             {exercise.score}
-                          </p>
-                        ) : (
-                          <div className="px-3 py-1 bg-purple-600/30 border border-purple-500/50 rounded text-xs font-semibold text-purple-300">
-                            Tap to rate
                           </div>
-                        )}
+                        </div>
+                        
+                        {/* Remove Button */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveExercise(index);
                           }}
-                          className="p-1 hover:bg-destructive/20 rounded transition-colors"
+                          className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-red-950/30 border border-red-900/40 text-xs font-medium text-red-400 hover:bg-red-950/50 transition-colors"
                         >
-                          <X className="w-4 h-4 text-muted-foreground" />
+                          <X className="w-3 h-3" />
+                          Remove Exercise
                         </button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="text-center py-2">
+                        <span className="text-xs font-semibold text-purple-300">Tap to rate form</span>
+                      </div>
+                    )}
                   </Card>
                 );
               })}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-6">
+              <Button
+                onClick={handleSaveAsTemplate}
+                variant="outline"
+                className="flex-1 text-sm"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Template
+              </Button>
+              <Button
+                onClick={() => setShowProgressPicPrompt(true)}
+                variant="outline"
+                className="flex-1 text-sm"
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archive
+              </Button>
+              <Button
+                onClick={() => setCurrentView('exercise-picker')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-5 h-5" />
+              </Button>
             </div>
           </div>
         )}

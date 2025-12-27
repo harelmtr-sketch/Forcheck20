@@ -61,6 +61,23 @@ export default function App() {
   const [currentView, setCurrentView] = useState<View>('daily');
   const [darkMode, setDarkMode] = useState(true);
   
+  // Settings state - lifted to persist across tabs
+  const [clearOnTemplate, setClearOnTemplate] = useState(false);
+  const [autoSaveWorkouts, setAutoSaveWorkouts] = useState(true);
+  const [showFormScore, setShowFormScore] = useState(true);
+  const [scoreDisplayMode, setScoreDisplayMode] = useState<'letter' | 'number' | 'both'>('both');
+  const [workoutReminders, setWorkoutReminders] = useState(true);
+  const [formTips, setFormTips] = useState(true);
+  const [friendActivity, setFriendActivity] = useState(false);
+  const [achievements, setAchievements] = useState(true);
+  const [profileVisibility, setProfileVisibility] = useState('friends');
+  const [workoutSharing, setWorkoutSharing] = useState(false);
+  const [leaderboard, setLeaderboard] = useState(true);
+  const [aiCoaching, setAiCoaching] = useState(true);
+  const [aiRecommendations, setAiRecommendations] = useState(true);
+  const [aiDifficulty, setAiDifficulty] = useState('moderate');
+  const [hapticFeedback, setHapticFeedback] = useState(true);
+  
   // Lift exercises state up to App level so it persists across tab changes
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
@@ -113,7 +130,41 @@ export default function App() {
       case 'profile':
         return <ProfileScreen onOpenSettings={handleOpenSettings} exercises={exercises} muscleStatus={muscleStatus} />;
       case 'settings':
-        return <SettingsScreen onBack={handleBackFromSettings} />;
+        return <SettingsScreen 
+          onBack={handleBackFromSettings} 
+          darkMode={darkMode} 
+          setDarkMode={setDarkMode}
+          clearOnTemplate={clearOnTemplate}
+          setClearOnTemplate={setClearOnTemplate}
+          autoSaveWorkouts={autoSaveWorkouts}
+          setAutoSaveWorkouts={setAutoSaveWorkouts}
+          showFormScore={showFormScore}
+          setShowFormScore={setShowFormScore}
+          scoreDisplayMode={scoreDisplayMode}
+          setScoreDisplayMode={setScoreDisplayMode}
+          workoutReminders={workoutReminders}
+          setWorkoutReminders={setWorkoutReminders}
+          formTips={formTips}
+          setFormTips={setFormTips}
+          friendActivity={friendActivity}
+          setFriendActivity={setFriendActivity}
+          achievements={achievements}
+          setAchievements={setAchievements}
+          profileVisibility={profileVisibility}
+          setProfileVisibility={setProfileVisibility}
+          workoutSharing={workoutSharing}
+          setWorkoutSharing={setWorkoutSharing}
+          leaderboard={leaderboard}
+          setLeaderboard={setLeaderboard}
+          aiCoaching={aiCoaching}
+          setAiCoaching={setAiCoaching}
+          aiRecommendations={aiRecommendations}
+          setAiRecommendations={setAiRecommendations}
+          aiDifficulty={aiDifficulty}
+          setAiDifficulty={setAiDifficulty}
+          hapticFeedback={hapticFeedback}
+          setHapticFeedback={setHapticFeedback}
+        />;
       default:
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
     }

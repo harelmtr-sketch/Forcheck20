@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, SwitchCamera, Zap, ZapOff, Camera as CameraIcon } from 'lucide-react';
 import { Card } from './ui/card';
 
@@ -8,7 +8,60 @@ export function CameraScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>('workout');
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment'); // Track which camera
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Start camera when component mounts or facingMode changes
+  useEffect(() => {
+    let currentStream: MediaStream | null = null;
+
+    const startCamera = async () => {
+      try {
+        // Stop any existing stream
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+
+        // Request camera access
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: facingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        });
+
+        currentStream = mediaStream;
+        setStream(mediaStream);
+        setError(null);
+
+        // Attach to video element
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+      } catch (err) {
+        // Silently fail - camera is optional, fallback to file input
+        setError(null);
+        setStream(null);
+      }
+    };
+
+    startCamera();
+
+    // Cleanup: stop camera when component unmounts
+    return () => {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [facingMode]);
+
+  const handleFlipCamera = () => {
+    setFacingMode(facingMode === 'environment' ? 'user' : 'environment');
+  };
 
   const handleCapture = () => {
     // Just open the file picker - this will use native camera on mobile
@@ -53,7 +106,7 @@ export function CameraScreen() {
         <div className="flex justify-end items-start gap-2">
           {/* Flip Camera Button */}
           <button
-            onClick={() => setFacingMode(facingMode === 'environment' ? 'user' : 'environment')}
+            onClick={handleFlipCamera}
             className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95 shadow-lg"
           >
             <SwitchCamera className="w-6 h-6 text-white" />
@@ -87,17 +140,44 @@ export function CameraScreen() {
         </p>
       </div>
 
-      {/* Camera Placeholder */}
+      {/* Camera Feed */}
       <div className="flex-1 relative overflow-hidden">
-        <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center">
-          <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
-          <div className="px-8 text-center">
-            <h3 className="text-white text-lg font-bold mb-2">Camera Ready</h3>
-            <p className="text-gray-400 text-sm font-medium">
-              Tap the button below to {selectedMode === 'workout' ? 'record video' : 'take a photo'}
-            </p>
+        {/* Live Video Stream */}
+        {stream && !error && (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center">
+            <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
+            <div className="px-8 text-center">
+              <h3 className="text-white text-lg font-bold mb-2">Camera Access Needed</h3>
+              <p className="text-gray-400 text-sm font-medium">
+                {error}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Loading State / Fallback */}
+        {!stream && !error && (
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center">
+            <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
+            <div className="px-8 text-center">
+              <h3 className="text-white text-lg font-bold mb-2">Camera Ready</h3>
+              <p className="text-gray-400 text-sm font-medium">
+                Tap the button below to {selectedMode === 'workout' ? 'record video' : 'take a photo'}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Camera Controls */}

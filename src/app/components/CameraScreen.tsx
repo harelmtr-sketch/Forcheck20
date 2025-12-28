@@ -7,21 +7,29 @@ type Mode = 'workout' | 'meal';
 export function CameraScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>('workout');
   const [flashEnabled, setFlashEnabled] = useState(false);
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment'); // Track which camera
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [capturedMedia, setCapturedMedia] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const timerIntervalRef = useRef<number | null>(null);
 
   // Start camera when component mounts or facingMode changes
   useEffect(() => {
     let currentStream: MediaStream | null = null;
+    let isMounted = true;
 
     const startCamera = async () => {
       try {
-        // Stop any existing stream
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
+        // Check if getUserMedia is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          console.log('getUserMedia not supported');
+          return;
         }
 
         // Request camera access
@@ -34,6 +42,11 @@ export function CameraScreen() {
           audio: false
         });
 
+        if (!isMounted) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
         currentStream = mediaStream;
         setStream(mediaStream);
         setError(null);
@@ -42,10 +55,13 @@ export function CameraScreen() {
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
-      } catch (err) {
+      } catch (err: any) {
+        console.log('Camera access info:', err.name, err.message);
         // Silently fail - camera is optional, fallback to file input
-        setError(null);
-        setStream(null);
+        if (isMounted) {
+          setError(null);
+          setStream(null);
+        }
       }
     };
 
@@ -53,6 +69,7 @@ export function CameraScreen() {
 
     // Cleanup: stop camera when component unmounts
     return () => {
+      isMounted = false;
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
       }
@@ -86,6 +103,109 @@ export function CameraScreen() {
       // 1. Upload to server for AI analysis
       // 2. Display preview
       // 3. Add to workout/meal log
+    }
+  };
+
+  const takePhoto = () => {
+    if (!videoRef.current || !stream) return;
+
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        setCapturedMedia(url);
+      }
+    }, 'image/jpeg', 0.95);
+  };
+
+  const handleCaptureClick = () => {
+    if (!stream) {
+      // Fallback to file picker if camera not available
+      fileInputRef.current?.click();
+      return;
+    }
+
+    if (selectedMode === 'workout') {
+      // Video recording
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    } else {
+      // Photo capture
+      takePhoto();
+    }
+  };
+
+  const handleCloseCapturedMedia = () => {
+    setCapturedMedia(null);
+    setRecordingTime(0);
+  };
+
+  const handleSaveCapturedMedia = () => {
+    // Here you would upload to server for AI analysis
+    alert(`${selectedMode === 'workout' ? 'Video' : 'Photo'} saved successfully! 📸`);
+    setCapturedMedia(null);
+    setRecordingTime(0);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const startRecording = () => {
+    if (!stream) return;
+
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      setCapturedMedia(url);
+      recordedChunksRef.current = [];
+    };
+
+    mediaRecorder.start();
+    setIsRecording(true);
+    setRecordingTime(0);
+
+    timerIntervalRef.current = window.setInterval(() => {
+      setRecordingTime(prevTime => prevTime + 1);
+    }, 1000);
+  };
+
+  const stopRecording = () => {
+    const mediaRecorder = mediaRecorderRef.current;
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+
+    setIsRecording(false);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
   };
 
@@ -153,6 +273,16 @@ export function CameraScreen() {
           />
         )}
 
+        {/* Recording Indicator */}
+        {isRecording && (
+          <div className="absolute top-32 left-0 right-0 z-20 flex items-center justify-center">
+            <div className="bg-red-500/80 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+              <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+              <span className="text-white font-bold text-sm">REC {formatTime(recordingTime)}</span>
+            </div>
+          </div>
+        )}
+
         {/* Error State */}
         {error && (
           <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center">
@@ -193,7 +323,7 @@ export function CameraScreen() {
 
           {/* Capture Button */}
           <button 
-            onClick={handleCapture}
+            onClick={handleCaptureClick}
             className="w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-95 bg-white shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:scale-105"
           >
             <div className={`w-16 h-16 rounded-full shadow-inner ${
@@ -254,6 +384,46 @@ export function CameraScreen() {
           </Card>
         </div>
       </div>
+
+      {/* Captured Media Preview */}
+      {capturedMedia && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-30 bg-black/80 flex flex-col items-center justify-center">
+          <div className="relative">
+            {selectedMode === 'workout' ? (
+              <video
+                src={capturedMedia}
+                controls
+                className="w-full h-full max-w-3xl max-h-3xl object-cover"
+              />
+            ) : (
+              <img
+                src={capturedMedia}
+                alt="Captured"
+                className="w-full h-full max-w-3xl max-h-3xl object-cover"
+              />
+            )}
+            <div className="absolute top-4 left-4">
+              <p className="text-white text-sm font-medium">
+                {selectedMode === 'workout' ? formatTime(recordingTime) : ''}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-4">
+            <button
+              onClick={handleCloseCapturedMedia}
+              className="w-12 h-12 rounded-full bg-red-500/40 backdrop-blur-md border border-red-500/60 flex items-center justify-center transition-all active:scale-95 shadow-lg"
+            >
+              <ZapOff className="w-6 h-6 text-red-500" />
+            </button>
+            <button
+              onClick={handleSaveCapturedMedia}
+              className="w-12 h-12 rounded-full bg-green-500/40 backdrop-blur-md border border-green-500/60 flex items-center justify-center transition-all active:scale-95 shadow-lg"
+            >
+              <Zap className="w-6 h-6 text-green-500" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

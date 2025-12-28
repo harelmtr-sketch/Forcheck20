@@ -57,8 +57,8 @@ export interface MuscleStatus {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('daily');
-  const [currentView, setCurrentView] = useState<View>('daily');
+  const [activeTab, setActiveTab] = useState<Tab>('camera');
+  const [currentView, setCurrentView] = useState<View>('camera');
   const [darkMode, setDarkMode] = useState(true);
   
   // Settings state - lifted to persist across tabs
@@ -103,8 +103,8 @@ export default function App() {
   ]);
 
   const tabs = [
-    { id: 'camera' as Tab, label: 'Camera', icon: Camera },
     { id: 'daily' as Tab, label: 'Daily', icon: BarChart3 },
+    { id: 'camera' as Tab, label: 'Camera', icon: Camera },
     { id: 'profile' as Tab, label: 'Profile', icon: User },
   ];
 

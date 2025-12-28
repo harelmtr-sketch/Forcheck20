@@ -93,6 +93,30 @@ export function DailyScreen({
 
     setExercises([...exercises, ...newExercises]);
     setActiveTemplateName(template.name); // Track the template name
+    
+    // Update muscle status for all muscles that will be trained
+    const musclesBeingTrained = new Set<string>();
+    
+    template.exercises.forEach(exerciseId => {
+      const exerciseData = exerciseDatabase.find(ex => ex.id === exerciseId);
+      if (exerciseData) {
+        exerciseData.primaryMuscles.forEach(muscle => musclesBeingTrained.add(muscle));
+        exerciseData.secondaryMuscles.forEach(muscle => musclesBeingTrained.add(muscle));
+      }
+    });
+    
+    // Mark muscles as being trained (set status to 'sore' and lastTrained to 'Today')
+    setMuscleStatus(prev => prev.map(muscle => {
+      if (musclesBeingTrained.has(muscle.key)) {
+        return {
+          ...muscle,
+          status: 'sore' as const,
+          lastTrained: 'Today'
+        };
+      }
+      return muscle;
+    }));
+    
     setCurrentView('main');
   };
 
@@ -529,7 +553,7 @@ export function DailyScreen({
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-white mb-1">Templates</h4>
-                  <p className="text-sm text-white/70">Browse {workoutTemplates.length + customTemplates.length} workouts</p>
+                  <p className="text-sm text-white/70">Browse and Choose a recommended workout then film your sets and get feedback</p>
                 </div>
                 <div className="text-4xl">🏋️</div>
               </div>
@@ -541,7 +565,7 @@ export function DailyScreen({
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-bold text-white mb-1">Custom</h4>
-                  <p className="text-sm text-white/70">Pick individual exercises</p>
+                  <p className="text-sm text-white/70">Create your own workout then film your sets and get feedback</p>
                 </div>
                 <div className="text-4xl">💪</div>
               </div>

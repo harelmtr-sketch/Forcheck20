@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase';
@@ -19,6 +19,13 @@ interface DailyScreenProps {
 }
 
 type View = 'main' | 'exercise-picker' | 'templates' | 'score-picker' | 'meal-form';
+
+interface SavedMeal {
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+}
 
 export function DailyScreen({ 
   exercises, 
@@ -47,11 +54,14 @@ export function DailyScreen({
   const [customSets, setCustomSets] = useState(3);
   const [customReps, setCustomReps] = useState(12);
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
+  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   
   // Meal form state
   const [mealName, setMealName] = useState('');
   const [mealCalories, setMealCalories] = useState('');
   const [mealProtein, setMealProtein] = useState('');
+  const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
+  const [showSavedMeals, setShowSavedMeals] = useState(false);
 
   // Calculate total calories and protein from meals
   const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
@@ -85,6 +95,23 @@ export function DailyScreen({
     proteinGoal,
     hasWorkout
   );
+
+  // Load saved meals from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('forcheck-saved-meals');
+    if (saved) {
+      try {
+        setSavedMeals(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to load saved meals:', e);
+      }
+    }
+  }, []);
+
+  // Save to localStorage whenever savedMeals changes
+  useEffect(() => {
+    localStorage.setItem('forcheck-saved-meals', JSON.stringify(savedMeals));
+  }, [savedMeals]);
 
   const handleTemplateStart = (template: WorkoutTemplate) => {
     // Add ALL exercises from template immediately with null scores
@@ -218,6 +245,16 @@ export function DailyScreen({
     setCurrentView('main');
   };
 
+  const handleResetWorkout = () => {
+    setShowResetConfirmation(true);
+  };
+
+  const confirmResetWorkout = () => {
+    setExercises([]);
+    setActiveTemplateName(null);
+    setShowResetConfirmation(false);
+  };
+
   const handleArchiveWorkout = (withPic: boolean = false) => {
     if (withPic) {
       setShowProgressPicPrompt(true);
@@ -318,6 +355,56 @@ export function DailyScreen({
     setMealCalories('');
     setMealProtein('');
     setCurrentView('main');
+  };
+
+  const handleSaveMealForFuture = () => {
+    if (!mealName || !mealCalories || !mealProtein) return;
+
+    const calories = parseInt(mealCalories);
+    const protein = parseInt(mealProtein);
+
+    const savedMeal: SavedMeal = {
+      id: Date.now().toString(),
+      name: mealName,
+      calories,
+      protein
+    };
+
+    // Check if meal with same name already exists
+    const exists = savedMeals.some(m => m.name.toLowerCase() === mealName.toLowerCase());
+    if (exists) {
+      alert('A meal with this name already exists!');
+      return;
+    }
+
+    setSavedMeals([...savedMeals, savedMeal]);
+    alert(`✅ "${mealName}" saved for future use!`);
+  };
+
+  const handleLoadSavedMeal = (meal: SavedMeal) => {
+    setMealName(meal.name);
+    setMealCalories(meal.calories.toString());
+    setMealProtein(meal.protein.toString());
+    setShowSavedMeals(false);
+    setCurrentView('meal-form'); // Open the meal form so user can see the loaded data
+  };
+
+  const handleDeleteSavedMeal = (mealId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('Delete this saved meal?')) {
+      setSavedMeals(savedMeals.filter(m => m.id !== mealId));
+    }
+  };
+
+  const handleQuickAddSavedMeal = (meal: SavedMeal) => {
+    const newMeal: Meal = {
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      score: 85
+    };
+    setMeals([...meals, newMeal]);
+    setShowSavedMeals(false);
   };
 
   const filteredExercises = exerciseDatabase.filter(ex => {
@@ -695,11 +782,11 @@ export function DailyScreen({
             </div>
             {hasWorkout && (
               <button
-                onClick={() => handleArchiveWorkout(false)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Archive workout"
+                onClick={handleResetWorkout}
+                className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                title="Reset workout"
               >
-                <Archive className="w-5 h-5 text-purple-400" />
+                <RotateCcw className="w-5 h-5 text-red-400" />
               </button>
             )}
           </div>
@@ -890,14 +977,6 @@ export function DailyScreen({
                 Save Template
               </Button>
               <Button
-                onClick={() => setShowProgressPicPrompt(true)}
-                variant="outline"
-                className="flex-1 text-sm"
-              >
-                <Archive className="w-4 h-4 mr-2" />
-                Archive
-              </Button>
-              <Button
                 onClick={() => setCurrentView('exercise-picker')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
@@ -931,13 +1010,25 @@ export function DailyScreen({
                 <Apple className="w-5 h-5 text-orange-400" />
                 Nutrition
               </h3>
-              <Button
-                onClick={() => setCurrentView('meal-form')}
-                size="sm"
-                className="bg-gradient-to-r from-orange-600/30 to-pink-600/20 border-orange-500/50 hover:shadow-[0_0_10px_rgba(251,146,60,0.3)]"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowSavedMeals(true)}
+                  size="sm"
+                  variant="outline"
+                  className="text-xs px-3"
+                  title="Browse saved meals"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  Saved
+                </Button>
+                <Button
+                  onClick={() => setCurrentView('meal-form')}
+                  size="sm"
+                  className="bg-gradient-to-r from-orange-600/30 to-pink-600/20 border-orange-500/50 hover:shadow-[0_0_10px_rgba(251,146,60,0.3)]"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Nutrition Progress Bars */}
@@ -1086,13 +1177,33 @@ export function DailyScreen({
                 className="w-full pl-4 pr-4 py-3 bg-secondary/80 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40"
               />
             </div>
+            
+            {/* Saved Meals Button */}
+            <button
+              onClick={() => setShowSavedMeals(true)}
+              className="w-full mt-3 py-2.5 px-4 bg-blue-600/40 hover:bg-blue-600/50 border border-blue-500/50 rounded-lg text-sm font-medium text-blue-200 transition-all hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2"
+            >
+              <Apple className="w-4 h-4" />
+              Browse Saved Meals ({savedMeals.length})
+            </button>
+
             <div className="flex gap-2 mt-4">
               <Button
                 onClick={handleAddMeal}
-                className="flex-1 bg-green-600/30 border-green-500/50"
+                className="flex-1 bg-green-600/60 hover:bg-green-600/70 border-green-500/60 text-white font-bold shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_20px_rgba(34,197,94,0.5)] transition-all"
               >
+                <Plus className="w-4 h-4 mr-2" />
                 Add Meal
               </Button>
+              <Button
+                onClick={handleSaveMealForFuture}
+                className="flex-1 bg-purple-600/60 hover:bg-purple-600/70 border-purple-500/60 text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] transition-all"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save for Future
+              </Button>
+            </div>
+            <div className="flex gap-2 mt-2">
               <Button
                 onClick={() => setCurrentView('main')}
                 variant="outline"
@@ -1299,6 +1410,131 @@ export function DailyScreen({
                 className="flex-1"
               >
                 Cancel
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Reset Workout Confirmation Modal */}
+      {showResetConfirmation && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-50">
+          <Card className="p-6 max-w-sm w-full bg-card border-red-500/30">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                <RotateCcw className="w-8 h-8 text-red-400" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">Reset Workout?</h3>
+              <p className="text-sm text-muted-foreground">
+                This will clear all exercises from your current workout. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={confirmResetWorkout}
+                className="flex-1 bg-red-600/30 border-red-500/50 hover:bg-red-600/50"
+              >
+                Reset
+              </Button>
+              <Button
+                onClick={() => setShowResetConfirmation(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Saved Meals Modal */}
+      {showSavedMeals && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-50">
+          <Card className="p-0 max-w-md w-full bg-card max-h-[80vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="font-bold">Saved Meals</h3>
+                <p className="text-xs text-muted-foreground mt-1">{savedMeals.length} saved</p>
+              </div>
+              <button
+                onClick={() => setShowSavedMeals(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Saved Meals List */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {savedMeals.length === 0 ? (
+                <div className="text-center py-12">
+                  <Apple className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
+                  <p className="text-muted-foreground font-medium mb-2">No saved meals yet</p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Save your favorite meals for quick access
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {savedMeals.map(meal => (
+                    <div
+                      key={meal.id}
+                      className="p-4 bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-border/50 rounded-lg hover:border-blue-500/50 transition-all group"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white">{meal.name}</h4>
+                          <div className="flex gap-4 mt-2">
+                            <div className="text-xs">
+                              <span className="text-muted-foreground">Calories:</span>{' '}
+                              <span className="font-bold text-orange-400">{meal.calories}</span>
+                            </div>
+                            <div className="text-xs">
+                              <span className="text-muted-foreground">Protein:</span>{' '}
+                              <span className="font-bold text-blue-400">{meal.protein}g</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => handleDeleteSavedMeal(meal.id, e)}
+                          className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded-lg transition-all"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleLoadSavedMeal(meal)}
+                          className="flex-1 py-2 px-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-xs font-medium text-purple-300 transition-colors"
+                        >
+                          Load to Form
+                        </button>
+                        <button
+                          onClick={() => handleQuickAddSavedMeal(meal)}
+                          className="flex-1 py-2 px-3 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded-lg text-xs font-medium text-green-300 transition-colors flex items-center justify-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          Quick Add
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-border">
+              <Button
+                onClick={() => setShowSavedMeals(false)}
+                variant="outline"
+                className="w-full"
+              >
+                Close
               </Button>
             </div>
           </Card>

@@ -1,171 +1,126 @@
 /**
- * Mock AI form analysis
- * In production, this would analyze the video using computer vision
- * For now, we simulate realistic scoring based on exercise difficulty
+ * AI form analysis using Gradio backend
+ * Connects to Hugging Face Space for real computer vision analysis
  */
 
 export interface FormAnalysisResult {
   score: number; // 0-100
-  sets: number; // Detected number of sets
+  sets: number; // Detected number of sets (rep count)
   feedback: string;
   strengths: string[];
   improvements: string[];
 }
 
-const exerciseDifficulty: Record<string, 'easy' | 'medium' | 'hard'> = {
-  // Pull exercises
-  'Pull-ups': 'hard',
-  'Chin-ups': 'hard',
-  'Muscle-ups': 'hard',
-  'Front Lever Pulls': 'hard',
-  'Archer Pull-ups': 'hard',
-  'Typewriter Pull-ups': 'hard',
-  'One-Arm Pull-up Negatives': 'hard',
-  'Inverted Rows': 'medium',
-  'Australian Pull-ups': 'medium',
-  'Negative Pull-ups': 'medium',
-  
-  // Push exercises
-  'Push-ups': 'medium',
-  'Diamond Push-ups': 'medium',
-  'Archer Push-ups': 'hard',
-  'Pike Push-ups': 'medium',
-  'Handstand Push-ups': 'hard',
-  'Pseudo Planche Push-ups': 'hard',
-  'Decline Push-ups': 'medium',
-  'Dips': 'medium',
-  'Ring Dips': 'hard',
-  
-  // Leg exercises
-  'Pistol Squats': 'hard',
-  'Bulgarian Split Squats': 'medium',
-  'Jump Squats': 'medium',
-  'Sissy Squats': 'hard',
-  'Nordic Curls': 'hard',
-  'Single-Leg Deadlifts': 'medium',
-  'Calf Raises': 'easy',
-  
-  // Core exercises
-  'L-sit': 'hard',
-  'Dragon Flags': 'hard',
-  'Hanging Leg Raises': 'hard',
-  'Ab Wheel Rollouts': 'medium',
-  'Plank': 'easy',
-  'Hollow Body Hold': 'medium',
-};
+const SPACE_URL = "https://gibil-pushup-prototype.hf.space";
+let gradioClient: any = null;
 
-const feedbackTemplates = {
-  excellent: [
-    'Perfect form! Your technique is on point.',
-    'Outstanding execution! Keep it up!',
-    'Flawless! You\'ve mastered this movement.',
-    'Exceptional form! Elite-level performance.',
-  ],
-  good: [
-    'Great form! Minor adjustments could help.',
-    'Solid execution! Nearly perfect.',
-    'Good technique! Very impressive.',
-    'Strong performance! Almost there.',
-  ],
-  decent: [
-    'Decent form! Room for improvement.',
-    'Not bad! Focus on the details.',
-    'Fair execution! Keep practicing.',
-    'Acceptable form! You can do better.',
-  ],
-  poor: [
-    'Form needs work! Review the basics.',
-    'Subpar execution! Focus on technique.',
-    'Weak form! Slow down and focus.',
-    'Poor technique! Practice makes perfect.',
-  ],
-};
-
-const strengthFeedback = [
-  'Full range of motion',
-  'Controlled tempo',
-  'Good muscle engagement',
-  'Stable core throughout',
-  'Proper breathing pattern',
-  'Consistent form across reps',
-  'Good shoulder positioning',
-  'Strong lockout at top',
-  'Smooth movement pattern',
-  'Excellent mind-muscle connection',
-];
-
-const improvementFeedback = [
-  'Increase range of motion',
-  'Control the negative phase',
-  'Engage your core more',
-  'Slow down the tempo',
-  'Focus on full extension',
-  'Keep elbows tucked',
-  'Straighten your legs',
-  'Avoid momentum',
-  'Maintain neutral spine',
-  'Keep shoulders retracted',
-];
-
-/**
- * Simulate AI form analysis of workout video
- * Returns a score and detailed feedback
- */
-export function analyzeWorkoutForm(exerciseName: string, videoBlob?: Blob): FormAnalysisResult {
-  // Get exercise difficulty (default to medium)
-  const difficulty = exerciseDifficulty[exerciseName] || 'medium';
-  
-  // Base score ranges by difficulty
-  const scoreRanges = {
-    easy: { min: 70, max: 100 },
-    medium: { min: 50, max: 90 },
-    hard: { min: 40, max: 80 },
-  };
-  
-  const range = scoreRanges[difficulty];
-  
-  // Generate semi-random score (weighted towards good performance)
-  // 60% chance of upper half, 40% chance of lower half
-  const isGoodPerformance = Math.random() > 0.4;
-  const min = isGoodPerformance ? (range.min + range.max) / 2 : range.min;
-  const max = isGoodPerformance ? range.max : (range.min + range.max) / 2;
-  const score = Math.floor(Math.random() * (max - min + 1)) + min;
-  
-  // Select feedback based on score
-  let feedbackCategory: keyof typeof feedbackTemplates;
-  if (score >= 90) feedbackCategory = 'excellent';
-  else if (score >= 70) feedbackCategory = 'good';
-  else if (score >= 50) feedbackCategory = 'decent';
-  else feedbackCategory = 'poor';
-  
-  const feedbackList = feedbackTemplates[feedbackCategory];
-  const feedback = feedbackList[Math.floor(Math.random() * feedbackList.length)];
-  
-  // Select 2-3 random strengths
-  const strengthCount = 2 + Math.floor(Math.random() * 2);
-  const strengths = shuffleArray(strengthFeedback).slice(0, strengthCount);
-  
-  // Select 1-2 random improvements (more for lower scores)
-  const improvementCount = score >= 70 ? 1 : 2;
-  const improvements = shuffleArray(improvementFeedback).slice(0, improvementCount);
-  
-  // Simulate detected number of sets
-  const sets = Math.floor(Math.random() * 5) + 1;
-  
-  return {
-    score,
-    sets,
-    feedback,
-    strengths,
-    improvements,
-  };
+async function getGradioClient() {
+  if (gradioClient) return gradioClient;
+  try {
+    // Dynamic import for @gradio/client to ensure browser compatibility
+    const { Client } = await import('@gradio/client');
+    gradioClient = await Client.connect(SPACE_URL);
+    return gradioClient;
+  } catch (error) {
+    console.error('Failed to connect to Gradio backend:', error);
+    throw new Error('Unable to connect to AI analysis backend');
+  }
 }
 
-function shuffleArray<T>(array: T[]): T[] {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+/**
+ * Analyze workout form using real AI backend
+ * Sends video to Gradio API and returns analysis results
+ */
+export async function analyzeWorkoutForm(exerciseName: string, videoBlob?: Blob): Promise<FormAnalysisResult> {
+  if (!videoBlob) {
+    throw new Error('Video file is required for analysis');
   }
-  return newArray;
+
+  try {
+    const app = await getGradioClient();
+
+    // Call the Gradio named endpoint: "/analyze"
+    // Input must be an array because the endpoint takes 1 argument: the video file
+    const result = await app.predict("/analyze", [videoBlob]);
+
+    // Gradio returns: { data: [output1, output2, ...] }
+    const summary = result?.data?.[0];        // JSON summary
+    // const annotated = result?.data?.[1];   // annotated video (optional, not used here)
+
+    if (!summary || summary.ok === false) {
+      const msg = summary?.error || "Backend returned an error.";
+      throw new Error(msg);
+    }
+
+    // Extract rep count
+    const repCount = Number(summary.rep_count ?? 0);
+
+    // Final score logic (defensive)
+    let finalScore: number = 0;
+
+    // If backend already provides final score directly:
+    if (summary.pushup_score != null) {
+      finalScore = Number(summary.pushup_score);
+    } else if (summary.final_score != null) {
+      finalScore = Number(summary.final_score);
+    } else {
+      // Otherwise compute average of rep_events[*].pushup_score
+      const reps = Array.isArray(summary.rep_events) ? summary.rep_events : [];
+      if (reps.length === 0) {
+        finalScore = 0;
+      } else {
+        const scores = reps
+          .map((r: any) => Number(r.pushup_score))
+          .filter((x: number) => Number.isFinite(x));
+        finalScore = scores.length ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length) : 0;
+      }
+    }
+
+    // Generate feedback based on score
+    let feedback = '';
+    if (finalScore >= 90) {
+      feedback = 'Excellent form! Your technique is outstanding.';
+    } else if (finalScore >= 75) {
+      feedback = 'Great form! Minor adjustments could help.';
+    } else if (finalScore >= 60) {
+      feedback = 'Good effort! Focus on form improvements.';
+    } else if (finalScore >= 40) {
+      feedback = 'Decent attempt! More practice needed.';
+    } else {
+      feedback = 'Form needs work! Focus on the basics.';
+    }
+
+    // Generate strengths and improvements based on score
+    const strengths: string[] = [];
+    const improvements: string[] = [];
+
+    if (finalScore >= 70) {
+      strengths.push('Controlled movement');
+      strengths.push('Good range of motion');
+      if (finalScore >= 85) {
+        strengths.push('Excellent form consistency');
+      }
+    } else {
+      improvements.push('Work on form consistency');
+      improvements.push('Control the movement');
+    }
+
+    if (finalScore < 80) {
+      improvements.push('Increase range of motion');
+      if (finalScore < 60) {
+        improvements.push('Focus on proper technique');
+      }
+    }
+
+    return {
+      score: finalScore,
+      sets: repCount,
+      feedback,
+      strengths,
+      improvements,
+    };
+  } catch (error: any) {
+    console.error('AI analysis error:', error);
+    throw new Error(error?.message || 'Failed to analyze video. Please try again.');
+  }
 }

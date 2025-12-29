@@ -200,13 +200,13 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
     }
   };
 
-  const handleExerciseSelect = (exerciseData: ExerciseData, targetIndex?: number) => {
+  const handleExerciseSelect = async (exerciseData: ExerciseData, targetIndex?: number) => {
     setIsAnalyzing(true);
     setShowExercisePicker(false);
 
-    // Simulate AI analysis delay
-    setTimeout(() => {
-      const result = analyzeWorkoutForm(exerciseData.name, capturedBlob);
+    try {
+      // Call real AI analysis
+      const result = await analyzeWorkoutForm(exerciseData.name, capturedBlob || undefined);
       
       // If targetIndex is provided, update that specific exercise
       if (targetIndex !== undefined && targetIndex !== null) {
@@ -234,7 +234,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
           // Add new exercise with AI score and detected sets
           const newExercise: Exercise = {
             name: exerciseData.name,
-            sets: result.sets, // Use AI-detected sets
+            sets: result.sets, // Use AI-detected sets (rep count)
             reps: exerciseData.baseReps,
             score: result.score,
             timestamp: new Date().toISOString(),
@@ -261,7 +261,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
       setIsAnalyzing(false);
       
       // Show success feedback
-      alert(`✅ ${exerciseData.name}\n${result.sets} sets detected\nForm Score: ${result.score}/100\n\n${result.feedback}\n\n💪 Strengths:\n${result.strengths.map(s => `• ${s}`).join('\n')}\n\n📈 Improvements:\n${result.improvements.map(i => `• ${i}`).join('\n')}`);
+      alert(`✅ ${exerciseData.name}\n${result.sets} reps detected\nForm Score: ${result.score}/100\n\n${result.feedback}\n\n💪 Strengths:\n${result.strengths.map(s => `• ${s}`).join('\n')}\n\n📈 Improvements:\n${result.improvements.map(i => `• ${i}`).join('\n')}`);
       
       handleCloseCapturedMedia();
       
@@ -269,7 +269,11 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
       if (targetIndex !== undefined && targetIndex !== null) {
         onRecordingComplete();
       }
-    }, 1500); // Simulate AI processing time
+    } catch (error: any) {
+      setIsAnalyzing(false);
+      alert(`❌ Analysis Failed\n\n${error?.message || 'Unable to analyze video. Please try again.'}`);
+      console.error('Analysis error:', error);
+    }
   };
 
   const formatTime = (seconds: number) => {

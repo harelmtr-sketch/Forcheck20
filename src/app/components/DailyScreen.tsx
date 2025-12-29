@@ -15,6 +15,7 @@ interface DailyScreenProps {
   setMeals: React.Dispatch<React.SetStateAction<Meal[]>>;
   muscleStatus: MuscleStatus[];
   setMuscleStatus: React.Dispatch<React.SetStateAction<MuscleStatus[]>>;
+  onRecordExercise: (exerciseIndex: number) => void;
 }
 
 type View = 'main' | 'exercise-picker' | 'templates' | 'score-picker' | 'meal-form';
@@ -25,7 +26,8 @@ export function DailyScreen({
   meals, 
   setMeals,
   muscleStatus,
-  setMuscleStatus
+  setMuscleStatus,
+  onRecordExercise
 }: DailyScreenProps) {
   const [currentView, setCurrentView] = useState<View>('main');
   const [searchQuery, setSearchQuery] = useState('');
@@ -338,13 +340,35 @@ export function DailyScreen({
     const exercise = exercises[selectedExerciseIndex];
     const exerciseData = exerciseDatabase.find(ex => ex.name === exercise.name);
 
-    const scoreOptions = [
-      { range: '95-100', value: 97, label: 'Perfect Form', color: 'from-green-600 to-emerald-500', emoji: '🏆' },
-      { range: '85-94', value: 90, label: 'Excellent', color: 'from-green-500 to-green-400', emoji: '✨' },
-      { range: '75-84', value: 80, label: 'Good', color: 'from-yellow-500 to-yellow-400', emoji: '👍' },
-      { range: '60-74', value: 70, label: 'Decent', color: 'from-orange-500 to-orange-400', emoji: '💡' },
-      { range: '0-59', value: 50, label: 'Needs Work', color: 'from-red-500 to-red-400', emoji: '🎯' },
-    ];
+    // Generate scores from 0-100 in increments of 10
+    const scoreValues = Array.from({ length: 11 }, (_, i) => i * 10);
+    
+    const getScoreColor = (score: number) => {
+      if (score >= 90) return 'from-green-600 via-green-500 to-emerald-500';
+      if (score >= 80) return 'from-green-500 via-green-400 to-lime-500';
+      if (score >= 70) return 'from-lime-500 via-yellow-400 to-yellow-500';
+      if (score >= 60) return 'from-yellow-500 via-orange-400 to-orange-500';
+      if (score >= 50) return 'from-orange-500 via-orange-600 to-red-500';
+      return 'from-red-600 via-red-500 to-red-400';
+    };
+
+    const getScoreLabel = (score: number) => {
+      if (score >= 90) return 'Perfect';
+      if (score >= 80) return 'Excellent';
+      if (score >= 70) return 'Good';
+      if (score >= 60) return 'Decent';
+      if (score >= 50) return 'Fair';
+      return 'Needs Work';
+    };
+
+    const getScoreEmoji = (score: number) => {
+      if (score >= 90) return '🏆';
+      if (score >= 80) return '✨';
+      if (score >= 70) return '💪';
+      if (score >= 60) return '👍';
+      if (score >= 50) return '💡';
+      return '🎯';
+    };
 
     return (
       <div className="flex flex-col h-full bg-background">
@@ -367,31 +391,35 @@ export function DailyScreen({
           </div>
         </div>
 
-        <div className="flex-1 px-6 py-6 space-y-3 overflow-y-auto">
-          <h3 className="font-bold text-center mb-4">How was your form?</h3>
-          {scoreOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleScoreSelect(option.value)}
-              className={`w-full p-5 rounded-xl bg-gradient-to-r ${option.color} hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="text-left">
-                  <p className="text-2xl mb-1">{option.emoji}</p>
-                  <p className="font-bold text-white text-lg">{option.label}</p>
-                  <p className="text-sm text-white/80 font-medium">{option.range} points</p>
+        <div className="flex-1 px-6 py-6 overflow-y-auto">
+          <h3 className="font-bold text-center mb-2">Rate Your Form</h3>
+          <p className="text-sm text-muted-foreground text-center mb-6">Select a score from 0-100</p>
+          
+          {/* Score List */}
+          <div className="space-y-2">
+            {scoreValues.map((score) => (
+              <button
+                key={score}
+                onClick={() => handleScoreSelect(score)}
+                className={`w-full p-4 rounded-lg bg-gradient-to-r ${getScoreColor(score)} hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-bold text-white/90">
+                    {getScoreLabel(score)}
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {score}
+                  </div>
                 </div>
-                <div className="text-3xl font-black text-white drop-shadow-lg">
-                  {option.value}
-                </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
+  // TEMPLATES VIEW
   // TEMPLATES VIEW
   if (currentView === 'templates') {
     return (
@@ -656,54 +684,46 @@ export function DailyScreen({
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </p>
           </div>
-          {hasWorkout && (
-            <button
-              onClick={() => handleArchiveWorkout(false)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              title="Archive workout"
-            >
-              <Archive className="w-5 h-5 text-purple-400" />
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Streak in corner */}
+            <div className="flex items-center gap-2">
+              <span className="text-3xl">🔥</span>
+              <div className="flex flex-col items-start">
+                <div className="text-2xl font-black text-orange-400">7</div>
+                <div className="text-xs text-orange-400/80 font-medium -mt-1">days</div>
+              </div>
+            </div>
+            {hasWorkout && (
+              <button
+                onClick={() => handleArchiveWorkout(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                title="Archive workout"
+              >
+                <Archive className="w-5 h-5 text-purple-400" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
-        {/* Daily Score & Streak - Side by Side */}
+        {/* Daily Score */}
         {(hasWorkout || hasMeals) && (
-          <div className="grid grid-cols-2 gap-3">
-            {/* Daily Score Box */}
-            <Card className="relative p-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-[0_0_20px_rgba(100,116,139,0.3)] overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
-              <div className="relative text-center">
-                <p className="text-sm text-slate-400 font-medium mb-3">Daily Score</p>
-                <div className={`text-6xl font-black ${
-                  dailyScoreData.score >= 90 ? 'text-green-400 drop-shadow-[0_0_20px_rgba(74,222,128,0.6)]' :
-                  dailyScoreData.score >= 80 ? 'text-lime-400 drop-shadow-[0_0_20px_rgba(163,230,53,0.6)]' :
-                  dailyScoreData.score >= 70 ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]' :
-                  dailyScoreData.score >= 60 ? 'text-orange-400 drop-shadow-[0_0_20px_rgba(251,146,60,0.6)]' :
-                  'text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.6)]'
-                }`}>
-                  {dailyScoreData.score}
-                </div>
+          <Card className="relative p-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-[0_0_20px_rgba(100,116,139,0.3)] overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+            <div className="relative text-center">
+              <p className="text-sm text-slate-400 font-medium mb-3">Daily Score</p>
+              <div className={`text-6xl font-black ${
+                dailyScoreData.score >= 90 ? 'text-green-400 drop-shadow-[0_0_20px_rgba(74,222,128,0.6)]' :
+                dailyScoreData.score >= 80 ? 'text-lime-400 drop-shadow-[0_0_20px_rgba(163,230,53,0.6)]' :
+                dailyScoreData.score >= 70 ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]' :
+                dailyScoreData.score >= 60 ? 'text-orange-400 drop-shadow-[0_0_20px_rgba(251,146,60,0.6)]' :
+                'text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.6)]'
+              }`}>
+                {dailyScoreData.score}
               </div>
-            </Card>
-
-            {/* Streak Box */}
-            <Card className="relative p-6 bg-gradient-to-br from-orange-900/60 via-amber-900/50 to-orange-950/60 border-orange-800/50 shadow-[0_0_25px_rgba(234,88,12,0.4)] overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent" />
-              <div className="relative text-center">
-                <p className="text-sm text-orange-300/80 font-medium mb-2">Streak</p>
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <span className="text-4xl">🔥</span>
-                  <div className="text-6xl font-black text-orange-400 drop-shadow-[0_0_15px_rgba(251,146,60,0.6)]">
-                    7
-                  </div>
-                </div>
-                <p className="text-xs text-orange-300/70 font-medium">days</p>
-              </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         )}
 
         {/* Workout Section */}
@@ -814,6 +834,18 @@ export function DailyScreen({
                         </button>
                       </div>
                     </div>
+
+                    {/* Record Now Button - always visible */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRecordExercise(index);
+                      }}
+                      className="flex items-center justify-center gap-2 w-full py-3 mb-3 rounded-lg bg-gradient-to-r from-red-600/30 to-pink-600/30 border border-red-500/50 hover:from-red-600/50 hover:to-pink-600/50 transition-all shadow-lg hover:shadow-red-500/30"
+                    >
+                      <Camera className="w-4 h-4 text-red-300" />
+                      <span className="text-sm font-bold text-red-200">Record Now</span>
+                    </button>
 
                     {isRated ? (
                       <div className="space-y-3">

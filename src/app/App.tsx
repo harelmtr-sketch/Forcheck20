@@ -103,6 +103,9 @@ export default function App() {
     { name: 'Calves', key: 'calves', status: 'ready', lastTrained: 'Never', setsToday: 0 },
   ]);
 
+  // Track specific exercise to record from Daily tab
+  const [exerciseToRecord, setExerciseToRecord] = useState<number | null>(null);
+
   const tabs = [
     { id: 'daily' as Tab, label: 'Daily', icon: BarChart3 },
     { id: 'camera' as Tab, label: 'Camera', icon: Camera },
@@ -122,12 +125,18 @@ export default function App() {
     setCurrentView(activeTab);
   };
 
+  const handleRecordExercise = (exerciseIndex: number) => {
+    setExerciseToRecord(exerciseIndex);
+    setActiveTab('camera');
+    setCurrentView('camera');
+  };
+
   const renderScreen = () => {
     switch (currentView) {
       case 'camera':
-        return <CameraScreen exercises={exercises} setExercises={setExercises} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
+        return <CameraScreen exercises={exercises} setExercises={setExercises} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} exerciseToRecord={exerciseToRecord} onRecordingComplete={() => setExerciseToRecord(null)} />;
       case 'daily':
-        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
+        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
       case 'profile':
         return <ProfileScreen onOpenSettings={handleOpenSettings} exercises={exercises} muscleStatus={muscleStatus} />;
       case 'settings':
@@ -167,7 +176,7 @@ export default function App() {
           setHapticFeedback={setHapticFeedback}
         />;
       default:
-        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
+        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
     }
   };
 

@@ -13,9 +13,11 @@ interface CameraScreenProps {
   setExercises: React.Dispatch<React.SetStateAction<Exercise[]>>;
   muscleStatus: MuscleStatus[];
   setMuscleStatus: React.Dispatch<React.SetStateAction<MuscleStatus[]>>;
+  exerciseToRecord: number | null;
+  onRecordingComplete: () => void;
 }
 
-export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleStatus }: CameraScreenProps) {
+export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleStatus, exerciseToRecord, onRecordingComplete }: CameraScreenProps) {
   const [selectedMode, setSelectedMode] = useState<Mode>('workout');
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
@@ -180,7 +182,16 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
   const handleSaveCapturedMedia = () => {
     if (selectedMode === 'workout') {
-      // Show exercise picker for workout videos
+      // If exerciseToRecord is set, automatically select that exercise
+      if (exerciseToRecord !== null && exercises[exerciseToRecord]) {
+        const exercise = exercises[exerciseToRecord];
+        const exerciseData = exerciseDatabase.find(ex => ex.name === exercise.name);
+        if (exerciseData) {
+          handleExerciseSelect(exerciseData, exerciseToRecord);
+          return;
+        }
+      }
+      // Otherwise show exercise picker for workout videos
       setShowExercisePicker(true);
     } else {
       // For meals, just save (would upload for nutrition analysis in production)
@@ -189,7 +200,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
     }
   };
 
-  const handleExerciseSelect = (exerciseData: ExerciseData) => {
+  const handleExerciseSelect = (exerciseData: ExerciseData, targetIndex?: number) => {
     setIsAnalyzing(true);
     setShowExercisePicker(false);
 
@@ -197,29 +208,40 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
     setTimeout(() => {
       const result = analyzeWorkoutForm(exerciseData.name, capturedBlob);
       
-      // Find or create the exercise in the workout
-      const existingIndex = exercises.findIndex(ex => ex.name === exerciseData.name);
-      
-      if (existingIndex >= 0) {
-        // Update existing exercise with the AI score and add to set count
+      // If targetIndex is provided, update that specific exercise
+      if (targetIndex !== undefined && targetIndex !== null) {
         const updatedExercises = [...exercises];
-        updatedExercises[existingIndex] = {
-          ...updatedExercises[existingIndex],
-          score: result.score,
-          sets: updatedExercises[existingIndex].sets + result.sets
+        updatedExercises[targetIndex] = {
+          ...updatedExercises[targetIndex],
+          score: result.score
+          // Keep existing sets/reps from template
         };
         setExercises(updatedExercises);
       } else {
-        // Add new exercise with AI score and detected sets
-        const newExercise: Exercise = {
-          name: exerciseData.name,
-          sets: result.sets, // Use AI-detected sets
-          reps: exerciseData.baseReps,
-          score: result.score,
-          timestamp: new Date().toISOString(),
-          fromTemplate: false
-        };
-        setExercises([...exercises, newExercise]);
+        // Find or create the exercise in the workout
+        const existingIndex = exercises.findIndex(ex => ex.name === exerciseData.name);
+        
+        if (existingIndex >= 0) {
+          // Update existing exercise with the AI score and add to set count
+          const updatedExercises = [...exercises];
+          updatedExercises[existingIndex] = {
+            ...updatedExercises[existingIndex],
+            score: result.score,
+            sets: updatedExercises[existingIndex].sets + result.sets
+          };
+          setExercises(updatedExercises);
+        } else {
+          // Add new exercise with AI score and detected sets
+          const newExercise: Exercise = {
+            name: exerciseData.name,
+            sets: result.sets, // Use AI-detected sets
+            reps: exerciseData.baseReps,
+            score: result.score,
+            timestamp: new Date().toISOString(),
+            fromTemplate: false
+          };
+          setExercises([...exercises, newExercise]);
+        }
       }
 
       // Update muscle status
@@ -242,6 +264,11 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
       alert(`✅ ${exerciseData.name}\n${result.sets} sets detected\nForm Score: ${result.score}/100\n\n${result.feedback}\n\n💪 Strengths:\n${result.strengths.map(s => `• ${s}`).join('\n')}\n\n📈 Improvements:\n${result.improvements.map(i => `• ${i}`).join('\n')}`);
       
       handleCloseCapturedMedia();
+      
+      // Clear exerciseToRecord after successful recording
+      if (targetIndex !== undefined && targetIndex !== null) {
+        onRecordingComplete();
+      }
     }, 1500); // Simulate AI processing time
   };
 
@@ -343,12 +370,24 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
       {/* Instruction Text at Top */}
       <div className="absolute top-20 left-0 right-0 z-10 px-6">
-        <p className="text-center text-sm text-white/90 font-medium drop-shadow-lg">
-          {selectedMode === 'workout' 
-            ? 'Tap to record your workout'
-            : 'Tap to take a photo of your meal'
-          }
-        </p>
+        {exerciseToRecord !== null && exercises[exerciseToRecord] ? (
+          <div className="bg-gradient-to-r from-red-600/80 to-pink-600/80 backdrop-blur-md px-4 py-3 rounded-lg shadow-xl border border-red-400/50">
+            <p className="text-center text-xs text-white/80 font-medium mb-1">Recording for:</p>
+            <p className="text-center text-sm text-white font-bold">
+              {exercises[exerciseToRecord].name}
+            </p>
+            <p className="text-center text-xs text-white/70 mt-1">
+              {exercises[exerciseToRecord].sets} sets × {exercises[exerciseToRecord].reps} reps
+            </p>
+          </div>
+        ) : (
+          <p className="text-center text-sm text-white/90 font-medium drop-shadow-lg">
+            {selectedMode === 'workout' 
+              ? 'Tap to record your workout'
+              : 'Tap to take a photo of your meal'
+            }
+          </p>
+        )}
       </div>
 
       {/* Camera Feed */}
@@ -391,47 +430,12 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
         {!stream && !error && (
           <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center px-8">
             <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
-            <div className="text-center mb-6">
-              <h3 className="text-white text-lg font-bold mb-2">Enable Camera</h3>
-              <p className="text-gray-400 text-sm font-medium mb-1">
-                Allow camera access to record workouts
-              </p>
-              <p className="text-gray-500 text-xs">
-                Click "Allow" when your browser asks for permission
+            <div className="text-center">
+              <h3 className="text-white text-lg font-bold mb-2">Camera Ready</h3>
+              <p className="text-gray-400 text-sm font-medium">
+                Tap the button below to {selectedMode === 'workout' ? 'record video' : 'take a photo'}
               </p>
             </div>
-            <button
-              onClick={() => {
-                // Trigger permission request by trying to start camera again
-                navigator.mediaDevices?.getUserMedia({
-                  video: {
-                    facingMode: facingMode,
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
-                  },
-                  audio: false
-                })
-                .then(mediaStream => {
-                  setStream(mediaStream);
-                  setPermissionState('granted');
-                  setError(null);
-                  if (videoRef.current) {
-                    videoRef.current.srcObject = mediaStream;
-                  }
-                })
-                .catch(err => {
-                  console.log('Permission denied or error:', err);
-                  setPermissionState('denied');
-                  setError('Camera access denied. You can still upload videos using the button below.');
-                });
-              }}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white font-bold shadow-lg shadow-blue-500/30 hover:scale-105 transition-all"
-            >
-              Enable Camera 📹
-            </button>
-            <p className="text-gray-500 text-xs mt-6">
-              Or use the upload button below to select videos from your device
-            </p>
           </div>
         )}
       </div>

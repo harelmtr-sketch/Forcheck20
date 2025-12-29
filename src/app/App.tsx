@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, BarChart3, User } from 'lucide-react';
 import { CameraScreen } from './components/CameraScreen';
 import { DailyScreen } from './components/DailyScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { loadWorkoutFromStorage, saveWorkoutToStorage } from './utils/workoutStorage';
 
 type Tab = 'camera' | 'daily' | 'profile';
 type View = Tab | 'settings';
@@ -124,7 +125,7 @@ export default function App() {
   const renderScreen = () => {
     switch (currentView) {
       case 'camera':
-        return <CameraScreen />;
+        return <CameraScreen exercises={exercises} setExercises={setExercises} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
       case 'daily':
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
       case 'profile':
@@ -169,6 +170,21 @@ export default function App() {
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} />;
     }
   };
+
+  // Load workout from storage on mount
+  useEffect(() => {
+    const saved = loadWorkoutFromStorage();
+    if (saved) {
+      setExercises(saved.exercises);
+      setMeals(saved.meals);
+      setMuscleStatus(saved.muscleStatus);
+    }
+  }, []);
+
+  // Save workout to storage whenever it changes
+  useEffect(() => {
+    saveWorkoutToStorage(exercises, meals, muscleStatus);
+  }, [exercises, meals, muscleStatus]);
 
   return (
     <div className={`h-screen w-full max-w-md mx-auto text-foreground flex flex-col overflow-hidden ${darkMode ? 'dark' : ''}`}>

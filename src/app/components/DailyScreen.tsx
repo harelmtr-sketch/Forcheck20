@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple } from 'lucide-react';
+import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase';
@@ -38,6 +38,13 @@ export function DailyScreen({
   const [customTemplateName, setCustomTemplateName] = useState('');
   const [activeTemplateName, setActiveTemplateName] = useState<string | null>(null); // Track active template name
   const [progressPicPreview, setProgressPicPreview] = useState<string | null>(null);
+  const [showFormVideo, setShowFormVideo] = useState(false);
+  const [selectedFormExercise, setSelectedFormExercise] = useState<ExerciseData | null>(null);
+  const [showCustomizeExercise, setShowCustomizeExercise] = useState(false);
+  const [pendingExercise, setPendingExercise] = useState<ExerciseData | null>(null);
+  const [customSets, setCustomSets] = useState(3);
+  const [customReps, setCustomReps] = useState(12);
+  const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
   
   // Meal form state
   const [mealName, setMealName] = useState('');
@@ -121,18 +128,55 @@ export function DailyScreen({
   };
 
   const handleExerciseAdd = (exerciseData: ExerciseData) => {
-    // Add exercise with null score
-    const newExercise: Exercise = {
-      name: exerciseData.name,
-      sets: exerciseData.baseSets,
-      reps: exerciseData.baseReps,
-      score: null,
-      timestamp: new Date().toISOString(),
-      fromTemplate: false // Mark as custom
-    };
+    // Show customize modal first
+    setPendingExercise(exerciseData);
+    setCustomSets(exerciseData.baseSets);
+    setCustomReps(exerciseData.baseReps);
+    setShowCustomizeExercise(true);
+  };
 
-    setExercises([...exercises, newExercise]);
-    setCurrentView('main');
+  const handleConfirmExercise = () => {
+    if (!pendingExercise) return;
+
+    if (editingExerciseIndex !== null) {
+      // Editing existing exercise
+      const updatedExercises = exercises.map((ex, i) => 
+        i === editingExerciseIndex 
+          ? { ...ex, sets: customSets, reps: customReps }
+          : ex
+      );
+      setExercises(updatedExercises);
+      setEditingExerciseIndex(null);
+    } else {
+      // Adding new exercise
+      const newExercise: Exercise = {
+        name: pendingExercise.name,
+        sets: customSets,
+        reps: customReps,
+        score: null,
+        timestamp: new Date().toISOString(),
+        fromTemplate: false // Mark as custom
+      };
+      setExercises([...exercises, newExercise]);
+      setCurrentView('main');
+    }
+    
+    setShowCustomizeExercise(false);
+    setPendingExercise(null);
+  };
+
+  const handleEditExercise = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent rating from triggering
+    const exercise = exercises[index];
+    const exerciseData = exerciseDatabase.find(ex => ex.name === exercise.name);
+    
+    if (exerciseData) {
+      setPendingExercise(exerciseData);
+      setCustomSets(exercise.sets);
+      setCustomReps(exercise.reps);
+      setEditingExerciseIndex(index);
+      setShowCustomizeExercise(true);
+    }
   };
 
   const handleRateExercise = (index: number) => {
@@ -200,18 +244,22 @@ export function DailyScreen({
   const handleSaveAsTemplate = () => {
     if (exercises.length === 0) return;
     
-    const templateName = prompt('Enter template name:');
-    if (!templateName) return;
+    setShowCustomTemplatePrompt(true);
+  };
+
+  const confirmSaveTemplate = () => {
+    if (!customTemplateName.trim()) return;
 
     const newTemplate: CustomTemplate = {
       id: Date.now().toString(),
-      name: templateName,
+      name: customTemplateName,
       exercises: [...exercises],
       createdAt: new Date().toISOString()
     };
 
     setCustomTemplates([...customTemplates, newTemplate]);
-    alert(`Template "${templateName}" saved!`);
+    setShowCustomTemplatePrompt(false);
+    setCustomTemplateName('');
   };
 
   const handleProgressPicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,6 +280,22 @@ export function DailyScreen({
 
   const handleRemoveMeal = (index: number) => {
     setMeals(meals.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteCustomTemplate = (templateId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent template from being selected
+    if (confirm('Delete this custom template?')) {
+      setCustomTemplates(customTemplates.filter(t => t.id !== templateId));
+    }
+  };
+
+  const handleViewExerciseForm = (exerciseName: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent rating from triggering
+    const exerciseData = exerciseDatabase.find(ex => ex.name === exerciseName);
+    if (exerciseData) {
+      setSelectedFormExercise(exerciseData);
+      setShowFormVideo(true);
+    }
   };
 
   const handleAddMeal = () => {
@@ -356,18 +420,20 @@ export function DailyScreen({
               {customTemplates.map((template) => (
                 <Card 
                   key={template.id}
-                  onClick={() => {
-                    const exercisesToAdd = template.exercises.map(ex => ({
-                      ...ex,
-                      score: null,
-                      timestamp: new Date().toISOString()
-                    }));
-                    setExercises([...exercises, ...exercisesToAdd]);
-                    setCurrentView('main');
-                  }}
-                  className="p-5 bg-gradient-to-br from-purple-600/25 to-pink-600/15 border-purple-500/40 cursor-pointer hover:scale-[1.02] transition-all shadow-lg"
+                  className="p-5 bg-gradient-to-br from-purple-600/25 to-pink-600/15 border-purple-500/40 cursor-pointer hover:scale-[1.02] transition-all shadow-lg relative"
                 >
-                  <div className="flex items-center justify-between">
+                  <div 
+                    onClick={() => {
+                      const exercisesToAdd = template.exercises.map(ex => ({
+                        ...ex,
+                        score: null,
+                        timestamp: new Date().toISOString()
+                      }));
+                      setExercises([...exercises, ...exercisesToAdd]);
+                      setCurrentView('main');
+                    }}
+                    className="flex items-center justify-between"
+                  >
                     <div>
                       <h4 className="font-bold text-white mb-1">⭐ {template.name}</h4>
                       <p className="text-sm text-white/70 font-medium">
@@ -376,6 +442,13 @@ export function DailyScreen({
                     </div>
                     <ChevronRight className="w-6 h-6 text-white/60" />
                   </div>
+                  <button
+                    onClick={(e) => handleDeleteCustomTemplate(template.id, e)}
+                    className="absolute top-3 right-12 p-2 rounded-full hover:bg-red-500/20 transition-colors"
+                    title="Delete template"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                  </button>
                 </Card>
               ))}
               <h3 className="font-bold text-sm text-blue-400 mt-6">Pre-Made Templates</h3>
@@ -411,71 +484,162 @@ export function DailyScreen({
   // EXERCISE PICKER VIEW
   if (currentView === 'exercise-picker') {
     return (
-      <div className="flex flex-col h-full">
-        <div className="px-6 py-6 border-b border-border/50">
-          <div className="flex items-center gap-3 mb-4">
-            <button 
-              onClick={() => setCurrentView('main')}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-            <div>
-              <h2 className="font-bold">Choose Exercise</h2>
-              <p className="text-sm text-muted-foreground font-medium">
-                {exerciseDatabase.length} exercises available
-              </p>
+      <>
+        <div className="flex flex-col h-full">
+          <div className="px-6 py-6 border-b border-border/50">
+            <div className="flex items-center gap-3 mb-4">
+              <button 
+                onClick={() => setCurrentView('main')}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </button>
+              <div>
+                <h2 className="font-bold">Choose Exercise</h2>
+                <p className="text-sm text-muted-foreground font-medium">
+                  {exerciseDatabase.length} exercises available
+                </p>
+              </div>
+            </div>
+
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search exercises..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-secondary/80 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40"
+              />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id
+                      ? 'bg-white/20 text-white'
+                      : 'bg-secondary text-muted-foreground'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search exercises..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-secondary/80 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40"
-            />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-white/20 text-white'
-                    : 'bg-secondary text-muted-foreground'
-                }`}
+          <div className="flex-1 px-6 py-4 overflow-y-auto space-y-3">
+            {filteredExercises.map((exercise) => (
+              <Card 
+                key={exercise.id}
+                onClick={() => handleExerciseAdd(exercise)}
+                className="p-4 bg-card border-border hover:bg-white/5 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
               >
-                {cat.label}
-              </button>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white mb-1">{exercise.name}</h4>
+                    <p className="text-sm text-muted-foreground font-medium">
+                      {exercise.baseSets} sets × {exercise.baseReps} reps
+                    </p>
+                  </div>
+                  <Plus className="w-6 h-6 text-white/60" />
+                </div>
+              </Card>
             ))}
           </div>
         </div>
 
-        <div className="flex-1 px-6 py-4 overflow-y-auto space-y-3">
-          {filteredExercises.map((exercise) => (
-            <Card 
-              key={exercise.id}
-              onClick={() => handleExerciseAdd(exercise)}
-              className="p-4 bg-card border-border hover:bg-white/5 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h4 className="font-bold text-white mb-1">{exercise.name}</h4>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    {exercise.baseSets} sets × {exercise.baseReps} reps
+        {/* Customize Exercise Modal - Must be here for exercise picker */}
+        {showCustomizeExercise && pendingExercise && (
+          <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-6 z-[100]">
+            <Card className="p-0 max-w-sm w-full bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 overflow-hidden">
+              {/* Header */}
+              <div className="p-5 bg-gradient-to-r from-green-600/20 to-blue-600/20 border-b border-slate-700">
+                <h3 className="font-bold text-white">{pendingExercise.name}</h3>
+                <p className="text-xs text-slate-400 mt-1">{editingExerciseIndex !== null ? 'Edit your workout' : 'Customize your workout'}</p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Sets Picker */}
+                <div>
+                  <label className="text-sm font-bold text-white mb-2 block">Sets</label>
+                  <select
+                    value={customSets}
+                    onChange={(e) => setCustomSets(parseInt(e.target.value))}
+                    className="w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600 rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+                    style={{ 
+                      backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.25em 1.25em'
+                    }}
+                  >
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                      <option key={num} value={num} className="bg-slate-800 text-white py-2">
+                        {num} {num === 1 ? 'set' : 'sets'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Reps Picker */}
+                <div>
+                  <label className="text-sm font-bold text-white mb-2 block">Reps</label>
+                  <select
+                    value={customReps}
+                    onChange={(e) => setCustomReps(parseInt(e.target.value))}
+                    className="w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600 rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+                    style={{ 
+                      backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.25em 1.25em'
+                    }}
+                  >
+                    {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                      <option key={num} value={num} className="bg-slate-800 text-white py-2">
+                        {num} {num === 1 ? 'rep' : 'reps'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Preview */}
+                <div className="p-4 bg-gradient-to-r from-green-600/10 to-blue-600/10 rounded-xl border border-green-500/30">
+                  <p className="text-xs text-slate-400 text-center mb-1">Your workout:</p>
+                  <p className="text-center font-bold text-white">
+                    {customSets} × {customReps} = <span className="text-green-400">{customSets * customReps} total reps</span>
                   </p>
                 </div>
-                <Plus className="w-6 h-6 text-white/60" />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="p-5 pt-0 flex gap-3">
+                <Button
+                  onClick={() => {
+                    setShowCustomizeExercise(false);
+                    setPendingExercise(null);
+                    setEditingExerciseIndex(null);
+                  }}
+                  variant="outline"
+                  className="flex-1 bg-slate-800/50 border-slate-600 hover:bg-slate-700"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmExercise}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-green-500 shadow-lg shadow-green-500/20"
+                >
+                  {editingExerciseIndex !== null ? 'Update' : 'Add Exercise'}
+                </Button>
               </div>
             </Card>
-          ))}
-        </div>
-      </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -624,13 +788,31 @@ export function DailyScreen({
                     className={`p-4 bg-gradient-to-br ${bgGradient} ${!isRated ? 'cursor-pointer hover:scale-[1.01]' : ''} transition-all`}
                   >
                     {/* Header with name */}
-                    <div className="mb-3">
-                      <h4 className={`font-bold text-lg mb-1 ${nameColor}`}>
-                        {exercise.name}
-                      </h4>
-                      <p className="text-xs text-gray-400">
-                        {exercise.sets} sets × {exercise.reps} reps
-                      </p>
+                    <div className="mb-3 flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className={`font-bold text-lg mb-1 ${nameColor}`}>
+                          {exercise.name}
+                        </h4>
+                        <p className="text-xs text-gray-400">
+                          {exercise.sets} sets × {exercise.reps} reps
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => handleEditExercise(index, e)}
+                          className="p-2.5 rounded-full bg-purple-600/30 border border-purple-500/50 hover:bg-purple-600/50 transition-all shadow-lg hover:shadow-purple-500/30"
+                          title="Edit sets/reps"
+                        >
+                          <Edit2 className="w-4 h-4 text-purple-300" />
+                        </button>
+                        <button
+                          onClick={(e) => handleViewExerciseForm(exercise.name, e)}
+                          className="p-2.5 rounded-full bg-blue-600/30 border border-blue-500/50 hover:bg-blue-600/50 transition-all shadow-lg hover:shadow-blue-500/30"
+                          title="Watch form video"
+                        >
+                          <Play className="w-4 h-4 text-blue-300 fill-blue-300" />
+                        </button>
+                      </div>
                     </div>
 
                     {isRated ? (
@@ -881,6 +1063,206 @@ export function DailyScreen({
               </Button>
               <Button
                 onClick={() => setCurrentView('main')}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Form Video Modal */}
+      {showFormVideo && selectedFormExercise && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
+          <Card className="p-0 max-w-md w-full bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 overflow-hidden">
+            {/* Header */}
+            <div className="p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-slate-700">
+              <h3 className="font-bold text-white">{selectedFormExercise.name}</h3>
+              <p className="text-xs text-slate-400 mt-1">Proper Form Tutorial</p>
+            </div>
+
+            {/* Mock Video Player */}
+            <div className="relative aspect-video bg-black">
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-900/20 to-purple-900/20">
+                <div className="text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-600/30 border-4 border-blue-500 flex items-center justify-center backdrop-blur-sm">
+                    <Play className="w-10 h-10 text-white fill-white ml-1" />
+                  </div>
+                  <p className="text-white font-bold">Form Tutorial Video</p>
+                  <p className="text-xs text-slate-300 mt-1">(Demo placeholder)</p>
+                </div>
+              </div>
+              {/* Video Controls UI */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-full h-1 bg-white/20 rounded-full">
+                    <div className="w-0 h-full bg-blue-500 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Exercise Info */}
+            <div className="p-4 space-y-3">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">💪</span>
+                  <p className="text-sm font-bold text-white">Target Muscles</p>
+                </div>
+                <p className="text-xs text-slate-400 pl-7">
+                  <span className="text-blue-300">Primary:</span> {selectedFormExercise.primaryMuscles.join(', ')}
+                </p>
+                <p className="text-xs text-slate-400 pl-7 mt-1">
+                  <span className="text-purple-300">Secondary:</span> {selectedFormExercise.secondaryMuscles.join(', ')}
+                </p>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🎯</span>
+                  <p className="text-sm font-bold text-white">Recommended Volume</p>
+                </div>
+                <p className="text-xs text-slate-400 pl-7">
+                  {selectedFormExercise.baseSets} sets × {selectedFormExercise.baseReps} reps
+                </p>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">📊</span>
+                  <p className="text-sm font-bold text-white">Difficulty</p>
+                </div>
+                <p className="text-xs text-slate-400 pl-7 capitalize">
+                  {selectedFormExercise.difficulty}
+                </p>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <div className="p-4 pt-0">
+              <Button
+                onClick={() => setShowFormVideo(false)}
+                className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600"
+              >
+                Close
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Customize Exercise Modal - Must be outside view checks to always render */}
+      {showCustomizeExercise && pendingExercise && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-6 z-[100]">
+          <Card className="p-0 max-w-sm w-full bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 overflow-hidden">
+            {/* Header */}
+            <div className="p-5 bg-gradient-to-r from-green-600/20 to-blue-600/20 border-b border-slate-700">
+              <h3 className="font-bold text-white">{pendingExercise.name}</h3>
+              <p className="text-xs text-slate-400 mt-1">{editingExerciseIndex !== null ? 'Edit your workout' : 'Customize your workout'}</p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Sets Picker */}
+              <div>
+                <label className="text-sm font-bold text-white mb-2 block">Sets</label>
+                <select
+                  value={customSets}
+                  onChange={(e) => setCustomSets(parseInt(e.target.value))}
+                  className="w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600 rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+                  style={{ 
+                    backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 0.75rem center',
+                    backgroundSize: '1.25em 1.25em'
+                  }}
+                >
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                    <option key={num} value={num} className="bg-slate-800 text-white py-2">
+                      {num} {num === 1 ? 'set' : 'sets'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Reps Picker */}
+              <div>
+                <label className="text-sm font-bold text-white mb-2 block">Reps</label>
+                <select
+                  value={customReps}
+                  onChange={(e) => setCustomReps(parseInt(e.target.value))}
+                  className="w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600 rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+                  style={{ 
+                    backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 0.75rem center',
+                    backgroundSize: '1.25em 1.25em'
+                  }}
+                >
+                  {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
+                    <option key={num} value={num} className="bg-slate-800 text-white py-2">
+                      {num} {num === 1 ? 'rep' : 'reps'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Preview */}
+              <div className="p-4 bg-gradient-to-r from-green-600/10 to-blue-600/10 rounded-xl border border-green-500/30">
+                <p className="text-xs text-slate-400 text-center mb-1">Your workout:</p>
+                <p className="text-center font-bold text-white">
+                  {customSets} × {customReps} = <span className="text-green-400">{customSets * customReps} total reps</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="p-5 pt-0 flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowCustomizeExercise(false);
+                  setPendingExercise(null);
+                  setEditingExerciseIndex(null);
+                }}
+                variant="outline"
+                className="flex-1 bg-slate-800/50 border-slate-600 hover:bg-slate-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmExercise}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-green-500 shadow-lg shadow-green-500/20"
+              >
+                {editingExerciseIndex !== null ? 'Update' : 'Add Exercise'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Custom Template Prompt Modal */}
+      {showCustomTemplatePrompt && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-50">
+          <Card className="p-6 max-w-sm w-full bg-card">
+            <h3 className="font-bold mb-4">Save Template</h3>
+            <input
+              type="text"
+              placeholder="Template Name"
+              value={customTemplateName}
+              onChange={(e) => setCustomTemplateName(e.target.value)}
+              className="w-full pl-4 pr-4 py-3 bg-secondary/80 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40"
+            />
+            <div className="flex gap-2 mt-4">
+              <Button
+                onClick={confirmSaveTemplate}
+                className="flex-1 bg-green-600/30 border-green-500/50"
+              >
+                Save Template
+              </Button>
+              <Button
+                onClick={() => setShowCustomTemplatePrompt(false)}
                 variant="outline"
                 className="flex-1"
               >

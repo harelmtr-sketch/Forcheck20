@@ -1,18 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, SwitchCamera, Zap, ZapOff, Camera as CameraIcon } from 'lucide-react';
+import { Upload, SwitchCamera, Zap, ZapOff, Camera as CameraIcon, X, Check, Search } from 'lucide-react';
 import { Card } from './ui/card';
+import { exerciseDatabase } from '../data/exerciseDatabase';
+import { analyzeWorkoutForm } from '../utils/aiFormScoring';
+import type { Exercise, MuscleStatus } from '../App';
+import type { ExerciseData } from '../data/exerciseDatabase';
 
 type Mode = 'workout' | 'meal';
 
-export function CameraScreen() {
+interface CameraScreenProps {
+  exercises: Exercise[];
+  setExercises: React.Dispatch<React.SetStateAction<Exercise[]>>;
+  muscleStatus: MuscleStatus[];
+  setMuscleStatus: React.Dispatch<React.SetStateAction<MuscleStatus[]>>;
+}
+
+export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleStatus }: CameraScreenProps) {
   const [selectedMode, setSelectedMode] = useState<Mode>('workout');
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [permissionState, setPermissionState] = useState<'pending' | 'granted' | 'denied'>('pending');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [capturedMedia, setCapturedMedia] = useState<string | null>(null);
+  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
+  const [showExercisePicker, setShowExercisePicker] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -50,6 +66,7 @@ export function CameraScreen() {
         currentStream = mediaStream;
         setStream(mediaStream);
         setError(null);
+        setPermissionState('granted');
 
         // Attach to video element
         if (videoRef.current) {
@@ -61,6 +78,7 @@ export function CameraScreen() {
         if (isMounted) {
           setError(null);
           setStream(null);
+          setPermissionState('denied');
         }
       }
     };
@@ -94,16 +112,20 @@ export function CameraScreen() {
     if (files && files.length > 0) {
       const file = files[0];
       const url = URL.createObjectURL(file);
-      console.log('File captured:', url);
       
-      // Visual feedback
-      alert(`${selectedMode === 'workout' ? 'Video' : 'Photo'} captured successfully! 📸`);
-      
-      // Here you would:
-      // 1. Upload to server for AI analysis
-      // 2. Display preview
-      // 3. Add to workout/meal log
+      if (selectedMode === 'workout') {
+        // For workout videos, show preview then exercise picker
+        setCapturedMedia(url);
+        setCapturedBlob(file);
+      } else {
+        // For meal photos, show preview
+        setCapturedMedia(url);
+        setCapturedBlob(file);
+      }
     }
+    
+    // Clear the input so the same file can be selected again
+    e.target.value = '';
   };
 
   const takePhoto = () => {
@@ -123,6 +145,7 @@ export function CameraScreen() {
       if (blob) {
         const url = URL.createObjectURL(blob);
         setCapturedMedia(url);
+        setCapturedBlob(blob);
       }
     }, 'image/jpeg', 0.95);
   };
@@ -149,14 +172,77 @@ export function CameraScreen() {
 
   const handleCloseCapturedMedia = () => {
     setCapturedMedia(null);
+    setCapturedBlob(null);
     setRecordingTime(0);
+    setShowExercisePicker(false);
+    setSearchQuery('');
   };
 
   const handleSaveCapturedMedia = () => {
-    // Here you would upload to server for AI analysis
-    alert(`${selectedMode === 'workout' ? 'Video' : 'Photo'} saved successfully! 📸`);
-    setCapturedMedia(null);
-    setRecordingTime(0);
+    if (selectedMode === 'workout') {
+      // Show exercise picker for workout videos
+      setShowExercisePicker(true);
+    } else {
+      // For meals, just save (would upload for nutrition analysis in production)
+      alert('Photo saved! Meal logged successfully! 🍽️');
+      handleCloseCapturedMedia();
+    }
+  };
+
+  const handleExerciseSelect = (exerciseData: ExerciseData) => {
+    setIsAnalyzing(true);
+    setShowExercisePicker(false);
+
+    // Simulate AI analysis delay
+    setTimeout(() => {
+      const result = analyzeWorkoutForm(exerciseData.name, capturedBlob);
+      
+      // Find or create the exercise in the workout
+      const existingIndex = exercises.findIndex(ex => ex.name === exerciseData.name);
+      
+      if (existingIndex >= 0) {
+        // Update existing exercise with the AI score and add to set count
+        const updatedExercises = [...exercises];
+        updatedExercises[existingIndex] = {
+          ...updatedExercises[existingIndex],
+          score: result.score,
+          sets: updatedExercises[existingIndex].sets + result.sets
+        };
+        setExercises(updatedExercises);
+      } else {
+        // Add new exercise with AI score and detected sets
+        const newExercise: Exercise = {
+          name: exerciseData.name,
+          sets: result.sets, // Use AI-detected sets
+          reps: exerciseData.baseReps,
+          score: result.score,
+          timestamp: new Date().toISOString(),
+          fromTemplate: false
+        };
+        setExercises([...exercises, newExercise]);
+      }
+
+      // Update muscle status
+      const affectedMuscles = [...exerciseData.primaryMuscles, ...exerciseData.secondaryMuscles];
+      setMuscleStatus(prev => prev.map(muscle => {
+        if (affectedMuscles.includes(muscle.key)) {
+          return {
+            ...muscle,
+            status: 'sore' as const,
+            lastTrained: 'Today',
+            setsToday: muscle.setsToday + result.sets // Use detected sets
+          };
+        }
+        return muscle;
+      }));
+
+      setIsAnalyzing(false);
+      
+      // Show success feedback
+      alert(`✅ ${exerciseData.name}\n${result.sets} sets detected\nForm Score: ${result.score}/100\n\n${result.feedback}\n\n💪 Strengths:\n${result.strengths.map(s => `• ${s}`).join('\n')}\n\n📈 Improvements:\n${result.improvements.map(i => `• ${i}`).join('\n')}`);
+      
+      handleCloseCapturedMedia();
+    }, 1500); // Simulate AI processing time
   };
 
   const formatTime = (seconds: number) => {
@@ -184,6 +270,7 @@ export function CameraScreen() {
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
       const url = URL.createObjectURL(blob);
       setCapturedMedia(url);
+      setCapturedBlob(blob);
       recordedChunksRef.current = [];
     };
 
@@ -208,6 +295,10 @@ export function CameraScreen() {
       timerIntervalRef.current = null;
     }
   };
+
+  const filteredExercises = exerciseDatabase.filter(exercise =>
+    exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="h-full flex flex-col bg-black">
@@ -298,14 +389,49 @@ export function CameraScreen() {
 
         {/* Loading State / Fallback */}
         {!stream && !error && (
-          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center px-8">
             <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
-            <div className="px-8 text-center">
-              <h3 className="text-white text-lg font-bold mb-2">Camera Ready</h3>
-              <p className="text-gray-400 text-sm font-medium">
-                Tap the button below to {selectedMode === 'workout' ? 'record video' : 'take a photo'}
+            <div className="text-center mb-6">
+              <h3 className="text-white text-lg font-bold mb-2">Enable Camera</h3>
+              <p className="text-gray-400 text-sm font-medium mb-1">
+                Allow camera access to record workouts
+              </p>
+              <p className="text-gray-500 text-xs">
+                Click "Allow" when your browser asks for permission
               </p>
             </div>
+            <button
+              onClick={() => {
+                // Trigger permission request by trying to start camera again
+                navigator.mediaDevices?.getUserMedia({
+                  video: {
+                    facingMode: facingMode,
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                  },
+                  audio: false
+                })
+                .then(mediaStream => {
+                  setStream(mediaStream);
+                  setPermissionState('granted');
+                  setError(null);
+                  if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream;
+                  }
+                })
+                .catch(err => {
+                  console.log('Permission denied or error:', err);
+                  setPermissionState('denied');
+                  setError('Camera access denied. You can still upload videos using the button below.');
+                });
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white font-bold shadow-lg shadow-blue-500/30 hover:scale-105 transition-all"
+            >
+              Enable Camera 📹
+            </button>
+            <p className="text-gray-500 text-xs mt-6">
+              Or use the upload button below to select videos from your device
+            </p>
           </div>
         )}
       </div>
@@ -413,15 +539,63 @@ export function CameraScreen() {
               onClick={handleCloseCapturedMedia}
               className="w-12 h-12 rounded-full bg-red-500/40 backdrop-blur-md border border-red-500/60 flex items-center justify-center transition-all active:scale-95 shadow-lg"
             >
-              <ZapOff className="w-6 h-6 text-red-500" />
+              <X className="w-6 h-6 text-white" />
             </button>
             <button
               onClick={handleSaveCapturedMedia}
               className="w-12 h-12 rounded-full bg-green-500/40 backdrop-blur-md border border-green-500/60 flex items-center justify-center transition-all active:scale-95 shadow-lg"
             >
-              <Zap className="w-6 h-6 text-green-500" />
+              <Check className="w-6 h-6 text-white" />
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Exercise Picker */}
+      {showExercisePicker && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-40 bg-black/95 flex flex-col p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-bold text-lg">Select Exercise</h3>
+            <button
+              onClick={() => setShowExercisePicker(false)}
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 transition-all"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
+          
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search exercises..."
+              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50"
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2">
+            {filteredExercises.map(exercise => (
+              <button
+                key={exercise.id}
+                onClick={() => handleExerciseSelect(exercise)}
+                className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-left"
+              >
+                <p className="text-white font-medium">{exercise.name}</p>
+                <p className="text-sm text-gray-400 mt-1">{exercise.category} • {exercise.baseSets}x{exercise.baseReps}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AI Analyzing Overlay */}
+      {isAnalyzing && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-black/90 flex flex-col items-center justify-center">
+          <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4" />
+          <p className="text-white font-bold text-lg">Analyzing Form...</p>
+          <p className="text-gray-400 text-sm mt-2">AI is processing your video</p>
         </div>
       )}
     </div>

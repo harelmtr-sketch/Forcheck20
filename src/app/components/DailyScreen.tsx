@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw } from 'lucide-react';
+import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw, Share2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase';
@@ -7,6 +7,8 @@ import { calculateWorkoutScore, getWorkoutScoreFeedback } from '../utils/workout
 import { calculateDietScore, calculateDailyScore } from '../utils/dailyScoring';
 import type { Exercise, Meal, MuscleStatus, ArchivedWorkout, CustomTemplate } from '../App';
 import type { ExerciseData, WorkoutTemplate } from '../data/exerciseDatabase';
+import { mockFriendsDatabase, type FriendData, type FriendStory } from '../data/mockFriendsData';
+import { DailyBreakdownStory } from './DailyBreakdownStory';
 
 interface DailyScreenProps {
   exercises: Exercise[];
@@ -55,6 +57,11 @@ export function DailyScreen({
   const [customReps, setCustomReps] = useState(12);
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  
+  // Friends and Story state
+  const [friends, setFriends] = useState<FriendData[]>(mockFriendsDatabase);
+  const [viewingStory, setViewingStory] = useState<FriendStory | null>(null);
+  const [viewingOwnStory, setViewingOwnStory] = useState(false);
   
   // Meal form state
   const [mealName, setMealName] = useState('');
@@ -405,6 +412,43 @@ export function DailyScreen({
     };
     setMeals([...meals, newMeal]);
     setShowSavedMeals(false);
+  };
+
+  // Friends and Story handlers
+  const handleViewFriendStory = (friend: FriendData) => {
+    if (friend.currentStory) {
+      setViewingStory(friend.currentStory);
+      // Mark story as viewed
+      setFriends(friends.map(f => 
+        f.id === friend.id ? { ...f, storyViewed: true } : f
+      ));
+    }
+  };
+
+  const handleViewOwnStory = () => {
+    // Generate user's own daily breakdown story
+    const ownStory: FriendStory = {
+      id: 'own-story',
+      userId: 'me',
+      userName: 'You',
+      userAvatar: '🔥',
+      date: new Date().toISOString(),
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+      dailyScore: dailyScoreData.score,
+      workoutScore: workoutScoreData.score,
+      dietScore: dietScoreData.score,
+      exercises: exercises,
+      meals: meals,
+      isViewed: false,
+      isPublic: true,
+    };
+    setViewingStory(ownStory);
+    setViewingOwnStory(true);
+  };
+
+  const handleCloseStory = () => {
+    setViewingStory(null);
+    setViewingOwnStory(false);
   };
 
   const filteredExercises = exerciseDatabase.filter(ex => {
@@ -846,12 +890,22 @@ export function DailyScreen({
           <div className="space-y-4">
             {/* Workout Header with Score */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <span className="text-2xl">💪</span>
-                <h3 className="font-bold text-blue-400">Workout</h3>
-                {activeTemplateName && (
-                  <span className="text-sm text-muted-foreground">• {activeTemplateName}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-blue-400">Workout</h3>
+                  {activeTemplateName && (
+                    <span className="text-sm text-muted-foreground font-medium">• {activeTemplateName}</span>
+                  )}
+                </div>
+                {/* Blue Plus Button moved here */}
+                <button
+                  onClick={() => setCurrentView('exercise-picker')}
+                  className="p-2 rounded-full bg-blue-600/60 hover:bg-blue-600/70 border border-blue-500/60 transition-all shadow-[0_0_10px_rgba(59,130,246,0.3)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  title="Add exercise"
+                >
+                  <Plus className="w-4 h-4 text-white" />
+                </button>
               </div>
               {workoutScoreData.score > 0 && (
                 <div className="text-5xl font-black text-yellow-400">
@@ -872,7 +926,8 @@ export function DailyScreen({
 
             {/* Exercise List */}
             <div className="space-y-3">
-              {exercises.map((exercise, index) => {
+              {[...exercises].reverse().map((exercise, reverseIndex) => {
+                const index = exercises.length - 1 - reverseIndex; // Get original index
                 const isRated = exercise.score !== null && exercise.score !== undefined;
                 
                 // Cycle through background gradients and name colors
@@ -892,14 +947,26 @@ export function DailyScreen({
                   <Card 
                     key={index} 
                     onClick={() => !isRated && handleRateExercise(index)}
-                    className={`p-4 bg-gradient-to-br ${bgGradient} ${!isRated ? 'cursor-pointer hover:scale-[1.01]' : ''} transition-all`}
+                    className={`p-4 bg-gradient-to-br ${bgGradient} ${!isRated ? 'cursor-pointer hover:scale-[1.01]' : ''} transition-all relative`}
                   >
                     {/* Header with name */}
                     <div className="mb-3 flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className={`font-bold text-lg mb-1 ${nameColor}`}>
-                          {exercise.name}
-                        </h4>
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <h4 className={`font-bold text-lg ${nameColor}`}>
+                            {exercise.name}
+                          </h4>
+                          {/* Timestamp next to name */}
+                          {exercise.timestamp && (
+                            <span className="text-xs text-gray-500 font-medium">
+                              {new Date(exercise.timestamp).toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-400">
                           {exercise.sets} sets × {exercise.reps} reps
                         </p>
@@ -975,12 +1042,6 @@ export function DailyScreen({
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Template
-              </Button>
-              <Button
-                onClick={() => setCurrentView('exercise-picker')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-5 h-5" />
               </Button>
             </div>
           </div>
@@ -1101,6 +1162,144 @@ export function DailyScreen({
                   </div>
                 </Card>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Friends Section - Ultra dopamine design */}
+        {(hasWorkout || hasMeals) && (
+          <div className="relative mt-8 mb-4">
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-orange-600/10 rounded-3xl blur-xl"></div>
+            
+            <div className="relative border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm bg-gradient-to-br from-slate-900/50 to-slate-800/50">
+              {/* Glowing header */}
+              <div className="relative bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-orange-600/20 px-5 py-4 border-b border-white/10">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-pink-500/20 to-purple-500/0 animate-pulse"></div>
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-md animate-pulse"></div>
+                      <div className="relative w-2 h-8 bg-gradient-to-b from-purple-500 via-pink-500 to-orange-500 rounded-full shadow-lg"></div>
+                    </div>
+                    <div>
+                      <h3 className="font-black text-white text-lg bg-gradient-to-r from-purple-200 via-pink-200 to-orange-200 bg-clip-text text-transparent">
+                        Friends
+                      </h3>
+                      <p className="text-[10px] text-white/50 font-medium">See who's crushing it today</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleViewOwnStory}
+                    className="group relative overflow-hidden px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] transition-all duration-300"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity blur-sm"></div>
+                    <div className="relative flex items-center gap-2">
+                      <Share2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                      <span className="text-xs font-bold">Share</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Stories Row with animations */}
+              <div className="px-5 py-5 flex gap-4 overflow-x-auto scrollbar-hide">
+                {friends.map((friend, idx) => (
+                  <button
+                    key={friend.id}
+                    onClick={() => handleViewFriendStory(friend)}
+                    disabled={!friend.hasStory}
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                    className={`flex-shrink-0 flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4 ${
+                      !friend.hasStory ? 'opacity-40' : 'hover:scale-110 cursor-pointer'
+                    } transition-all duration-300`}
+                  >
+                    {/* Glowing Story Ring */}
+                    <div className="relative group">
+                      {friend.hasStory && !friend.storyViewed && (
+                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 rounded-full blur-lg opacity-75 group-hover:opacity-100 animate-pulse"></div>
+                      )}
+                      <div className={`relative ${ 
+                        friend.hasStory 
+                          ? !friend.storyViewed 
+                            ? 'p-[3px] bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-400 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.5)]' 
+                            : 'p-[3px] bg-gradient-to-tr from-white/30 to-white/10 rounded-full'
+                          : 'p-[3px] bg-white/5 rounded-full'
+                      }`}>
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center text-2xl border-[3px] border-background shadow-xl group-hover:shadow-2xl transition-shadow">
+                          {friend.avatar}
+                        </div>
+                        {friend.hasStory && !friend.storyViewed && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full border-2 border-background animate-bounce shadow-lg shadow-pink-500/50"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Name & Score with gradient */}
+                    <div className="text-center max-w-[70px]">
+                      <p className="text-[11px] font-bold text-white/90 truncate mb-0.5">
+                        {friend.name}
+                      </p>
+                      <div className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                        friend.todayScore >= 90 ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.3)]' :
+                        friend.todayScore >= 80 ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.3)]' :
+                        'bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.3)]'
+                      }`}>
+                        {friend.todayScore}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Podium-style Leaderboard */}
+              <div className="px-5 pb-5">
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-4 border border-white/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="text-xl">🏆</div>
+                    <h4 className="text-sm font-bold text-white/80">Today's Top 3</h4>
+                  </div>
+                  <div className="flex gap-2">
+                    {friends
+                      .sort((a, b) => b.todayScore - a.todayScore)
+                      .slice(0, 3)
+                      .map((friend, index) => (
+                        <div
+                          key={friend.id}
+                          className={`flex-1 relative overflow-hidden rounded-xl p-3 ${ 
+                            index === 0 ? 'bg-gradient-to-br from-yellow-500/15 to-orange-500/15 border-2 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]' :
+                            index === 1 ? 'bg-gradient-to-br from-gray-400/15 to-gray-500/15 border-2 border-gray-400/40 shadow-[0_0_15px_rgba(156,163,175,0.2)]' :
+                            'bg-gradient-to-br from-orange-500/15 to-red-500/15 border-2 border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.2)]'
+                          }`}
+                        >
+                          {/* Sparkle effect for first place */}
+                          {index === 0 && (
+                            <div className="absolute top-1 right-1 text-yellow-400 animate-pulse">✨</div>
+                          )}
+                          
+                          <div className="flex flex-col items-center gap-2">
+                            <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-lg ${
+                              index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
+                              index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
+                              'bg-gradient-to-br from-orange-400 to-red-500 text-black'
+                            }`}>
+                              {index === 0 ? '👑' : index + 1}
+                            </div>
+                            <div className="text-xl">{friend.avatar}</div>
+                            <p className="text-[10px] font-bold text-white/90 truncate max-w-full">{friend.name}</p>
+                            <div className={`text-lg font-black ${
+                              index === 0 ? 'text-yellow-400' :
+                              index === 1 ? 'text-gray-300' :
+                              'text-orange-400'
+                            }`}>
+                              {friend.todayScore}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1539,6 +1738,15 @@ export function DailyScreen({
             </div>
           </Card>
         </div>
+      )}
+
+      {/* Daily Breakdown Story Modal */}
+      {viewingStory && (
+        <DailyBreakdownStory
+          story={viewingStory}
+          onClose={handleCloseStory}
+          isOwnStory={viewingOwnStory}
+        />
       )}
     </div>
   );

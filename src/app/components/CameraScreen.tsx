@@ -3,8 +3,10 @@ import { Upload, SwitchCamera, Zap, ZapOff, Camera as CameraIcon, X, Check, Sear
 import { Card } from './ui/card';
 import { exerciseDatabase } from '../data/exerciseDatabase';
 import { analyzeWorkoutForm } from '../utils/aiFormScoring';
+import { AnalysisResultSheet } from './AnalysisResultSheet';
 import type { Exercise, MuscleStatus } from '../App';
 import type { ExerciseData } from '../data/exerciseDatabase';
+import type { FormAnalysisResult } from '../utils/aiFormScoring';
 
 type Mode = 'workout' | 'meal';
 
@@ -31,6 +33,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<FormAnalysisResult & { exerciseName: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -178,6 +181,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
     setRecordingTime(0);
     setShowExercisePicker(false);
     setSearchQuery('');
+    setAnalysisResult(null);
   };
 
   const handleSaveCapturedMedia = () => {
@@ -260,10 +264,11 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
       setIsAnalyzing(false);
       
-      // Show success feedback
-      alert(`✅ ${exerciseData.name}\n${result.sets} reps detected\nForm Score: ${result.score}/100\n\n${result.feedback}\n\n💪 Strengths:\n${result.strengths.map(s => `• ${s}`).join('\n')}\n\n📈 Improvements:\n${result.improvements.map(i => `• ${i}`).join('\n')}`);
+      // Show beautiful result sheet instead of alert
+      console.log('Setting analysis result:', { ...result, exerciseName: exerciseData.name });
+      setAnalysisResult({ ...result, exerciseName: exerciseData.name });
       
-      handleCloseCapturedMedia();
+      // DON'T close captured media yet - wait for user to close result sheet
       
       // Clear exerciseToRecord after successful recording
       if (targetIndex !== undefined && targetIndex !== null) {
@@ -605,6 +610,17 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
           <p className="text-white font-bold text-lg">Analyzing Form...</p>
           <p className="text-gray-400 text-sm mt-2">AI is processing your video</p>
         </div>
+      )}
+
+      {/* Analysis Result Sheet */}
+      {analysisResult && (
+        <AnalysisResultSheet
+          result={analysisResult}
+          onClose={() => {
+            setAnalysisResult(null);
+            handleCloseCapturedMedia();
+          }}
+        />
       )}
     </div>
   );

@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, SwitchCamera, Zap, ZapOff, Camera as CameraIcon, X, Check, Search } from 'lucide-react';
+import { Upload, SwitchCamera, Zap, ZapOff, Camera as CameraIcon, X, Check, Search, Video } from 'lucide-react';
 import { Card } from './ui/card';
-import { exerciseDatabase } from '../data/exerciseDatabase';
+import { exerciseDatabase } from '../data/exerciseDatabase-clean';
 import { analyzeWorkoutForm } from '../utils/aiFormScoring';
 import { AnalysisResultSheet } from './AnalysisResultSheet';
 import type { Exercise, MuscleStatus } from '../App';
-import type { ExerciseData } from '../data/exerciseDatabase';
+import type { ExerciseData } from '../data/exerciseDatabase-clean';
 import type { FormAnalysisResult } from '../utils/aiFormScoring';
 
 type Mode = 'workout' | 'meal';
@@ -337,7 +337,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
   );
 
   return (
-    <div className="h-full flex flex-col bg-black">
+    <div className="fixed inset-0 flex flex-col bg-black">
       {/* Hidden file input for capture - uses native camera on mobile */}
       <input
         ref={fileInputRef}
@@ -348,59 +348,8 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
         className="hidden"
       />
 
-      {/* Top Controls */}
-      <div className="absolute top-0 left-0 right-0 z-20 pt-4 px-4">
-        <div className="flex justify-end items-start gap-2">
-          {/* Flip Camera Button */}
-          <button
-            onClick={handleFlipCamera}
-            className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95 shadow-lg"
-          >
-            <SwitchCamera className="w-6 h-6 text-white" />
-          </button>
-
-          {/* Flash Button */}
-          <button
-            onClick={() => setFlashEnabled(!flashEnabled)}
-            className={`w-12 h-12 rounded-full backdrop-blur-md border flex items-center justify-center transition-all active:scale-95 shadow-lg ${
-              flashEnabled 
-                ? 'bg-yellow-500/40 border-yellow-400/60 hover:bg-yellow-500/60' 
-                : 'bg-black/40 border-white/20 hover:bg-black/60'
-            }`}
-          >
-            {flashEnabled ? (
-              <Zap className="w-6 h-6 text-yellow-300" />
-            ) : (
-              <ZapOff className="w-6 h-6 text-white" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Instruction Text at Top */}
-      <div className="absolute top-20 left-0 right-0 z-10 px-6">
-        {exerciseToRecord !== null && exercises[exerciseToRecord] ? (
-          <div className="bg-gradient-to-r from-red-600/80 to-pink-600/80 backdrop-blur-md px-4 py-3 rounded-lg shadow-xl border border-red-400/50">
-            <p className="text-center text-xs text-white/80 font-medium mb-1">Recording for:</p>
-            <p className="text-center text-sm text-white font-bold">
-              {exercises[exerciseToRecord].name}
-            </p>
-            <p className="text-center text-xs text-white/70 mt-1">
-              {exercises[exerciseToRecord].sets} sets × {exercises[exerciseToRecord].reps} reps
-            </p>
-          </div>
-        ) : (
-          <p className="text-center text-sm text-white/90 font-medium drop-shadow-lg">
-            {selectedMode === 'workout' 
-              ? 'Tap to record your workout'
-              : 'Tap to take a photo of your meal'
-            }
-          </p>
-        )}
-      </div>
-
-      {/* Camera Feed */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* Camera Feed - Full Screen */}
+      <div className="absolute inset-0">
         {/* Live Video Stream */}
         {stream && !error && (
           <video
@@ -410,16 +359,6 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
             muted
             className="w-full h-full object-cover"
           />
-        )}
-
-        {/* Recording Indicator */}
-        {isRecording && (
-          <div className="absolute top-32 left-0 right-0 z-20 flex items-center justify-center">
-            <div className="bg-red-500/80 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
-              <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-              <span className="text-white font-bold text-sm">REC {formatTime(recordingTime)}</span>
-            </div>
-          </div>
         )}
 
         {/* Error State */}
@@ -449,116 +388,150 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
         )}
       </div>
 
-      {/* Camera Controls */}
-      <div className="px-6 py-6 bg-black">
-        <div className="flex items-center justify-center gap-6 mb-6">
+      {/* Top Controls - Overlaid */}
+      <div className="absolute top-0 left-0 right-0 z-20 pt-safe">
+        <div className="flex justify-between items-start px-4 pt-4 pb-2">
+          {/* Left side - Mode indicator */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedMode('workout')}
+              className={`px-3 py-1.5 rounded-full backdrop-blur-md border transition-all text-xs font-bold ${
+                selectedMode === 'workout'
+                  ? 'bg-blue-500/60 border-blue-400/80 text-white shadow-lg'
+                  : 'bg-black/30 border-white/20 text-white/70'
+              }`}
+            >
+              Workout
+            </button>
+            <button
+              onClick={() => setSelectedMode('meal')}
+              className={`px-3 py-1.5 rounded-full backdrop-blur-md border transition-all text-xs font-bold ${
+                selectedMode === 'meal'
+                  ? 'bg-green-500/60 border-green-400/80 text-white shadow-lg'
+                  : 'bg-black/30 border-white/20 text-white/70'
+              }`}
+            >
+              Meal
+            </button>
+          </div>
+
+          {/* Right side - Camera controls */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleFlipCamera}
+              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95 shadow-lg"
+            >
+              <SwitchCamera className="w-5 h-5 text-white" />
+            </button>
+            <button
+              onClick={() => setFlashEnabled(!flashEnabled)}
+              className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center transition-all active:scale-95 shadow-lg ${
+                flashEnabled 
+                  ? 'bg-yellow-500/40 border-yellow-400/60' 
+                  : 'bg-black/40 border-white/20'
+              }`}
+            >
+              {flashEnabled ? (
+                <Zap className="w-5 h-5 text-yellow-300" />
+              ) : (
+                <ZapOff className="w-5 h-5 text-white" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Exercise Recording Badge */}
+        {exerciseToRecord !== null && exercises[exerciseToRecord] && (
+          <div className="px-4 mt-2">
+            <div className="bg-gradient-to-r from-red-600/90 to-pink-600/90 backdrop-blur-md px-3 py-2 rounded-full shadow-xl border border-red-400/50 inline-flex items-center gap-2">
+              <Video className="w-3.5 h-3.5 text-white" />
+              <p className="text-xs text-white/90 font-medium">
+                Recording: <span className="font-bold">{exercises[exerciseToRecord].name}</span>
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Recording Indicator */}
+      {isRecording && (
+        <div className="absolute top-24 left-0 right-0 z-20 flex items-center justify-center">
+          <div className="bg-red-500/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+            <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+            <span className="text-white font-bold text-sm">REC {formatTime(recordingTime)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Controls - Overlaid */}
+      <div className="absolute bottom-20 left-0 right-0 z-20 pb-6">
+        <div className="flex items-center justify-center gap-8">
           {/* Upload Button */}
           <button 
             onClick={handleUpload}
-            className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/20 flex items-center justify-center hover:bg-white/20 transition-all active:scale-95 shadow-lg"
+            className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border-2 border-white/30 flex items-center justify-center hover:bg-black/70 transition-all active:scale-95 shadow-xl"
           >
-            <Upload className="w-6 h-6 text-white" />
+            <Upload className="w-5 h-5 text-white" />
           </button>
 
-          {/* Capture Button */}
+          {/* Capture Button - Larger, centered */}
           <button 
             onClick={handleCaptureClick}
-            className="w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-95 bg-white shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:scale-105"
+            className="w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-95 bg-white shadow-[0_0_30px_rgba(255,255,255,0.6)] hover:scale-110 relative"
           >
-            <div className={`w-16 h-16 rounded-full shadow-inner ${
-              selectedMode === 'workout'
-                ? 'bg-gradient-to-br from-blue-400 to-purple-500'
-                : 'bg-gradient-to-br from-green-400 to-emerald-500'
-            }`} />
+            {isRecording ? (
+              <div className="w-8 h-8 bg-red-600 rounded-md" />
+            ) : (
+              <div className={`w-[72px] h-[72px] rounded-full ${
+                selectedMode === 'workout'
+                  ? 'bg-gradient-to-br from-blue-500 to-purple-600'
+                  : 'bg-gradient-to-br from-green-500 to-emerald-600'
+              }`} />
+            )}
           </button>
 
           {/* Spacer for symmetry */}
-          <div className="w-14 h-14" />
-        </div>
-
-        {/* Mode Selection Buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card 
-            onClick={() => setSelectedMode('workout')}
-            className={`p-4 cursor-pointer transition-all ${
-              selectedMode === 'workout'
-                ? 'bg-gradient-to-br from-blue-600/30 to-blue-500/20 border-blue-500/60 shadow-xl shadow-blue-500/20 scale-105'
-                : 'bg-gradient-to-br from-blue-600/15 to-blue-500/10 border-blue-500/30 hover:from-blue-600/20 hover:to-blue-500/15'
-            }`}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <h4 className={`font-bold text-sm ${
-                selectedMode === 'workout' 
-                  ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' 
-                  : 'text-blue-200'
-              }`}>
-                Workout
-              </h4>
-              <p className="text-xs text-blue-300/80 font-medium text-center">
-                Record sets for AI
-              </p>
-            </div>
-          </Card>
-
-          <Card 
-            onClick={() => setSelectedMode('meal')}
-            className={`p-4 cursor-pointer transition-all ${
-              selectedMode === 'meal'
-                ? 'bg-gradient-to-br from-green-600/30 to-green-500/20 border-green-500/60 shadow-xl shadow-green-500/20 scale-105'
-                : 'bg-gradient-to-br from-green-600/15 to-green-500/10 border-green-500/30 hover:from-green-600/20 hover:to-green-500/15'
-            }`}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <h4 className={`font-bold text-sm ${
-                selectedMode === 'meal' 
-                  ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' 
-                  : 'text-green-200'
-              }`}>
-                Meal
-              </h4>
-              <p className="text-xs text-green-300/80 font-medium text-center">
-                Photo for nutrition
-              </p>
-            </div>
-          </Card>
+          <div className="w-12 h-12" />
         </div>
       </div>
 
       {/* Captured Media Preview */}
       {capturedMedia && (
-        <div className="absolute top-0 left-0 right-0 bottom-0 z-30 bg-black/80 flex flex-col items-center justify-center">
-          <div className="relative">
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-30 bg-black flex flex-col items-center justify-center">
+          <div className="relative w-full h-full">
             {selectedMode === 'workout' ? (
               <video
                 src={capturedMedia}
                 controls
-                className="w-full h-full max-w-3xl max-h-3xl object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <img
                 src={capturedMedia}
                 alt="Captured"
-                className="w-full h-full max-w-3xl max-h-3xl object-cover"
+                className="w-full h-full object-contain"
               />
             )}
-            <div className="absolute top-4 left-4">
-              <p className="text-white text-sm font-medium">
-                {selectedMode === 'workout' ? formatTime(recordingTime) : ''}
-              </p>
-            </div>
+            {recordingTime > 0 && (
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full">
+                <p className="text-white text-sm font-bold">
+                  {formatTime(recordingTime)}
+                </p>
+              </div>
+            )}
           </div>
-          <div className="mt-4 flex gap-4">
+          <div className="absolute bottom-24 left-0 right-0 flex justify-center gap-4 px-4">
             <button
               onClick={handleCloseCapturedMedia}
-              className="w-12 h-12 rounded-full bg-red-500/40 backdrop-blur-md border border-red-500/60 flex items-center justify-center transition-all active:scale-95 shadow-lg"
+              className="w-14 h-14 rounded-full bg-red-500/80 backdrop-blur-md border-2 border-red-400/80 flex items-center justify-center transition-all active:scale-95 shadow-xl"
             >
-              <X className="w-6 h-6 text-white" />
+              <X className="w-7 h-7 text-white" />
             </button>
             <button
               onClick={handleSaveCapturedMedia}
-              className="w-12 h-12 rounded-full bg-green-500/40 backdrop-blur-md border border-green-500/60 flex items-center justify-center transition-all active:scale-95 shadow-lg"
+              className="w-14 h-14 rounded-full bg-green-500/80 backdrop-blur-md border-2 border-green-400/80 flex items-center justify-center transition-all active:scale-95 shadow-xl"
             >
-              <Check className="w-6 h-6 text-white" />
+              <Check className="w-7 h-7 text-white" />
             </button>
           </div>
         </div>
@@ -566,8 +539,8 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
       {/* Exercise Picker */}
       {showExercisePicker && (
-        <div className="absolute top-0 left-0 right-0 bottom-0 z-40 bg-black/95 flex flex-col p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-40 bg-black/98 backdrop-blur-xl flex flex-col">
+          <div className="flex items-center justify-between px-4 pt-6 pb-4 border-b border-white/10">
             <h3 className="text-white font-bold text-lg">Select Exercise</h3>
             <button
               onClick={() => setShowExercisePicker(false)}
@@ -577,35 +550,39 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
             </button>
           </div>
           
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search exercises..."
-              className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50"
-            />
+          <div className="px-4 pt-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search exercises..."
+                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50"
+              />
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2">
-            {filteredExercises.map(exercise => (
-              <button
-                key={exercise.id}
-                onClick={() => handleExerciseSelect(exercise)}
-                className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-left"
-              >
-                <p className="text-white font-medium">{exercise.name}</p>
-                <p className="text-sm text-gray-400 mt-1">{exercise.category} • {exercise.baseSets}x{exercise.baseReps}</p>
-              </button>
-            ))}
+          <div className="flex-1 overflow-y-auto px-4 pb-24">
+            <div className="space-y-2 py-2">
+              {filteredExercises.map(exercise => (
+                <button
+                  key={exercise.id}
+                  onClick={() => handleExerciseSelect(exercise)}
+                  className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-left active:scale-[0.98]"
+                >
+                  <p className="text-white font-semibold">{exercise.name}</p>
+                  <p className="text-sm text-gray-400 mt-1">{exercise.category} • {exercise.baseSets}x{exercise.baseReps}</p>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {/* AI Analyzing Overlay */}
       {isAnalyzing && (
-        <div className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-black/90 flex flex-col items-center justify-center">
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center">
           <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4" />
           <p className="text-white font-bold text-lg">Analyzing Form...</p>
           <p className="text-gray-400 text-sm mt-2">AI is processing your video</p>

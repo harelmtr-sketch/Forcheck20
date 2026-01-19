@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw, Share2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase';
+import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase-clean';
 import { calculateWorkoutScore, getWorkoutScoreFeedback } from '../utils/workoutScoring';
 import { calculateDietScore, calculateDailyScore } from '../utils/dailyScoring';
 import type { Exercise, Meal, MuscleStatus, ArchivedWorkout, CustomTemplate } from '../App';
-import type { ExerciseData, WorkoutTemplate } from '../data/exerciseDatabase';
+import type { ExerciseData, WorkoutTemplate } from '../data/exerciseDatabase-clean';
 import { mockFriendsDatabase, type FriendData, type FriendStory } from '../data/mockFriendsData';
 import { DailyBreakdownStory } from './DailyBreakdownStory';
 

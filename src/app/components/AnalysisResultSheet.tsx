@@ -30,27 +30,17 @@ export function AnalysisResultSheet({
     return 'Needs Work';
   };
 
-  // Consistent accent color (blue-only system)
+  // Consistent color system: green for 80+, red for below
   const getAccentColors = (s: number) => {
-    if (s >= 90) return {
-      ring: 'stroke-blue-500',
-      ringGlow: 'drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]',
-      text: 'text-blue-400',
-    };
     if (s >= 80) return {
-      ring: 'stroke-blue-400',
-      ringGlow: 'drop-shadow-[0_0_6px_rgba(96,165,250,0.4)]',
-      text: 'text-blue-300',
-    };
-    if (s >= 70) return {
-      ring: 'stroke-blue-300',
-      ringGlow: 'drop-shadow-[0_0_4px_rgba(147,197,253,0.3)]',
-      text: 'text-blue-200',
+      ring: 'stroke-green-500',
+      ringGlow: 'drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]',
+      text: 'text-green-400',
     };
     return {
-      ring: 'stroke-slate-400',
-      ringGlow: '',
-      text: 'text-slate-300',
+      ring: 'stroke-red-500',
+      ringGlow: 'drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]',
+      text: 'text-red-400',
     };
   };
 
@@ -117,7 +107,7 @@ export function AnalysisResultSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
       <div
-        className={`w-full max-w-md bg-gradient-to-b from-slate-900 to-slate-950 rounded-3xl border border-white/10 shadow-2xl transition-all duration-220 ease-out ${
+        className={`w-full max-w-md bg-gradient-to-b from-slate-900 to-black rounded-3xl border border-white/10 shadow-2xl transition-all duration-220 ease-out ${
           showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2.5'
         }`}
       >
@@ -144,11 +134,11 @@ export function AnalysisResultSheet({
         <div className="px-6 py-8">
           {isValidResult ? (
             <div className="space-y-8">
-              {/* B) HERO METRICS */}
-              <div className="flex items-center justify-center gap-6">
-                {/* Circular Score Ring */}
+              {/* B) HERO METRICS - Circular Score with Reps Badge */}
+              <div className="flex items-center justify-center">
+                {/* Circular Score Ring with embedded reps */}
                 <div className="relative flex-shrink-0">
-                  <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
+                  <svg className="w-44 h-44 -rotate-90" viewBox="0 0 120 120">
                     {/* Background ring */}
                     <circle
                       cx="60"
@@ -175,22 +165,22 @@ export function AnalysisResultSheet({
                   </svg>
                   {/* Score + Grade in center */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="text-5xl font-black text-white leading-none mb-0.5">
+                    <div className="text-6xl font-black text-white leading-none mb-1">
                       {animatedScore}
                     </div>
-                    <div className="text-base text-white/30 font-bold mb-1.5">/100</div>
+                    <div className="text-base text-white/30 font-bold mb-3">/100</div>
                     <div className={`text-xs font-bold ${colors.text}`}>
                       {status}
                     </div>
-                  </div>
-                </div>
-
-                {/* Reps Stats Column */}
-                <div className="flex flex-col gap-2">
-                  <div className="px-5 py-4 rounded-2xl bg-white/5 border border-white/10">
-                    <div className="text-xs font-semibold text-white/50 mb-1.5">Reps</div>
-                    <div className="text-4xl font-black text-white leading-none">
-                      {animatedReps}
+                    
+                    {/* Reps badge - positioned at bottom inside circle */}
+                    <div className="absolute bottom-8">
+                      <div className={`px-4 py-2 rounded-full border-2 ${score >= 80 ? 'bg-green-500/20 border-green-500/60' : 'bg-red-500/20 border-red-500/60'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg font-black text-white">{animatedReps}</span>
+                          <span className="text-xs font-bold text-white/60">reps</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -293,8 +283,8 @@ export function AnalysisResultSheet({
             // NO DETECTION STATE
             <div className="space-y-6 py-4">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-orange-500/10 border-2 border-orange-500/20 flex items-center justify-center">
-                  <AlertCircle className="w-10 h-10 text-orange-400/80" />
+                <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center">
+                  <AlertCircle className="w-10 h-10 text-red-400/80" />
                 </div>
                 <div className="text-center">
                   <h3 className="text-xl font-bold text-white mb-2">No valid reps detected</h3>
@@ -318,7 +308,7 @@ export function AnalysisResultSheet({
                       transition: 'all 300ms ease-out',
                     }}
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400/60 mt-2 flex-shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400/60 mt-2 flex-shrink-0" />
                     <span className="text-sm text-white/85 leading-relaxed">{tip}</span>
                   </div>
                 ))}

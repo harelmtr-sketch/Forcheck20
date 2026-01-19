@@ -196,18 +196,18 @@ export default function App() {
   }, [exercises, meals, muscleStatus]);
 
   return (
-    <div className={`h-screen w-full max-w-md mx-auto text-foreground flex flex-col overflow-hidden ${darkMode ? 'dark' : ''}`}>
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-950 via-slate-950 to-blue-950 -z-10" />
+    <div className={`h-screen w-full ${currentView === 'camera' ? '' : 'max-w-md mx-auto'} text-foreground flex flex-col overflow-hidden ${darkMode ? 'dark' : ''}`}>
+      {/* Pure black background - no gradient */}
+      <div className="absolute inset-0 bg-black -z-10" />
       
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden relative bg-background/95">
+      <div className={`flex-1 overflow-hidden relative ${currentView === 'camera' ? 'bg-black' : 'bg-background'}`}>
         {renderScreen()}
       </div>
 
       {/* Bottom Navigation */}
       {currentView !== 'settings' && (
-        <div className="border-t border-border bg-background">
+        <div className={`border-t border-border bg-background ${currentView === 'camera' ? 'absolute bottom-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-md border-white/10' : ''}`}>
           <nav className="flex items-center justify-around px-4 py-3">
             {tabs.map((tab) => {
               const Icon = tab.icon;

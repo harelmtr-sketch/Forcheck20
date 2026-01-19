@@ -1,5 +1,5 @@
 import type { Exercise, MuscleStatus } from '../App';
-import { exerciseDatabase } from '../data/exerciseDatabase';
+import { exerciseDatabase } from '../data/exerciseDatabase-clean';
 
 /**
  * Calculate the C coefficient based on ready muscles and muscles hit

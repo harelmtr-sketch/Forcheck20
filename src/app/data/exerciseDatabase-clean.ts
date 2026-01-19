@@ -8,7 +8,6 @@ export interface ExerciseData {
   equipment: 'bodyweight' | 'weights' | 'resistance-band' | 'none';
   baseReps: number;
   baseSets: number;
-  emoji: string;
 }
 
 export const exerciseDatabase: ExerciseData[] = [
@@ -22,8 +21,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '💪'
+    baseSets: 3
   },
   {
     id: 'diamond-push-up',
@@ -34,8 +32,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '💎'
+    baseSets: 3
   },
   {
     id: 'pike-push-up',
@@ -46,8 +43,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '⛰️'
+    baseSets: 3
   },
   {
     id: 'handstand-push-up',
@@ -58,8 +54,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 8,
-    baseSets: 3,
-    emoji: '🤸'
+    baseSets: 3
   },
   {
     id: 'decline-push-up',
@@ -70,8 +65,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '📐'
+    baseSets: 3
   },
   {
     id: 'pseudo-planche-pushup',
@@ -82,8 +76,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 6,
-    baseSets: 3,
-    emoji: '🔥'
+    baseSets: 3
   },
   {
     id: 'wide-push-up',
@@ -94,8 +87,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '💪'
+    baseSets: 3
   },
   {
     id: 'archer-push-up',
@@ -106,8 +98,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 8,
-    baseSets: 3,
-    emoji: '🏹'
+    baseSets: 3
   },
   {
     id: 'one-arm-push-up',
@@ -118,8 +109,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 5,
-    baseSets: 3,
-    emoji: '💪'
+    baseSets: 3
   },
   {
     id: 'clap-push-up',
@@ -130,8 +120,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 8,
-    baseSets: 3,
-    emoji: '👏'
+    baseSets: 3
   },
   {
     id: 'incline-push-up',
@@ -142,8 +131,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '📐'
+    baseSets: 3
   },
   {
     id: 'tricep-dip',
@@ -154,8 +142,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '💪'
+    baseSets: 3
   },
   {
     id: 'bench-dip',
@@ -166,8 +153,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '💺'
+    baseSets: 3
   },
 
   // PULL EXERCISES
@@ -180,8 +166,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '🏋️'
+    baseSets: 3
   },
   {
     id: 'chin-up',
@@ -192,8 +177,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '💪'
+    baseSets: 3
   },
   {
     id: 'inverted-row',
@@ -204,8 +188,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '🚣'
+    baseSets: 3
   },
   {
     id: 'archer-pull-up',
@@ -216,8 +199,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 6,
-    baseSets: 3,
-    emoji: '🏹'
+    baseSets: 3
   },
   {
     id: 'muscle-up',
@@ -228,8 +210,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 5,
-    baseSets: 3,
-    emoji: '🔥'
+    baseSets: 3
   },
   {
     id: 'wide-pull-up',
@@ -240,8 +221,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 8,
-    baseSets: 3,
-    emoji: '🏋️'
+    baseSets: 3
   },
   {
     id: 'neutral-grip-pull-up',
@@ -252,8 +232,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '🏋️'
+    baseSets: 3
   },
   {
     id: 'one-arm-pull-up',
@@ -264,8 +243,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 3,
-    baseSets: 3,
-    emoji: '💪'
+    baseSets: 3
   },
   {
     id: 'typewriter-pull-up',
@@ -276,8 +254,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 6,
-    baseSets: 3,
-    emoji: '⌨️'
+    baseSets: 3
   },
   {
     id: 'australian-pull-up',
@@ -288,8 +265,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '🦘'
+    baseSets: 3
   },
   {
     id: 'face-pull',
@@ -300,8 +276,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'resistance-band',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '😮'
+    baseSets: 3
   },
   {
     id: 'scapula-pull-up',
@@ -312,8 +287,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '🏋️'
+    baseSets: 3
   },
 
   // LEG EXERCISES
@@ -326,8 +300,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 4,
-    emoji: '🦵'
+    baseSets: 4
   },
   {
     id: 'pistol-squat',
@@ -338,8 +311,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 8,
-    baseSets: 3,
-    emoji: '🔫'
+    baseSets: 3
   },
   {
     id: 'lunge',
@@ -350,8 +322,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '🚶'
+    baseSets: 3
   },
   {
     id: 'jump-squat',
@@ -362,8 +333,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '🦘'
+    baseSets: 3
   },
   {
     id: 'calf-raise',
@@ -374,8 +344,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 25,
-    baseSets: 3,
-    emoji: '📈'
+    baseSets: 3
   },
   {
     id: 'bulgarian-split-squat',
@@ -386,8 +355,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '🇧🇬'
+    baseSets: 3
   },
   {
     id: 'walking-lunge',
@@ -398,8 +366,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '🚶'
+    baseSets: 3
   },
   {
     id: 'sissy-squat',
@@ -410,8 +377,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '🦵'
+    baseSets: 3
   },
   {
     id: 'nordic-curl',
@@ -422,8 +388,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 6,
-    baseSets: 3,
-    emoji: '❄️'
+    baseSets: 3
   },
   {
     id: 'box-jump',
@@ -434,8 +399,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '📦'
+    baseSets: 3
   },
   {
     id: 'wall-sit',
@@ -446,8 +410,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 60, // seconds
-    baseSets: 3,
-    emoji: '🧱'
+    baseSets: 3
   },
   {
     id: 'glute-bridge',
@@ -458,8 +421,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '🌉'
+    baseSets: 3
   },
   {
     id: 'single-leg-deadlift',
@@ -470,8 +432,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '🦩'
+    baseSets: 3
   },
   {
     id: 'lateral-lunge',
@@ -482,8 +443,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '⬅️'
+    baseSets: 3
   },
   {
     id: 'jump-lunge',
@@ -494,8 +454,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 16,
-    baseSets: 3,
-    emoji: '🦘'
+    baseSets: 3
   },
 
   // CORE EXERCISES
@@ -508,8 +467,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 60, // seconds
-    baseSets: 3,
-    emoji: '🏋️'
+    baseSets: 3
   },
   {
     id: 'crunches',
@@ -520,8 +478,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '📐'
+    baseSets: 3
   },
   {
     id: 'leg-raises',
@@ -532,8 +489,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '⬆️'
+    baseSets: 3
   },
   {
     id: 'dragon-flag',
@@ -544,8 +500,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 5,
-    baseSets: 3,
-    emoji: '🐉'
+    baseSets: 3
   },
   {
     id: 'side-plank',
@@ -556,8 +511,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 45, // seconds per side
-    baseSets: 3,
-    emoji: '🔄'
+    baseSets: 3
   },
   {
     id: 'russian-twist',
@@ -568,8 +522,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 30,
-    baseSets: 3,
-    emoji: '🌀'
+    baseSets: 3
   },
   {
     id: 'bicycle-crunch',
@@ -580,8 +533,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 30,
-    baseSets: 3,
-    emoji: '🚴'
+    baseSets: 3
   },
   {
     id: 'hollow-hold',
@@ -592,8 +544,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 45, // seconds
-    baseSets: 3,
-    emoji: '🌙'
+    baseSets: 3
   },
   {
     id: 'v-up',
@@ -604,8 +555,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '✌️'
+    baseSets: 3
   },
   {
     id: 'windshield-wiper',
@@ -616,8 +566,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '🚗'
+    baseSets: 3
   },
   {
     id: 'ab-wheel',
@@ -628,8 +577,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'advanced',
     equipment: 'bodyweight',
     baseReps: 10,
-    baseSets: 3,
-    emoji: '⭕'
+    baseSets: 3
   },
   {
     id: 'dead-bug',
@@ -640,8 +588,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '🪲'
+    baseSets: 3
   },
   {
     id: 'flutter-kick',
@@ -652,8 +599,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 40,
-    baseSets: 3,
-    emoji: '🏊'
+    baseSets: 3
   },
   {
     id: 'toe-touch',
@@ -664,8 +610,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '👣'
+    baseSets: 3
   },
 
   // FULL BODY
@@ -678,8 +623,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '🔥'
+    baseSets: 3
   },
   {
     id: 'mountain-climber',
@@ -690,8 +634,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 30,
-    baseSets: 3,
-    emoji: '⛰️'
+    baseSets: 3
   },
   {
     id: 'bear-crawl',
@@ -702,8 +645,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '🐻'
+    baseSets: 3
   },
   {
     id: 'sprawl',
@@ -714,8 +656,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 15,
-    baseSets: 3,
-    emoji: '🤸'
+    baseSets: 3
   },
   {
     id: 'jump-rope',
@@ -726,8 +667,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 100,
-    baseSets: 3,
-    emoji: '🪢'
+    baseSets: 3
   },
   {
     id: 'inchworm',
@@ -738,8 +678,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 12,
-    baseSets: 3,
-    emoji: '🐛'
+    baseSets: 3
   },
   {
     id: 'star-jump',
@@ -750,8 +689,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '⭐'
+    baseSets: 3
   },
   {
     id: 'high-knee',
@@ -762,8 +700,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'beginner',
     equipment: 'bodyweight',
     baseReps: 40,
-    baseSets: 3,
-    emoji: '🦵'
+    baseSets: 3
   },
   {
     id: 'plank-jack',
@@ -774,8 +711,7 @@ export const exerciseDatabase: ExerciseData[] = [
     difficulty: 'intermediate',
     equipment: 'bodyweight',
     baseReps: 20,
-    baseSets: 3,
-    emoji: '🃏'
+    baseSets: 3
   },
 ];
 
@@ -789,7 +725,6 @@ export interface WorkoutTemplate {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   gradient: string;
   color: string;
-  emoji: string;
 }
 
 export const workoutTemplates: WorkoutTemplate[] = [
@@ -803,8 +738,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-blue-600/20 to-blue-500/10',
-    color: 'blue',
-    emoji: '💪'
+    color: 'blue'
   },
   {
     id: 'beginner-push',
@@ -815,8 +749,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 20,
     difficulty: 'beginner',
     gradient: 'from-cyan-600/20 to-cyan-500/10',
-    color: 'cyan',
-    emoji: '🌟'
+    color: 'cyan'
   },
   {
     id: 'advanced-push',
@@ -827,8 +760,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 40,
     difficulty: 'advanced',
     gradient: 'from-indigo-600/20 to-blue-600/10',
-    color: 'indigo',
-    emoji: '🚀'
+    color: 'indigo'
   },
   {
     id: 'chest-focus',
@@ -839,8 +771,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 30,
     difficulty: 'intermediate',
     gradient: 'from-sky-600/20 to-blue-500/10',
-    color: 'sky',
-    emoji: '💎'
+    color: 'sky'
   },
   {
     id: 'shoulder-focus',
@@ -851,8 +782,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 30,
     difficulty: 'advanced',
     gradient: 'from-violet-600/20 to-purple-500/10',
-    color: 'violet',
-    emoji: '🏔️'
+    color: 'violet'
   },
 
   // PULL TEMPLATES
@@ -865,8 +795,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-green-600/20 to-green-500/10',
-    color: 'green',
-    emoji: '🏋️'
+    color: 'green'
   },
   {
     id: 'beginner-pull',
@@ -877,8 +806,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 20,
     difficulty: 'beginner',
     gradient: 'from-teal-600/20 to-teal-500/10',
-    color: 'teal',
-    emoji: '⭐'
+    color: 'teal'
   },
   {
     id: 'advanced-pull',
@@ -889,8 +817,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 40,
     difficulty: 'advanced',
     gradient: 'from-emerald-600/20 to-green-600/10',
-    color: 'emerald',
-    emoji: '💪'
+    color: 'emerald'
   },
   {
     id: 'back-thickness',
@@ -901,8 +828,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-lime-600/20 to-green-500/10',
-    color: 'lime',
-    emoji: '🦅'
+    color: 'lime'
   },
 
   // LEG TEMPLATES
@@ -915,8 +841,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 40,
     difficulty: 'intermediate',
     gradient: 'from-orange-600/20 to-orange-500/10',
-    color: 'orange',
-    emoji: '🦵'
+    color: 'orange'
   },
   {
     id: 'beginner-legs',
@@ -927,8 +852,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 25,
     difficulty: 'beginner',
     gradient: 'from-amber-600/20 to-orange-500/10',
-    color: 'amber',
-    emoji: '🌱'
+    color: 'amber'
   },
   {
     id: 'advanced-legs',
@@ -939,8 +863,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 45,
     difficulty: 'advanced',
     gradient: 'from-red-600/20 to-orange-600/10',
-    color: 'red',
-    emoji: '🔥'
+    color: 'red'
   },
   {
     id: 'quad-focus',
@@ -951,8 +874,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'advanced',
     gradient: 'from-yellow-600/20 to-amber-500/10',
-    color: 'yellow',
-    emoji: '⚡'
+    color: 'yellow'
   },
   {
     id: 'glute-hamstring',
@@ -963,8 +885,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-rose-600/20 to-pink-500/10',
-    color: 'rose',
-    emoji: '🍑'
+    color: 'rose'
   },
 
   // FULL BODY & CONDITIONING
@@ -977,8 +898,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 45,
     difficulty: 'intermediate',
     gradient: 'from-purple-600/20 to-pink-600/10',
-    color: 'purple',
-    emoji: '🔥'
+    color: 'purple'
   },
   {
     id: 'hiit-cardio',
@@ -989,8 +909,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 25,
     difficulty: 'intermediate',
     gradient: 'from-fuchsia-600/20 to-pink-500/10',
-    color: 'fuchsia',
-    emoji: '💥'
+    color: 'fuchsia'
   },
   {
     id: 'core-crusher',
@@ -1001,8 +920,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 25,
     difficulty: 'intermediate',
     gradient: 'from-pink-600/20 to-rose-500/10',
-    color: 'pink',
-    emoji: '💎'
+    color: 'pink'
   },
   {
     id: 'beginner-fullbody',
@@ -1013,8 +931,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 30,
     difficulty: 'beginner',
     gradient: 'from-slate-600/20 to-gray-500/10',
-    color: 'slate',
-    emoji: '✨'
+    color: 'slate'
   },
   {
     id: 'advanced-beast',
@@ -1025,8 +942,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 50,
     difficulty: 'advanced',
     gradient: 'from-red-600/20 to-purple-600/10',
-    color: 'red',
-    emoji: '👹'
+    color: 'red'
   },
   {
     id: 'mobility-recovery',
@@ -1037,8 +953,7 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 20,
     difficulty: 'beginner',
     gradient: 'from-cyan-600/20 to-blue-500/10',
-    color: 'cyan',
-    emoji: '🧘'
+    color: 'cyan'
   },
 ];
 
@@ -1086,36 +1001,31 @@ export function generateRealisticScore(difficulty: 'beginner' | 'intermediate' |
 }
 
 // Get performance feedback based on score
-export function getScoreFeedback(score: number): { message: string; color: string; emoji: string } {
+export function getScoreFeedback(score: number): { message: string; color: string } {
   if (score >= 95) {
     return { 
-      message: "Perfect form! You're crushing it! 🔥", 
-      color: 'text-green-400',
-      emoji: '🏆'
+      message: "Perfect form! You're crushing it!", 
+      color: 'text-green-400'
     };
   } else if (score >= 85) {
     return { 
-      message: "Excellent work! Keep it up! 💪", 
-      color: 'text-green-400',
-      emoji: '✨'
+      message: "Excellent work! Keep it up!", 
+      color: 'text-green-400'
     };
   } else if (score >= 75) {
     return { 
       message: "Good job! Room for improvement.", 
-      color: 'text-yellow-400',
-      emoji: '👍'
+      color: 'text-blue-400'
     };
   } else if (score >= 60) {
     return { 
       message: "Decent effort. Focus on form.", 
-      color: 'text-orange-400',
-      emoji: '💡'
+      color: 'text-red-400'
     };
   } else {
     return { 
       message: "Keep practicing. Form needs work.", 
-      color: 'text-red-400',
-      emoji: '🎯'
+      color: 'text-red-400'
     };
   }
 }

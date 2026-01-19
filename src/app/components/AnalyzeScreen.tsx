@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, Video, CheckCircle, AlertCircle, TrendingUp, Camera, Zap, Target, Award, Sparkles, Clock, Brain } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, TrendingUp, Camera, Zap, Target, Award, Sparkles, Brain, Dumbbell, Utensils, Video } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 
@@ -16,17 +16,11 @@ export function AnalyzeScreen() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [progress, setProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const workoutInputRef = useRef<HTMLInputElement>(null);
+  const mealInputRef = useRef<HTMLInputElement>(null);
 
-  // Last analysis summary
-  const lastAnalysis = {
-    exercise: 'Push-ups',
-    score: 82,
-    issuesFixed: 2
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCameraCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('video/')) {
       setVideoFile(file);
@@ -34,11 +28,19 @@ export function AnalyzeScreen() {
     }
   };
 
-  const handleCameraCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleWorkoutCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('video/')) {
       setVideoFile(file);
       setAnalysisResult(null);
+    }
+  };
+
+  const handleMealCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      // Handle meal photo
+      alert('Meal tracking coming soon!');
     }
   };
 
@@ -93,50 +95,22 @@ export function AnalyzeScreen() {
     setVideoFile(null);
     setAnalysisResult(null);
     setProgress(0);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
     if (cameraInputRef.current) {
       cameraInputRef.current.value = '';
+    }
+    if (workoutInputRef.current) {
+      workoutInputRef.current.value = '';
     }
   };
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-background to-background/95">
-      {/* Header with White Accent */}
-      <div className="px-6 py-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-gray-100/10 rounded-full blur-3xl" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="w-7 h-7 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-            <h1 className="bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              Analyze Form
-            </h1>
-          </div>
-          <p className="text-muted-foreground font-medium mb-3">
-            Upload or record your workout for AI-powered analysis
-          </p>
-          
-          {/* Last Analysis Summary */}
-          <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 rounded-lg px-3 py-2 border border-white/10">
-            <span className="text-white/60">Last session:</span>
-            <span className="text-white font-semibold">{lastAnalysis.exercise}</span>
-            <span className="text-white/40">·</span>
-            <span className="text-white font-semibold">Form score {lastAnalysis.score}</span>
-            <span className="text-white/40">·</span>
-            <span className="text-green-400 font-semibold">{lastAnalysis.issuesFixed} issues fixed</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 px-6 pb-6 overflow-y-auto">
+      {/* Main Content - Takes Full Screen */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         {!videoFile && !analysisResult && (
-          <div className="space-y-5">
-            {/* Upload Options */}
-            <div className="grid grid-cols-1 gap-4">
-              {/* Camera Option - Featured */}
+          <div className="w-full max-w-md flex flex-col items-center">
+            {/* Large Camera Circle */}
+            <div className="relative mb-12">
               <input
                 ref={cameraInputRef}
                 type="file"
@@ -148,94 +122,107 @@ export function AnalyzeScreen() {
               />
               <label
                 htmlFor="camera-capture"
-                className="relative flex flex-col items-center justify-center h-52 border-2 border-white/40 rounded-3xl cursor-pointer bg-gradient-to-br from-white/15 via-white/10 to-gray-100/15 hover:from-white/25 hover:via-white/20 hover:to-gray-100/25 transition-all group overflow-hidden shadow-xl shadow-white/10"
+                className="relative block cursor-pointer group"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/10 to-gray-100/0 group-hover:from-white/10 group-hover:to-gray-100/10 transition-all" />
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/20 rounded-full blur-2xl" />
-                <div className="relative z-10 flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/30 to-gray-100/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-lg shadow-white/20">
-                    <Camera className="w-12 h-12 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-                  </div>
-                  <p className="text-xl font-bold text-white mb-2 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Record with Camera</p>
-                  <p className="text-sm text-gray-200 font-medium">
-                    Capture your workout live
-                  </p>
+                {/* Outer Glow Ring */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-red-500/30 blur-2xl animate-pulse" />
+                
+                {/* Main Camera Circle */}
+                <div className="relative w-72 h-72 rounded-full bg-gradient-to-br from-blue-600/40 via-purple-600/40 to-red-600/40 border-4 border-white/30 flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_60px_rgba(59,130,246,0.4)]">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
+                  <Camera className="w-28 h-28 text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]" />
                 </div>
-                <div className="absolute top-4 right-4 px-3 py-1.5 bg-white/30 backdrop-blur-sm rounded-full border border-white/50">
-                  <span className="text-xs font-bold text-white">⭐ Recommended</span>
-                </div>
-              </label>
 
-              {/* Upload Option */}
+                {/* Pulsing Ring Animation */}
+                <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-ping" style={{ animationDuration: '2s' }} />
+              </label>
+            </div>
+
+            {/* Action Buttons Below Circle */}
+            <div className="w-full space-y-4">
+              {/* Workout Button */}
               <input
-                ref={fileInputRef}
+                ref={workoutInputRef}
                 type="file"
                 accept="video/*"
-                onChange={handleFileSelect}
+                capture="environment"
+                onChange={handleWorkoutCapture}
                 className="hidden"
-                id="video-upload"
+                id="workout-capture"
               />
               <label
-                htmlFor="video-upload"
-                className="flex flex-col items-center justify-center h-44 border-2 border-dashed border-white/30 rounded-3xl cursor-pointer hover:bg-white/5 hover:border-white/50 transition-all group"
+                htmlFor="workout-capture"
+                className="block w-full cursor-pointer"
               >
-                <div className="p-5 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors mb-4">
-                  <Upload className="w-9 h-9 text-white group-hover:text-gray-100 transition-colors drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
-                </div>
-                <p className="font-bold text-lg mb-1">Upload Video</p>
-                <p className="text-sm text-muted-foreground font-medium">
-                  MP4, MOV, or AVI (max 100MB)
-                </p>
+                <Card className="p-5 bg-gradient-to-r from-blue-600/40 to-purple-600/30 border-blue-400/50 hover:from-blue-600/50 hover:to-purple-600/40 transition-all shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] active:scale-[0.98]">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-500/40 rounded-xl border border-blue-400/40">
+                      <Dumbbell className="w-7 h-7 text-blue-200 drop-shadow-[0_0_10px_rgba(96,165,250,0.8)]" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">Record Workout</h3>
+                      <p className="text-sm text-blue-200/80">Film your sets and get AI feedback</p>
+                    </div>
+                    <Sparkles className="w-6 h-6 text-blue-300 drop-shadow-[0_0_10px_rgba(96,165,250,0.6)]" />
+                  </div>
+                </Card>
+              </label>
+
+              {/* Meal Button */}
+              <input
+                ref={mealInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleMealCapture}
+                className="hidden"
+                id="meal-capture"
+              />
+              <label
+                htmlFor="meal-capture"
+                className="block w-full cursor-pointer"
+              >
+                <Card className="p-5 bg-gradient-to-r from-orange-600/40 to-red-600/30 border-orange-400/50 hover:from-orange-600/50 hover:to-red-600/40 transition-all shadow-[0_0_30px_rgba(251,146,60,0.3)] hover:shadow-[0_0_40px_rgba(251,146,60,0.5)] active:scale-[0.98]">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-orange-500/40 rounded-xl border border-orange-400/40">
+                      <Utensils className="w-7 h-7 text-orange-200 drop-shadow-[0_0_10px_rgba(251,146,60,0.8)]" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">Track Meal</h3>
+                      <p className="text-sm text-orange-200/80">Snap a photo to log nutrition</p>
+                    </div>
+                    <Camera className="w-6 h-6 text-orange-300 drop-shadow-[0_0_10px_rgba(251,146,60,0.6)]" />
+                  </div>
+                </Card>
               </label>
             </div>
 
-            {/* Estimated Analysis Time */}
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
-              <Clock className="w-4 h-4" />
-              <span>Analysis takes ~10–20s</span>
+            {/* Feature Pills */}
+            <div className="flex flex-wrap gap-2 mt-8 justify-center">
+              <div className="px-4 py-2 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-white" />
+                  <span className="text-xs font-semibold text-white">Real-time Analysis</span>
+                </div>
+              </div>
+              <div className="px-4 py-2 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-white" />
+                  <span className="text-xs font-semibold text-white">Form Scoring</span>
+                </div>
+              </div>
+              <div className="px-4 py-2 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-white" />
+                  <span className="text-xs font-semibold text-white">AI Powered</span>
+                </div>
+              </div>
             </div>
-
-            {/* Feature Cards */}
-            <div className="grid grid-cols-3 gap-3 mt-8">
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-white/15 to-gray-100/10 border border-white/30 text-center shadow-lg shadow-white/5">
-                <Target className="w-7 h-7 text-white mx-auto mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
-                <p className="text-xs font-semibold text-gray-200">Real-time<br/>Analysis</p>
-              </div>
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-white/15 to-gray-100/10 border border-white/30 text-center shadow-lg shadow-white/5">
-                <Award className="w-7 h-7 text-white mx-auto mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
-                <p className="text-xs font-semibold text-gray-200">Form<br/>Scoring</p>
-              </div>
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-white/15 to-gray-100/10 border border-white/30 text-center shadow-lg shadow-white/5">
-                <Sparkles className="w-7 h-7 text-white mx-auto mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
-                <p className="text-xs font-semibold text-gray-200">AI<br/>Feedback</p>
-              </div>
-            </div>
-
-            {/* Tips Section */}
-            <Card className="p-5 bg-gradient-to-br from-white/10 to-gray-100/5 border-white/30 mt-6 shadow-lg">
-              <h4 className="text-white mb-3 flex items-center gap-2 font-bold">
-                <span className="text-lg">💡</span> Pro Tips
-              </h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2.5">
-                  <span className="text-white mt-0.5 font-bold">•</span>
-                  <span className="font-medium">Position camera 6-10 feet away</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-white mt-0.5 font-bold">•</span>
-                  <span className="font-medium">Ensure full body is visible in frame</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-white mt-0.5 font-bold">•</span>
-                  <span className="font-medium">Good lighting improves accuracy</span>
-                </li>
-              </ul>
-            </Card>
           </div>
         )}
 
         {videoFile && !analysisResult && (
-          <div className="space-y-6">
+          <div className="w-full max-w-md space-y-6">
             <Card className="p-6 bg-gradient-to-br from-white/15 to-gray-100/10 border-white/40 shadow-xl">
               <div className="flex items-center gap-4 mb-5">
                 <div className="p-4 bg-white/30 rounded-2xl">
@@ -260,7 +247,7 @@ export function AnalyzeScreen() {
                   </div>
                   <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-800/40 border border-white/20">
                     <div
-                      className="h-full bg-gradient-to-r from-white via-gray-100 to-gray-200 transition-all duration-300 shadow-lg shadow-white/50"
+                      className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 transition-all duration-300 shadow-lg shadow-blue-500/50"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -275,7 +262,7 @@ export function AnalyzeScreen() {
               <Button
                 onClick={analyzeVideo}
                 disabled={isAnalyzing}
-                className="flex-1 h-16 bg-gradient-to-r from-white via-gray-100 to-gray-200 hover:from-gray-100 hover:via-white hover:to-gray-100 text-black font-bold border-0 shadow-xl shadow-white/30 text-lg"
+                className="flex-1 h-16 bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 hover:from-blue-700 hover:via-purple-700 hover:to-red-700 text-white font-bold border-0 shadow-xl shadow-blue-500/30 text-lg"
               >
                 {isAnalyzing ? (
                   <span className="flex items-center gap-2">
@@ -302,7 +289,7 @@ export function AnalyzeScreen() {
         )}
 
         {analysisResult && (
-          <div className="space-y-6">
+          <div className="w-full max-w-md space-y-6 pb-6">
             {/* Score Card with Confidence Indicator */}
             <Card className="p-7 bg-gradient-to-br from-white/25 via-white/20 to-gray-100/25 border-white/50 relative overflow-hidden shadow-2xl shadow-white/20">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/30 rounded-full blur-3xl" />
@@ -398,7 +385,7 @@ export function AnalyzeScreen() {
 
             <Button 
               onClick={reset} 
-              className="w-full h-16 bg-gradient-to-r from-white via-gray-100 to-gray-200 hover:from-gray-100 hover:via-white hover:to-gray-100 text-black font-bold border-0 shadow-xl shadow-white/30 text-lg"
+              className="w-full h-16 bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 hover:from-blue-700 hover:via-purple-700 hover:to-red-700 text-white font-bold border-0 shadow-xl shadow-blue-500/30 text-lg"
             >
               <Camera className="w-6 h-6 mr-2" />
               Analyze Another Video

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CheckCircle2, TrendingUp, AlertCircle, X, Activity } from 'lucide-react';
 import { Button } from './ui/button';
 import type { FormAnalysisResult } from '../utils/aiFormScoring';
+import { getScoreColor, getScoreGlow } from '../utils/scoreColors';
 
 interface AnalysisResultSheetProps {
   result: FormAnalysisResult & { exerciseName: string };
@@ -21,30 +22,44 @@ export function AnalysisResultSheet({
 
   const isValidResult = reps > 0 && score > 0;
 
-  // Get status label (single source of truth for grade)
+  // Get status label with clearer progression
   const getStatusLabel = (s: number) => {
+    if (s >= 95) return 'Perfect';
     if (s >= 90) return 'Excellent';
-    if (s >= 80) return 'Great';
-    if (s >= 70) return 'Good';
-    if (s >= 60) return 'Decent';
-    return 'Needs Work';
+    if (s >= 85) return 'Great';
+    if (s >= 75) return 'Good';
+    if (s >= 65) return 'Fair';
+    if (s >= 50) return 'Needs Work';
+    return 'Poor';
   };
 
-  // Consistent color system: green for 80+, red for below
-  const getAccentColors = (s: number) => {
-    if (s >= 80) return {
-      ring: 'stroke-green-500',
-      ringGlow: 'drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]',
-      text: 'text-green-400',
-    };
-    return {
-      ring: 'stroke-red-500',
-      ringGlow: 'drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]',
-      text: 'text-red-400',
-    };
+  // Get ring color based on score
+  const getRingColor = (s: number) => {
+    if (s >= 90) return 'stroke-green-500';
+    if (s >= 80) return 'stroke-green-500';
+    if (s >= 70) return 'stroke-yellow-400';
+    if (s >= 60) return 'stroke-orange-400';
+    return 'stroke-red-500';
   };
 
-  const colors = getAccentColors(score);
+  const getRingGlow = (s: number) => {
+    if (s >= 90) return 'drop-shadow-[0_0_10px_rgba(34,197,94,0.6)]';
+    if (s >= 80) return 'drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]';
+    if (s >= 70) return 'drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]';
+    if (s >= 60) return 'drop-shadow-[0_0_10px_rgba(251,146,60,0.5)]';
+    return 'drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]';
+  };
+
+  const getBadgeBg = (s: number) => {
+    if (s >= 80) return 'bg-green-500/20 border-green-500/60';
+    if (s >= 70) return 'bg-yellow-500/20 border-yellow-500/60';
+    if (s >= 60) return 'bg-orange-500/20 border-orange-500/60';
+    return 'bg-red-500/20 border-red-500/60';
+  };
+
+  const ringColor = getRingColor(score);
+  const ringGlow = getRingGlow(score);
+  const badgeBg = getBadgeBg(score);
   const status = getStatusLabel(score);
 
   // Entrance animation
@@ -160,7 +175,7 @@ export function AnalysisResultSheet({
                       strokeLinecap="round"
                       strokeDasharray={circumference}
                       strokeDashoffset={circumference - progress}
-                      className={`${colors.ring} ${colors.ringGlow} transition-all duration-600 ease-out`}
+                      className={`${ringColor} ${ringGlow} transition-all duration-600 ease-out`}
                     />
                   </svg>
                   {/* Score + Grade in center */}
@@ -169,13 +184,13 @@ export function AnalysisResultSheet({
                       {animatedScore}
                     </div>
                     <div className="text-base text-white/30 font-bold mb-3">/100</div>
-                    <div className={`text-xs font-bold ${colors.text}`}>
+                    <div className={`text-xs font-bold ${getScoreColor(score)}`}>
                       {status}
                     </div>
                     
                     {/* Reps badge - positioned at bottom inside circle */}
                     <div className="absolute bottom-8">
-                      <div className={`px-4 py-2 rounded-full border-2 ${score >= 80 ? 'bg-green-500/20 border-green-500/60' : 'bg-red-500/20 border-red-500/60'}`}>
+                      <div className={`px-4 py-2 rounded-full border-2 ${badgeBg}`}>
                         <div className="flex items-center gap-1.5">
                           <span className="text-lg font-black text-white">{animatedReps}</span>
                           <span className="text-xs font-bold text-white/60">reps</span>

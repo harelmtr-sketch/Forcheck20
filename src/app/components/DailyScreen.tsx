@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw, Share2 } from 'lucide-react';
+import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw, Share2, Flame, Dumbbell, Trophy, Zap, Utensils, Activity, Star, Crown, TrendingUp, Anchor, Shield, ArrowUp, Rocket, Bolt, Layers, HeartPulse, CircleDot, User, Skull, Wind } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase-clean';
@@ -9,6 +9,7 @@ import type { Exercise, Meal, MuscleStatus, ArchivedWorkout, CustomTemplate } fr
 import type { ExerciseData, WorkoutTemplate } from '../data/exerciseDatabase-clean';
 import { mockFriendsDatabase, type FriendData, type FriendStory } from '../data/mockFriendsData';
 import { DailyBreakdownStory } from './DailyBreakdownStory';
+import { getScoreColor, getScoreGlow, getScoreBgColor, getScoreBorderColor, getScoreShadowColor } from '../utils/scoreColors';
 
 interface DailyScreenProps {
   exercises: Exercise[];
@@ -28,6 +29,34 @@ interface SavedMeal {
   calories: number;
   protein: number;
 }
+
+// Icon mapper for workout templates
+const getTemplateIcon = (iconName: string) => {
+  const icons: { [key: string]: any } = {
+    'Zap': Zap,
+    'Play': Play,
+    'Crown': Crown,
+    'Target': Target,
+    'TrendingUp': TrendingUp,
+    'Dumbbell': Dumbbell,
+    'Anchor': Anchor,
+    'Award': Award,
+    'Shield': Shield,
+    'Flame': Flame,
+    'ArrowUp': ArrowUp,
+    'Rocket': Rocket,
+    'Bolt': Bolt,
+    'Layers': Layers,
+    'Activity': Activity,
+    'HeartPulse': HeartPulse,
+    'CircleDot': CircleDot,
+    'User': User,
+    'Skull': Skull,
+    'Wind': Wind
+  };
+  const IconComponent = icons[iconName] || Dumbbell;
+  return IconComponent;
+};
 
 export function DailyScreen({ 
   exercises, 
@@ -474,47 +503,91 @@ export function DailyScreen({
     // Generate scores from 0-100 in increments of 10
     const scoreValues = Array.from({ length: 11 }, (_, i) => i * 10);
     
-    const getScoreColor = (score: number) => {
-      if (score >= 90) return 'from-green-600 via-green-500 to-emerald-500';
-      if (score >= 80) return 'from-green-500 via-green-400 to-lime-500';
-      if (score >= 70) return 'from-lime-500 via-yellow-400 to-yellow-500';
-      if (score >= 60) return 'from-yellow-500 via-orange-400 to-orange-500';
-      if (score >= 50) return 'from-orange-500 via-orange-600 to-red-500';
-      return 'from-red-600 via-red-500 to-red-400';
+    // Score color system for Rate Your Form screen
+    const getScoreTextColor = (score: number) => {
+      if (score >= 90) return 'text-green-500';
+      if (score >= 80) return 'text-green-400';
+      if (score >= 70) return 'text-yellow-400';
+      if (score >= 60) return 'text-orange-400';
+      if (score >= 50) return 'text-orange-500';
+      return 'text-red-500';
+    };
+
+    const getScoreBorderColor = (score: number) => {
+      if (score >= 90) return 'border-green-500/70';
+      if (score >= 80) return 'border-green-400/70';
+      if (score >= 70) return 'border-yellow-400/70';
+      if (score >= 60) return 'border-orange-400/70';
+      if (score >= 50) return 'border-orange-500/70';
+      return 'border-red-500/70';
+    };
+
+    // Base background for all rows (always visible)
+    const getScoreBaseBg = (score: number) => {
+      if (score >= 90) return 'bg-green-500/8';
+      if (score >= 80) return 'bg-green-400/8';
+      if (score >= 70) return 'bg-yellow-400/8';
+      if (score >= 60) return 'bg-orange-400/8';
+      if (score >= 50) return 'bg-orange-500/8';
+      return 'bg-red-500/8';
+    };
+
+    // Selected background (stronger)
+    const getScoreSelectedBg = (score: number) => {
+      if (score >= 90) return 'bg-green-500/20';
+      if (score >= 80) return 'bg-green-400/20';
+      if (score >= 70) return 'bg-yellow-400/18';
+      if (score >= 60) return 'bg-orange-400/18';
+      if (score >= 50) return 'bg-orange-500/18';
+      return 'bg-red-500/20';
+    };
+
+    const getScoreGlowColor = (score: number) => {
+      if (score >= 90) return 'shadow-xl shadow-green-500/30';
+      if (score >= 80) return 'shadow-xl shadow-green-400/30';
+      if (score >= 70) return 'shadow-xl shadow-yellow-400/30';
+      if (score >= 60) return 'shadow-xl shadow-orange-400/30';
+      if (score >= 50) return 'shadow-xl shadow-orange-500/30';
+      return 'shadow-xl shadow-red-500/30';
     };
 
     const getScoreLabel = (score: number) => {
-      if (score >= 90) return 'Perfect';
-      if (score >= 80) return 'Excellent';
+      if (score >= 95) return 'Elite';
+      if (score >= 90) return 'Excellent';
+      if (score >= 80) return 'Great';
       if (score >= 70) return 'Good';
-      if (score >= 60) return 'Decent';
-      if (score >= 50) return 'Fair';
-      return 'Needs Work';
-    };
-
-    const getScoreEmoji = (score: number) => {
-      if (score >= 90) return '🏆';
-      if (score >= 80) return '✨';
-      if (score >= 70) return '💪';
-      if (score >= 60) return '👍';
-      if (score >= 50) return '💡';
-      return '🎯';
+      if (score >= 60) return 'Fair';
+      if (score >= 40) return 'Needs Work';
+      return 'Poor';
     };
 
     return (
-      <div className="flex flex-col h-full bg-background">
-        <div className="px-6 py-6 border-b border-border/50">
+      <div className="flex flex-col h-full relative overflow-hidden">
+        {/* Consistent background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
+          <div 
+            className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5 animate-pulse-slow"
+            style={{ animationDuration: '16s' }}
+          />
+        </div>
+
+        <div className="px-6 py-6 border-b border-border/50 backdrop-blur-sm relative z-10">
           <button 
             onClick={() => {
               setSelectedExerciseIndex(null);
               setCurrentView('main');
             }}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors mb-4 -ml-2"
+            className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors mb-4 -ml-2 active:scale-95"
           >
             <ChevronLeft className="w-5 h-5 text-white" />
           </button>
           <div className="text-center mb-2">
-            <div className="text-5xl mb-3">{exerciseData?.emoji || '💪'}</div>
+            <div className="mb-3 flex justify-center">
+              <div className="p-3 bg-blue-500/20 rounded-xl border border-blue-500/40">
+                <Dumbbell className="w-8 h-8 text-blue-400" />
+              </div>
+            </div>
             <h2 className="font-bold mb-1">{exercise.name}</h2>
             <p className="text-sm text-muted-foreground font-medium">
               {exercise.sets} sets × {exercise.reps} reps
@@ -522,28 +595,63 @@ export function DailyScreen({
           </div>
         </div>
 
-        <div className="flex-1 px-6 py-6 overflow-y-auto">
+        <div className="flex-1 px-6 py-6 overflow-y-auto relative z-10">
           <h3 className="font-bold text-center mb-2">Rate Your Form</h3>
-          <p className="text-sm text-muted-foreground text-center mb-6">Select a score from 0-100</p>
+          <p className="text-sm text-white/60 text-center mb-6">How did your form feel for this exercise?</p>
+          
+          {/* Score Feedback */}
+          {exercise.score !== undefined && (
+            <div className={`mb-6 p-4 rounded-xl border-2 ${getScoreBorderColor(exercise.score)} ${getScoreSelectedBg(exercise.score)} ${getScoreGlowColor(exercise.score)} animate-in fade-in slide-in-from-top-2 duration-300`}>
+              <div className="text-center">
+                <div className={`text-sm font-bold mb-1 ${getScoreTextColor(exercise.score)}`}>
+                  {getScoreLabel(exercise.score)}
+                </div>
+                <p className="text-xs text-white/70">
+                  {exercise.score >= 80 ? 'Excellent work! Keep it up.' : 
+                   exercise.score >= 60 ? 'Good effort. Focus on form next time.' : 
+                   'Room to improve. Watch technique videos.'}
+                </p>
+              </div>
+            </div>
+          )}
           
           {/* Score List */}
           <div className="space-y-2">
-            {scoreValues.map((score) => (
-              <button
-                key={score}
-                onClick={() => handleScoreSelect(score)}
-                className={`w-full p-4 rounded-lg bg-gradient-to-r ${getScoreColor(score)} hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-bold text-white/90">
-                    {getScoreLabel(score)}
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {score}
-                  </div>
+            {scoreValues.map((score, index) => {
+              const isSelected = exercise.score === score;
+              const showDivider = score === 10 || score === 30 || score === 50;
+              
+              return (
+                <div key={score}>
+                  {showDivider && index > 0 && (
+                    <div className="py-2">
+                      <div className="h-px bg-gradient-to-r from-transparent via-gray-700/50 to-transparent" />
+                    </div>
+                  )}
+                  <button
+                    onClick={() => handleScoreSelect(score)}
+                    className={`w-full p-5 rounded-xl transition-all duration-300 ${
+                      isSelected 
+                        ? `${getScoreSelectedBg(score)} ${getScoreBorderColor(score)} border-2 ${getScoreGlowColor(score)} scale-[1.02]`
+                        : `${getScoreBaseBg(score)} border border-gray-800/50 hover:border-gray-700/70 hover:scale-[1.01] ${!isSelected && exercise.score !== undefined ? 'opacity-60' : ''}`
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className={`text-base font-bold transition-all duration-300 ${
+                        isSelected ? 'text-white' : 'text-white/90'
+                      }`}>
+                        {getScoreLabel(score)}
+                      </div>
+                      <div className={`text-3xl font-black transition-all duration-300 ${getScoreTextColor(score)} ${
+                        isSelected ? 'drop-shadow-[0_0_12px_currentColor]' : ''
+                      }`}>
+                        {score}
+                      </div>
+                    </div>
+                  </button>
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -551,15 +659,14 @@ export function DailyScreen({
   }
 
   // TEMPLATES VIEW
-  // TEMPLATES VIEW
   if (currentView === 'templates') {
     return (
       <div className="flex flex-col h-full">
-        <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-purple-600/10 to-blue-600/10">
+        <div className="px-6 py-6 border-b border-border">
           <div className="flex items-center gap-3 mb-4">
             <button 
               onClick={() => setCurrentView('main')}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
             >
               <ChevronLeft className="w-5 h-5 text-white" />
             </button>
@@ -575,11 +682,11 @@ export function DailyScreen({
         <div className="flex-1 px-6 py-6 overflow-y-auto space-y-4">
           {customTemplates.length > 0 && (
             <>
-              <h3 className="font-bold text-sm text-purple-400">Your Templates</h3>
+              <h3 className="font-bold text-sm text-blue-400">Your Templates</h3>
               {customTemplates.map((template) => (
                 <Card 
                   key={template.id}
-                  className="p-5 bg-gradient-to-br from-purple-600/25 to-pink-600/15 border-purple-500/40 cursor-pointer hover:scale-[1.02] transition-all shadow-lg relative"
+                  className="p-5 bg-card border-border cursor-pointer hover:bg-gray-800 transition-all relative"
                 >
                   <div 
                     onClick={() => {
@@ -593,13 +700,16 @@ export function DailyScreen({
                     }}
                     className="flex items-center justify-between"
                   >
-                    <div>
-                      <h4 className="font-bold text-white mb-1">⭐ {template.name}</h4>
-                      <p className="text-sm text-white/70 font-medium">
-                        {template.exercises.length} exercises • Custom
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-blue-400" />
+                      <div>
+                        <h4 className="font-bold text-white mb-1">{template.name}</h4>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          {template.exercises.length} exercises • Custom
+                        </p>
+                      </div>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-white/60" />
+                    <ChevronRight className="w-6 h-6 text-muted-foreground" />
                   </div>
                   <button
                     onClick={(e) => handleDeleteCustomTemplate(template.id, e)}
@@ -614,27 +724,32 @@ export function DailyScreen({
             </>
           )}
 
-          {workoutTemplates.map((template) => (
-            <Card 
-              key={template.id}
-              onClick={() => handleTemplateStart(template)}
-              className={`p-5 bg-gradient-to-br ${template.gradient} border-${template.color}-500/40 cursor-pointer hover:scale-[1.02] transition-all shadow-lg`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-5xl">{template.emoji}</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-white mb-1">{template.name}</h3>
-                  <p className="text-sm text-white/80 font-medium mb-2">
-                    {template.description}
-                  </p>
-                  <p className="text-xs text-white/70 font-semibold">
-                    {template.exercises.length} exercises • {template.duration} min
-                  </p>
+          {workoutTemplates.map((template) => {
+            const TemplateIcon = getTemplateIcon(template.icon);
+            return (
+              <Card 
+                key={template.id}
+                onClick={() => handleTemplateStart(template)}
+                className={`p-5 bg-gradient-to-br ${template.gradient} border-${template.color}-500/40 cursor-pointer hover:scale-[1.01] transition-all`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 bg-${template.color}-500/20 rounded-lg border border-${template.color}-500/40`}>
+                    <TemplateIcon className={`w-8 h-8 text-${template.color}-400`} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white mb-1">{template.name}</h3>
+                    <p className="text-sm text-white/70 font-medium mb-2">
+                      {template.description}
+                    </p>
+                    <p className="text-xs text-white/60 font-semibold">
+                      {template.exercises.length} exercises • {template.duration} min
+                    </p>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-white/40" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-white/60" />
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </div>
     );
@@ -645,11 +760,11 @@ export function DailyScreen({
     return (
       <>
         <div className="flex flex-col h-full">
-          <div className="px-6 py-6 border-b border-border/50">
+          <div className="px-6 py-6 border-b border-border">
             <div className="flex items-center gap-3 mb-4">
               <button 
                 onClick={() => setCurrentView('main')}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
               </button>
@@ -668,7 +783,7 @@ export function DailyScreen({
                 placeholder="Search exercises..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-secondary/80 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/40"
+                className="w-full pl-10 pr-4 py-3 bg-card rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -679,8 +794,8 @@ export function DailyScreen({
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                     selectedCategory === cat.id
-                      ? 'bg-white/20 text-white'
-                      : 'bg-secondary text-muted-foreground'
+                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
+                      : 'bg-card text-muted-foreground border border-border'
                   }`}
                 >
                   {cat.label}
@@ -694,7 +809,7 @@ export function DailyScreen({
               <Card 
                 key={exercise.id}
                 onClick={() => handleExerciseAdd(exercise)}
-                className="p-4 bg-card border-border hover:bg-white/5 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                className="p-4 bg-card border-border hover:bg-gray-800 cursor-pointer transition-all active:scale-[0.98]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -703,7 +818,7 @@ export function DailyScreen({
                       {exercise.baseSets} sets × {exercise.baseReps} reps
                     </p>
                   </div>
-                  <Plus className="w-6 h-6 text-white/60" />
+                  <Plus className="w-6 h-6 text-blue-400" />
                 </div>
               </Card>
             ))}
@@ -713,11 +828,11 @@ export function DailyScreen({
         {/* Customize Exercise Modal - Must be here for exercise picker */}
         {showCustomizeExercise && pendingExercise && (
           <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-6 z-[100]">
-            <Card className="p-0 max-w-sm w-full bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 overflow-hidden">
+            <Card className="p-0 max-w-sm w-full bg-card border-border overflow-hidden">
               {/* Header */}
-              <div className="p-5 bg-gradient-to-r from-green-600/20 to-blue-600/20 border-b border-slate-700">
+              <div className="p-5 bg-gray-900 border-b border-border">
                 <h3 className="font-bold text-white">{pendingExercise.name}</h3>
-                <p className="text-xs text-slate-400 mt-1">{editingExerciseIndex !== null ? 'Edit your workout' : 'Customize your workout'}</p>
+                <p className="text-xs text-muted-foreground mt-1">{editingExerciseIndex !== null ? 'Edit your workout' : 'Customize your workout'}</p>
               </div>
 
               {/* Content */}
@@ -728,7 +843,7 @@ export function DailyScreen({
                   <select
                     value={customSets}
                     onChange={(e) => setCustomSets(parseInt(e.target.value))}
-                    className="w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600 rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+                    className="w-full px-4 py-3.5 bg-gray-900 border border-border rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer appearance-none"
                     style={{ 
                       backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
                       backgroundRepeat: 'no-repeat',
@@ -737,7 +852,7 @@ export function DailyScreen({
                     }}
                   >
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                      <option key={num} value={num} className="bg-slate-800 text-white py-2">
+                      <option key={num} value={num} className="bg-gray-900 text-white py-2">
                         {num} {num === 1 ? 'set' : 'sets'}
                       </option>
                     ))}
@@ -750,7 +865,7 @@ export function DailyScreen({
                   <select
                     value={customReps}
                     onChange={(e) => setCustomReps(parseInt(e.target.value))}
-                    className="w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600 rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+                    className="w-full px-4 py-3.5 bg-gray-900 border border-border rounded-xl text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer appearance-none"
                     style={{ 
                       backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
                       backgroundRepeat: 'no-repeat',
@@ -759,7 +874,7 @@ export function DailyScreen({
                     }}
                   >
                     {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
-                      <option key={num} value={num} className="bg-slate-800 text-white py-2">
+                      <option key={num} value={num} className="bg-gray-900 text-white py-2">
                         {num} {num === 1 ? 'rep' : 'reps'}
                       </option>
                     ))}
@@ -767,10 +882,10 @@ export function DailyScreen({
                 </div>
 
                 {/* Preview */}
-                <div className="p-4 bg-gradient-to-r from-green-600/10 to-blue-600/10 rounded-xl border border-green-500/30">
-                  <p className="text-xs text-slate-400 text-center mb-1">Your workout:</p>
+                <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/30">
+                  <p className="text-xs text-muted-foreground text-center mb-1">Your workout:</p>
                   <p className="text-center font-bold text-white">
-                    {customSets} × {customReps} = <span className="text-green-400">{customSets * customReps} total reps</span>
+                    {customSets} × {customReps} = <span className="text-blue-400">{customSets * customReps} total reps</span>
                   </p>
                 </div>
               </div>
@@ -784,13 +899,13 @@ export function DailyScreen({
                     setEditingExerciseIndex(null);
                   }}
                   variant="outline"
-                  className="flex-1 bg-slate-800/50 border-slate-600 hover:bg-slate-700"
+                  className="flex-1"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleConfirmExercise}
-                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-green-500 shadow-lg shadow-green-500/20"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
                   {editingExerciseIndex !== null ? 'Update' : 'Add Exercise'}
                 </Button>
@@ -804,11 +919,22 @@ export function DailyScreen({
 
   // MAIN VIEW
   return (
-    <div className="flex flex-col h-full">
-      {/* Header with Archive Button */}
-      <div className="px-6 py-6 relative overflow-hidden border-b border-border/30">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-blue-600/10 to-cyan-600/10" />
-        <div className="relative flex items-center justify-between">
+    <div className="flex flex-col h-full relative overflow-hidden">
+      {/* Animated background gradient - very subtle, slow loop */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5 animate-pulse-slow"
+          style={{ animationDuration: '16s' }}
+        />
+      </div>
+
+      {/* Header */}
+      <div className="px-6 py-6 relative z-10 border-b border-border/50 backdrop-blur-sm">
+        {/* Subtle "Today" indicator line */}
+        <div className="absolute left-0 right-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+        
+        <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
           <div>
             <h1 className="mb-1 font-bold">Today's Progress</h1>
             <p className="text-sm text-muted-foreground font-medium">
@@ -816,113 +942,128 @@ export function DailyScreen({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Streak in corner */}
-            <div className="flex items-center gap-2">
-              <span className="text-3xl">🔥</span>
+            {/* Streak with subtle pulse animation */}
+            <div 
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-red-950/50 to-orange-950/30 border border-red-500/40 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 transition-all duration-300 animate-pulse-very-slow"
+              style={{ animationDuration: '4s' }}
+            >
+              <Flame className="w-6 h-6 text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.7)]" />
               <div className="flex flex-col items-start">
-                <div className="text-2xl font-black text-orange-400">7</div>
-                <div className="text-xs text-orange-400/80 font-medium -mt-1">days</div>
+                <div className="text-2xl font-black text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]">7</div>
+                <div className="text-xs text-red-300/80 font-medium -mt-1">days</div>
               </div>
             </div>
             {hasWorkout && (
               <button
                 onClick={handleResetWorkout}
-                className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-red-500/20 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-red-500/20"
                 title="Reset workout"
               >
-                <RotateCcw className="w-5 h-5 text-red-400" />
+                <RotateCcw className="w-5 h-5 text-red-400 hover:drop-shadow-[0_0_6px_rgba(248,113,113,0.6)]" />
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
-        {/* Daily Score */}
+      <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6 relative z-10">
+        {/* Daily Score with green-to-red system */}
         {(hasWorkout || hasMeals) && (
-          <Card className="relative p-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 shadow-[0_0_20px_rgba(100,116,139,0.3)] overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
-            <div className="relative text-center">
-              <p className="text-sm text-slate-400 font-medium mb-3">Daily Score</p>
-              <div className={`text-6xl font-black ${
-                dailyScoreData.score >= 90 ? 'text-green-400 drop-shadow-[0_0_20px_rgba(74,222,128,0.6)]' :
-                dailyScoreData.score >= 80 ? 'text-lime-400 drop-shadow-[0_0_20px_rgba(163,230,53,0.6)]' :
-                dailyScoreData.score >= 70 ? 'text-yellow-400 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]' :
-                dailyScoreData.score >= 60 ? 'text-orange-400 drop-shadow-[0_0_20px_rgba(251,146,60,0.6)]' :
-                'text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.6)]'
-              }`}>
-                {dailyScoreData.score}
+          <div 
+            className="relative animate-in fade-in slide-in-from-bottom-2 duration-500"
+            style={{ animationDelay: '50ms' }}
+          >
+            {/* Ambient glow behind card */}
+            <div className={`absolute inset-0 blur-2xl opacity-20 rounded-3xl -z-10 ${getScoreBgColor(dailyScoreData.score)}`} />
+            
+            <Card className="relative p-8 bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 border border-gray-800/50 overflow-hidden shadow-2xl shadow-black/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-800/5 via-transparent to-transparent" />
+              <div className="relative text-center">
+                <p className="text-sm text-gray-400 font-semibold mb-4 tracking-wider uppercase">Daily Score</p>
+                <div className={`text-6xl font-black transition-all duration-500 ${getScoreColor(dailyScoreData.score)} ${getScoreGlow(dailyScoreData.score)}`}>
+                  {dailyScoreData.score}
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         )}
 
         {/* Workout Section */}
         {!hasWorkout ? (
-          <div className="space-y-3">
-            <h3 className="font-bold text-lg">Start Workout</h3>
+          <div 
+            className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500 relative"
+            style={{ animationDelay: '100ms' }}
+          >
+            {/* Ambient blue rim light behind header */}
+            <div className="absolute -inset-x-2 -top-2 h-8 bg-blue-500/5 blur-xl -z-10" />
+            
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Dumbbell className="w-5 h-5 text-blue-400" />
+              Start Workout
+            </h3>
             <Card 
               onClick={() => setCurrentView('templates')}
-              className="p-5 bg-gradient-to-br from-blue-600/20 to-purple-600/15 border-blue-400/40 cursor-pointer hover:scale-[1.02] transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+              className="group p-6 bg-gradient-to-br from-card to-gray-900/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-white mb-1">Templates</h4>
-                  <p className="text-sm text-white/70">Browse and Choose a recommended workout then film your sets and get feedback</p>
+                <div className="flex-1">
+                  <h4 className="font-bold text-white mb-2 text-lg">Templates</h4>
+                  <p className="text-sm text-muted-foreground">Browse and Choose a recommended workout then film your sets and get feedback</p>
                 </div>
-                <div className="text-4xl">🏋️</div>
+                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/30 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-110 transition-all duration-300">
+                  <Dumbbell className="w-8 h-8 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+                </div>
               </div>
             </Card>
             <Card 
               onClick={() => setCurrentView('exercise-picker')}
-              className="p-5 bg-gradient-to-br from-green-600/20 to-emerald-600/15 border-green-500/40 cursor-pointer hover:scale-[1.02] transition-all hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+              className="group p-6 bg-gradient-to-br from-card to-gray-900/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-white mb-1">Custom</h4>
-                  <p className="text-sm text-white/70">Create your own workout then film your sets and get feedback</p>
+                <div className="flex-1">
+                  <h4 className="font-bold text-white mb-2 text-lg">Custom</h4>
+                  <p className="text-sm text-muted-foreground">Create your own workout then film your sets and get feedback</p>
                 </div>
-                <div className="text-4xl">💪</div>
+                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/30 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-110 transition-all duration-300">
+                  <Zap className="w-8 h-8 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+                </div>
               </div>
             </Card>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div 
+            className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150 relative"
+          >
+            {/* Ambient blue rim light behind workout section */}
+            <div className="absolute -inset-4 bg-blue-500/5 blur-2xl -z-10 rounded-3xl" />
+            
             {/* Workout Header with Score */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">💪</span>
+                <div className="p-2 bg-gradient-to-br from-blue-500/30 to-blue-600/20 rounded-lg border border-blue-500/50 shadow-lg shadow-blue-500/20">
+                  <Dumbbell className="w-5 h-5 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.6)]" />
+                </div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-blue-400">Workout</h3>
+                  <h3 className="font-bold text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]">Workout</h3>
                   {activeTemplateName && (
                     <span className="text-sm text-muted-foreground font-medium">• {activeTemplateName}</span>
                   )}
                 </div>
-                {/* Blue Plus Button moved here */}
+                {/* Blue Plus Button with glow */}
                 <button
                   onClick={() => setCurrentView('exercise-picker')}
-                  className="p-2 rounded-full bg-blue-600/60 hover:bg-blue-600/70 border border-blue-500/60 transition-all shadow-[0_0_10px_rgba(59,130,246,0.3)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  className="p-2 rounded-full bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 hover:scale-110 active:scale-95"
                   title="Add exercise"
                 >
-                  <Plus className="w-4 h-4 text-white" />
+                  <Plus className="w-4 h-4 text-blue-400" />
                 </button>
               </div>
               {workoutScoreData.score > 0 && (
-                <div className="text-5xl font-black text-yellow-400">
+                <div className={`text-5xl font-black transition-all duration-500 ${getScoreColor(workoutScoreData.score)} ${getScoreGlow(workoutScoreData.score)}`}>
                   {workoutScoreData.score}
                 </div>
               )}
             </div>
-
-            {/* View Detailed Breakdown Button */}
-            {workoutScoreData.score > 0 && (
-              <Card className="p-4 bg-blue-950/30 border-blue-900/50 cursor-pointer hover:bg-blue-950/40 transition-all">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-300">View detailed breakdown</span>
-                  <ChevronRight className="w-5 h-5 text-blue-400" />
-                </div>
-              </Card>
-            )}
 
             {/* Exercise List */}
             <div className="space-y-3">
@@ -930,30 +1071,17 @@ export function DailyScreen({
                 const index = exercises.length - 1 - reverseIndex; // Get original index
                 const isRated = exercise.score !== null && exercise.score !== undefined;
                 
-                // Cycle through background gradients and name colors
-                const bgGradients = [
-                  'from-blue-950/50 to-blue-900/40 border-blue-900/60',
-                  'from-amber-950/50 to-amber-900/40 border-amber-900/60',
-                  'from-green-950/50 to-green-900/40 border-green-900/60',
-                  'from-purple-950/50 to-purple-900/40 border-purple-900/60',
-                  'from-orange-950/50 to-orange-900/40 border-orange-900/60',
-                ];
-                const bgGradient = bgGradients[index % bgGradients.length];
-                
-                const nameColors = ['text-blue-300', 'text-yellow-400', 'text-green-400', 'text-purple-400', 'text-orange-400'];
-                const nameColor = nameColors[index % nameColors.length];
-                
                 return (
                   <Card 
                     key={index} 
                     onClick={() => !isRated && handleRateExercise(index)}
-                    className={`p-4 bg-gradient-to-br ${bgGradient} ${!isRated ? 'cursor-pointer hover:scale-[1.01]' : ''} transition-all relative`}
+                    className={`group p-4 bg-gradient-to-br from-card to-gray-900/50 border border-border/50 ${!isRated ? 'cursor-pointer hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10' : 'shadow-md'} transition-all duration-300 relative`}
                   >
                     {/* Header with name */}
                     <div className="mb-3 flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-baseline gap-2 mb-1">
-                          <h4 className={`font-bold text-lg ${nameColor}`}>
+                          <h4 className="font-bold text-lg text-white">
                             {exercise.name}
                           </h4>
                           {/* Timestamp next to name */}
@@ -967,46 +1095,46 @@ export function DailyScreen({
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                           {exercise.sets} sets × {exercise.reps} reps
                         </p>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={(e) => handleEditExercise(index, e)}
-                          className="p-2.5 rounded-full bg-purple-600/30 border border-purple-500/50 hover:bg-purple-600/50 transition-all shadow-lg hover:shadow-purple-500/30"
+                          className="p-2.5 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/40 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 hover:scale-110 active:scale-95"
                           title="Edit sets/reps"
                         >
-                          <Edit2 className="w-4 h-4 text-purple-300" />
+                          <Edit2 className="w-4 h-4 text-blue-400" />
                         </button>
                         <button
                           onClick={(e) => handleViewExerciseForm(exercise.name, e)}
-                          className="p-2.5 rounded-full bg-blue-600/30 border border-blue-500/50 hover:bg-blue-600/50 transition-all shadow-lg hover:shadow-blue-500/30"
+                          className="p-2.5 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/40 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 hover:scale-110 active:scale-95"
                           title="Watch form video"
                         >
-                          <Play className="w-4 h-4 text-blue-300 fill-blue-300" />
+                          <Play className="w-4 h-4 text-blue-400 fill-blue-400" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Record Now Button - always visible */}
+                    {/* Record Now Button - always visible with enhanced styling */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onRecordExercise(index);
                       }}
-                      className="flex items-center justify-center gap-2 w-full py-3 mb-3 rounded-lg bg-gradient-to-r from-red-600/30 to-pink-600/30 border border-red-500/50 hover:from-red-600/50 hover:to-pink-600/50 transition-all shadow-lg hover:shadow-red-500/30"
+                      className="flex items-center justify-center gap-2 w-full py-3 mb-3 rounded-lg bg-gradient-to-r from-red-950/50 to-red-900/30 border border-red-500/40 hover:border-red-500/60 hover:shadow-lg hover:shadow-red-500/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                     >
-                      <Camera className="w-4 h-4 text-red-300" />
-                      <span className="text-sm font-bold text-red-200">Record Now</span>
+                      <Camera className="w-4 h-4 text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.5)]" />
+                      <span className="text-sm font-bold text-red-400">Record Now</span>
                     </button>
 
                     {isRated ? (
                       <div className="space-y-3">
-                        {/* Score Display */}
+                        {/* Score Display with green-to-red system */}
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-400">Score:</span>
-                          <div className="text-4xl font-black text-green-400">
+                          <span className="text-xs text-muted-foreground">Score:</span>
+                          <div className={`text-4xl font-black ${getScoreColor(exercise.score!)} ${getScoreGlow(exercise.score!)}`}>
                             {exercise.score}
                           </div>
                         </div>
@@ -1017,7 +1145,7 @@ export function DailyScreen({
                             e.stopPropagation();
                             handleRemoveExercise(index);
                           }}
-                          className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-red-950/30 border border-red-900/40 text-xs font-medium text-red-400 hover:bg-red-950/50 transition-colors"
+                          className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs font-medium text-red-400 hover:bg-red-500/20 transition-colors"
                         >
                           <X className="w-3 h-3" />
                           Remove Exercise
@@ -1025,7 +1153,7 @@ export function DailyScreen({
                       </div>
                     ) : (
                       <div className="text-center py-2">
-                        <span className="text-xs font-semibold text-purple-300">Tap to rate form</span>
+                        <span className="text-xs font-semibold text-blue-400">Tap to rate form</span>
                       </div>
                     )}
                   </Card>
@@ -1049,27 +1177,34 @@ export function DailyScreen({
 
         {/* Meal Section */}
         {!hasMeals ? (
-          <div className="space-y-3">
-            <h3 className="font-bold text-lg">Track Nutrition</h3>
+          <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Utensils className="w-5 h-5 text-blue-400" />
+              Track Nutrition
+            </h3>
             <Card 
               onClick={() => setCurrentView('meal-form')}
-              className="p-5 bg-gradient-to-br from-orange-600/20 to-pink-600/15 border-orange-400/40 cursor-pointer hover:scale-[1.02] transition-all hover:shadow-[0_0_15px_rgba(251,146,60,0.3)]"
+              className="group p-6 bg-gradient-to-br from-card to-gray-900/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-white mb-1">Add Meals</h4>
-                  <p className="text-sm text-white/70">Track your nutrition</p>
+                <div className="flex-1">
+                  <h4 className="font-bold text-white mb-2 text-lg">Add Meals</h4>
+                  <p className="text-sm text-muted-foreground">Track your nutrition</p>
                 </div>
-                <div className="text-4xl">🍽️</div>
+                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl border border-blue-500/30 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 group-hover:scale-110 transition-all duration-300">
+                  <Utensils className="w-8 h-8 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+                </div>
               </div>
             </Card>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 font-bold">
-                <Apple className="w-5 h-5 text-orange-400" />
-                Nutrition
+                <div className="p-1.5 bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg border border-orange-500/30 shadow-md shadow-orange-500/20">
+                  <Apple className="w-5 h-5 text-orange-400 drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]" />
+                </div>
+                <span className="text-orange-400">Nutrition</span>
               </h3>
               <div className="flex gap-2">
                 <Button
@@ -1092,26 +1227,28 @@ export function DailyScreen({
               </div>
             </div>
 
-            {/* Nutrition Progress Bars */}
-            <Card className="p-4 bg-gradient-to-br from-orange-600/15 to-pink-600/10 border-orange-500/30">
+            {/* Nutrition Progress Bars with enhanced depth */}
+            <Card className="p-5 bg-gradient-to-br from-gray-900/90 to-gray-900/70 border border-blue-500/20 shadow-lg shadow-blue-500/5">
               <div className="space-y-4">
                 {/* Calories */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">🔥</span>
+                      <div className="p-1 bg-gradient-to-br from-orange-500/20 to-red-500/10 rounded-lg border border-orange-500/30">
+                        <Flame className="w-5 h-5 text-orange-400 drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]" />
+                      </div>
                       <p className="text-sm font-bold text-white">Calories</p>
                     </div>
                     <p className="font-bold text-white">
-                      <span className={totalCalories >= calorieGoal * 0.9 ? 'text-green-400' : 'text-orange-300'}>
+                      <span className={totalCalories >= calorieGoal * 0.9 ? 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'text-blue-400'}>
                         {totalCalories}
                       </span>
-                      <span className="text-white/50"> / {calorieGoal}</span>
+                      <span className="text-muted-foreground"> / {calorieGoal}</span>
                     </p>
                   </div>
-                  <div className="h-2.5 bg-black/20 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-gray-800/80 rounded-full overflow-hidden shadow-inner">
                     <div 
-                      className="h-full bg-gradient-to-r from-orange-500 to-yellow-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(251,146,60,0.5)]"
+                      className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
                       style={{ width: `${Math.min((totalCalories / calorieGoal) * 100, 100)}%` }}
                     />
                   </div>
@@ -1121,19 +1258,21 @@ export function DailyScreen({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">💪</span>
+                      <div className="p-1 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg border border-blue-500/30">
+                        <Zap className="w-5 h-5 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.5)]" />
+                      </div>
                       <p className="text-sm font-bold text-white">Protein</p>
                     </div>
                     <p className="font-bold text-white">
-                      <span className={totalProtein >= proteinGoal * 0.9 ? 'text-green-400' : 'text-pink-300'}>
+                      <span className={totalProtein >= proteinGoal * 0.9 ? 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'text-blue-400'}>
                         {totalProtein}g
                       </span>
-                      <span className="text-white/50"> / {proteinGoal}g</span>
+                      <span className="text-muted-foreground"> / {proteinGoal}g</span>
                     </p>
                   </div>
-                  <div className="h-2.5 bg-black/20 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-gray-800/80 rounded-full overflow-hidden shadow-inner">
                     <div 
-                      className="h-full bg-gradient-to-r from-pink-500 to-purple-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(236,72,153,0.5)]"
+                      className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
                       style={{ width: `${Math.min((totalProtein / proteinGoal) * 100, 100)}%` }}
                     />
                   </div>
@@ -1144,9 +1283,11 @@ export function DailyScreen({
             {/* Meal List */}
             <div className="space-y-2">
               {meals.map((meal, index) => (
-                <Card key={index} className="p-3 bg-gradient-to-r from-card to-orange-950/10 border-border hover:border-orange-500/30 transition-all">
+                <Card key={index} className="group p-3 bg-gradient-to-br from-card to-gray-900/50 border border-border/50 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300">
                   <div className="flex items-center gap-3">
-                    <div className="text-3xl">🍲</div>
+                    <div className="p-2 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg border border-blue-500/30 shadow-md shadow-blue-500/10">
+                      <Apple className="w-6 h-6 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.4)]" />
+                    </div>
                     <div className="flex-1">
                       <h4 className="font-bold text-white text-sm">{meal.name}</h4>
                       <p className="text-xs text-muted-foreground">
@@ -1155,9 +1296,9 @@ export function DailyScreen({
                     </div>
                     <button
                       onClick={() => handleRemoveMeal(index)}
-                      className="p-1.5 hover:bg-destructive/20 rounded transition-colors"
+                      className="p-1.5 hover:bg-red-500/20 rounded transition-all duration-200 hover:scale-110 active:scale-95"
                     >
-                      <X className="w-4 h-4 text-muted-foreground" />
+                      <X className="w-4 h-4 text-muted-foreground hover:text-red-400" />
                     </button>
                   </div>
                 </Card>
@@ -1166,85 +1307,70 @@ export function DailyScreen({
           </div>
         )}
 
-        {/* Friends Section - Ultra dopamine design */}
+        {/* Friends Section with enhanced depth */}
         {(hasWorkout || hasMeals) && (
-          <div className="relative mt-8 mb-4">
-            {/* Animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-orange-600/10 rounded-3xl blur-xl"></div>
-            
-            <div className="relative border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm bg-gradient-to-br from-slate-900/50 to-slate-800/50">
-              {/* Glowing header */}
-              <div className="relative bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-orange-600/20 px-5 py-4 border-b border-white/10">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-pink-500/20 to-purple-500/0 animate-pulse"></div>
-                <div className="relative flex items-center justify-between">
+          <div className="mt-8 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+            <Card className="border border-blue-500/20 overflow-hidden shadow-2xl shadow-blue-500/10 bg-gradient-to-br from-gray-900/90 to-gray-900/70">
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-border/50 bg-gradient-to-r from-blue-950/20 to-transparent">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-md animate-pulse"></div>
-                      <div className="relative w-2 h-8 bg-gradient-to-b from-purple-500 via-pink-500 to-orange-500 rounded-full shadow-lg"></div>
+                    <div className="p-2 bg-gradient-to-br from-blue-500/30 to-blue-600/20 rounded-lg border border-blue-500/50 shadow-lg shadow-blue-500/20">
+                      <Trophy className="w-5 h-5 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
                     </div>
                     <div>
-                      <h3 className="font-black text-white text-lg bg-gradient-to-r from-purple-200 via-pink-200 to-orange-200 bg-clip-text text-transparent">
-                        Friends
-                      </h3>
-                      <p className="text-[10px] text-white/50 font-medium">See who's crushing it today</p>
+                      <h3 className="font-bold text-white">Friends</h3>
+                      <p className="text-xs text-muted-foreground">See who's crushing it today</p>
                     </div>
                   </div>
                   <button
                     onClick={handleViewOwnStory}
-                    className="group relative overflow-hidden px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] transition-all duration-300"
+                    className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-500/50 hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity blur-sm"></div>
-                    <div className="relative flex items-center gap-2">
-                      <Share2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                      <span className="text-xs font-bold">Share</span>
+                    <div className="flex items-center gap-2">
+                      <Share2 className="w-4 h-4 text-blue-400" />
+                      <span className="text-xs font-bold text-blue-400">Share</span>
                     </div>
                   </button>
                 </div>
               </div>
 
-              {/* Stories Row with animations */}
+              {/* Stories Row with enhanced animations */}
               <div className="px-5 py-5 flex gap-4 overflow-x-auto scrollbar-hide">
                 {friends.map((friend, idx) => (
                   <button
                     key={friend.id}
                     onClick={() => handleViewFriendStory(friend)}
                     disabled={!friend.hasStory}
-                    style={{ animationDelay: `${idx * 50}ms` }}
-                    className={`flex-shrink-0 flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4 ${
+                    className={`flex-shrink-0 flex flex-col items-center gap-2 ${
                       !friend.hasStory ? 'opacity-40' : 'hover:scale-110 cursor-pointer'
-                    } transition-all duration-300`}
+                    } transition-all duration-300 animate-in fade-in slide-in-from-bottom-2`}
+                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
-                    {/* Glowing Story Ring */}
-                    <div className="relative group">
-                      {friend.hasStory && !friend.storyViewed && (
-                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500 rounded-full blur-lg opacity-75 group-hover:opacity-100 animate-pulse"></div>
-                      )}
+                    {/* Story Ring with glow */}
+                    <div className="relative">
                       <div className={`relative ${ 
                         friend.hasStory 
                           ? !friend.storyViewed 
-                            ? 'p-[3px] bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-400 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.5)]' 
-                            : 'p-[3px] bg-gradient-to-tr from-white/30 to-white/10 rounded-full'
-                          : 'p-[3px] bg-white/5 rounded-full'
+                            ? 'p-[3px] bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg shadow-blue-500/40' 
+                            : 'p-[3px] bg-gray-600 rounded-full'
+                          : 'p-[3px] bg-gray-800 rounded-full'
                       }`}>
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center text-2xl border-[3px] border-background shadow-xl group-hover:shadow-2xl transition-shadow">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center text-2xl border-[3px] border-background shadow-inner">
                           {friend.avatar}
                         </div>
                         {friend.hasStory && !friend.storyViewed && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full border-2 border-background animate-bounce shadow-lg shadow-pink-500/50"></div>
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-background shadow-lg shadow-blue-500/50 animate-pulse"></div>
                         )}
                       </div>
                     </div>
                     
-                    {/* Name & Score with gradient */}
+                    {/* Name & Score */}
                     <div className="text-center max-w-[70px]">
-                      <p className="text-[11px] font-bold text-white/90 truncate mb-0.5">
+                      <p className="text-xs font-bold text-white truncate mb-0.5">
                         {friend.name}
                       </p>
-                      <div className={`text-xs font-black px-2 py-0.5 rounded-full ${
-                        friend.todayScore >= 90 ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.3)]' :
-                        friend.todayScore >= 80 ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.3)]' :
-                        'bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.3)]'
-                      }`}>
+                      <div className={`text-xs font-black px-2 py-0.5 rounded-full border shadow-md ${getScoreBgColor(friend.todayScore)} ${getScoreColor(friend.todayScore)} ${getScoreBorderColor(friend.todayScore)} ${getScoreShadowColor(friend.todayScore)}`}>
                         {friend.todayScore}
                       </div>
                     </div>
@@ -1252,12 +1378,14 @@ export function DailyScreen({
                 ))}
               </div>
 
-              {/* Podium-style Leaderboard */}
+              {/* Podium-style Leaderboard with enhanced depth */}
               <div className="px-5 pb-5">
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-4 border border-white/5">
+                <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl p-4 border border-blue-500/20 shadow-xl shadow-blue-500/5">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="text-xl">🏆</div>
-                    <h4 className="text-sm font-bold text-white/80">Today's Top 3</h4>
+                    <div className="p-1 bg-gradient-to-br from-yellow-500/20 to-orange-500/10 rounded-lg border border-yellow-500/30">
+                      <Trophy className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+                    </div>
+                    <h4 className="text-sm font-bold text-white">Today's Top 3</h4>
                   </div>
                   <div className="flex gap-2">
                     {friends
@@ -1266,32 +1394,30 @@ export function DailyScreen({
                       .map((friend, index) => (
                         <div
                           key={friend.id}
-                          className={`flex-1 relative overflow-hidden rounded-xl p-3 ${ 
-                            index === 0 ? 'bg-gradient-to-br from-yellow-500/15 to-orange-500/15 border-2 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]' :
-                            index === 1 ? 'bg-gradient-to-br from-gray-400/15 to-gray-500/15 border-2 border-gray-400/40 shadow-[0_0_15px_rgba(156,163,175,0.2)]' :
-                            'bg-gradient-to-br from-orange-500/15 to-red-500/15 border-2 border-orange-500/40 shadow-[0_0_15px_rgba(249,115,22,0.2)]'
+                          className={`relative flex-1 rounded-xl p-3 border transition-all duration-300 hover:scale-105 ${ 
+                            index === 0 ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 border-blue-500/40 shadow-lg shadow-blue-500/20' :
+                            index === 1 ? 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border-gray-600/50 shadow-md' :
+                            'bg-gradient-to-br from-card to-gray-900/50 border-border/50 shadow-sm'
                           }`}
                         >
-                          {/* Sparkle effect for first place */}
+                          {/* Zap for first place with animation */}
                           {index === 0 && (
-                            <div className="absolute top-1 right-1 text-yellow-400 animate-pulse">✨</div>
+                            <div className="absolute top-1 right-1 animate-pulse">
+                              <Zap className="w-4 h-4 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.8)] fill-blue-400" />
+                            </div>
                           )}
                           
                           <div className="flex flex-col items-center gap-2">
-                            <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-lg ${
-                              index === 0 ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black' :
-                              index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-black' :
-                              'bg-gradient-to-br from-orange-400 to-red-500 text-black'
+                            <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md ${
+                              index === 0 ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/40' :
+                              index === 1 ? 'bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-gray-600/40' :
+                              'bg-gradient-to-br from-gray-700 to-gray-800 text-white shadow-gray-700/40'
                             }`}>
                               {index === 0 ? '👑' : index + 1}
                             </div>
                             <div className="text-xl">{friend.avatar}</div>
-                            <p className="text-[10px] font-bold text-white/90 truncate max-w-full">{friend.name}</p>
-                            <div className={`text-lg font-black ${
-                              index === 0 ? 'text-yellow-400' :
-                              index === 1 ? 'text-gray-300' :
-                              'text-orange-400'
-                            }`}>
+                            <p className="text-xs font-bold text-white truncate max-w-full">{friend.name}</p>
+                            <div className={`text-lg font-black ${getScoreColor(friend.todayScore)} ${getScoreGlow(friend.todayScore)}`}>
                               {friend.todayScore}
                             </div>
                           </div>
@@ -1300,7 +1426,7 @@ export function DailyScreen({
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         )}
       </div>
@@ -1450,7 +1576,7 @@ export function DailyScreen({
             <div className="p-4 space-y-3">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">💪</span>
+                  <Dumbbell className="w-5 h-5 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
                   <p className="text-sm font-bold text-white">Target Muscles</p>
                 </div>
                 <p className="text-xs text-slate-400 pl-7">
@@ -1463,7 +1589,7 @@ export function DailyScreen({
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">🎯</span>
+                  <Target className="w-5 h-5 text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.6)]" />
                   <p className="text-sm font-bold text-white">Recommended Volume</p>
                 </div>
                 <p className="text-xs text-slate-400 pl-7">

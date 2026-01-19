@@ -276,7 +276,12 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
       }
     } catch (error: any) {
       setIsAnalyzing(false);
-      alert(`❌ Analysis Failed\n\n${error?.message || 'Unable to analyze video. Please try again.'}`);
+      
+      // Reset gradio client on error so it can reconnect next time
+      const errorMessage = error?.message || 'Unable to analyze video. Please try again.';
+      
+      // Show user-friendly error
+      alert(`❌ Analysis Failed\n\n${errorMessage}\n\nTip: Make sure you have a stable internet connection and the analysis server is available.`);
       console.error('Analysis error:', error);
     }
   };
@@ -443,9 +448,9 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
         {/* Exercise Recording Badge */}
         {exerciseToRecord !== null && exercises[exerciseToRecord] && (
           <div className="px-4 mt-2">
-            <div className="bg-gradient-to-r from-red-600/90 to-pink-600/90 backdrop-blur-md px-3 py-2 rounded-full shadow-xl border border-red-400/50 inline-flex items-center gap-2">
-              <Video className="w-3.5 h-3.5 text-white" />
-              <p className="text-xs text-white/90 font-medium">
+            <div className="bg-red-500/20 backdrop-blur-md px-3 py-2 rounded-full border border-red-500/40 inline-flex items-center gap-2">
+              <Video className="w-3.5 h-3.5 text-red-400" />
+              <p className="text-xs text-red-400 font-medium">
                 Recording: <span className="font-bold">{exercises[exerciseToRecord].name}</span>
               </p>
             </div>
@@ -456,7 +461,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
       {/* Recording Indicator */}
       {isRecording && (
         <div className="absolute top-24 left-0 right-0 z-20 flex items-center justify-center">
-          <div className="bg-red-500/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+          <div className="bg-red-500 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
             <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
             <span className="text-white font-bold text-sm">REC {formatTime(recordingTime)}</span>
           </div>
@@ -477,15 +482,15 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
           {/* Capture Button - Larger, centered */}
           <button 
             onClick={handleCaptureClick}
-            className="w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-95 bg-white shadow-[0_0_30px_rgba(255,255,255,0.6)] hover:scale-110 relative"
+            className="w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-95 bg-white hover:scale-105 relative"
           >
             {isRecording ? (
               <div className="w-8 h-8 bg-red-600 rounded-md" />
             ) : (
               <div className={`w-[72px] h-[72px] rounded-full ${
                 selectedMode === 'workout'
-                  ? 'bg-gradient-to-br from-blue-500 to-purple-600'
-                  : 'bg-gradient-to-br from-green-500 to-emerald-600'
+                  ? 'bg-blue-500'
+                  : 'bg-blue-500'
               }`} />
             )}
           </button>
@@ -582,10 +587,11 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
       {/* AI Analyzing Overlay */}
       {isAnalyzing && (
-        <div className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center">
+        <div className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center px-8">
           <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4" />
           <p className="text-white font-bold text-lg">Analyzing Form...</p>
           <p className="text-gray-400 text-sm mt-2">AI is processing your video</p>
+          <p className="text-gray-500 text-xs mt-4 text-center max-w-xs">This may take up to 2 minutes depending on video length and server load. Shorter videos (10-15 seconds) process faster.</p>
         </div>
       )}
 

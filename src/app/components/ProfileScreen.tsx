@@ -24,6 +24,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { HumanBodyModel } from "./HumanBodyModel";
 import type { Exercise, MuscleStatus, Friend } from '../App';
+import { getScoreColor, getScoreGlow, getScoreBgColor, getScoreBorderColor, getScoreShadowColor } from '../utils/scoreColors';
 
 interface ProfileScreenProps {
   onOpenSettings: () => void;
@@ -106,14 +107,16 @@ export function ProfileScreen({
               <p className="text-sm text-muted-foreground font-medium">Last 7 days</p>
             </div>
 
-            {/* Line graph */}
-            <Card className="p-5 bg-gradient-to-br from-blue-600/20 to-blue-500/10 border-blue-500/40">
+            {/* Line graph with enhanced styling */}
+            <Card className="p-5 bg-gradient-to-br from-gray-900/90 to-gray-900/70 border border-blue-500/30 shadow-xl shadow-blue-500/10">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-xs text-white/70 font-medium mb-1">Weekly Average</p>
-                  <p className="font-black text-white">{weeklyAverage}</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-1">Weekly Average</p>
+                  <p className={`text-3xl font-black ${getScoreColor(weeklyAverage)} ${getScoreGlow(weeklyAverage)}`}>{weeklyAverage}</p>
                 </div>
-                <BarChart3 className="w-5 h-5 text-blue-400" />
+                <div className="p-2 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                  <BarChart3 className="w-5 h-5 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.5)]" />
+                </div>
               </div>
 
               <div className="relative h-32 flex items-end justify-between gap-2">
@@ -131,25 +134,25 @@ export function ProfileScreen({
               </div>
             </Card>
 
-            {/* Workout history list */}
+            {/* Workout history list with score colors */}
             <div className="space-y-2">
               {mockHistory.map((day, i) => (
                 <Card
                   key={i}
-                  className="p-4 bg-card/50 border-white/10 flex items-center justify-between"
+                  className="group p-4 bg-gradient-to-br from-card to-gray-900/50 border border-border/50 flex items-center justify-between hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600/30 to-blue-500/20 border border-blue-500/40 flex items-center justify-center">
-                      <p className="font-black text-white">{day.grade}</p>
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getScoreBgColor(day.score)} border ${getScoreBorderColor(day.score)} flex items-center justify-center shadow-md ${getScoreShadowColor(day.score)}`}>
+                      <p className={`font-black ${getScoreColor(day.score)}`}>{day.grade}</p>
                     </div>
                     <div>
                       <p className="font-bold text-white">{day.date}</p>
-                      <p className="text-xs text-white/70 font-medium">{day.exercises} exercises</p>
+                      <p className="text-xs text-muted-foreground font-medium">{day.exercises} exercises</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-black text-white">{day.score}</p>
-                    <p className="text-xs text-white/70 font-medium">score</p>
+                    <p className={`text-2xl font-black ${getScoreColor(day.score)} ${getScoreGlow(day.score)}`}>{day.score}</p>
+                    <p className="text-xs text-muted-foreground font-medium">score</p>
                   </div>
                 </Card>
               ))}
@@ -165,56 +168,58 @@ export function ProfileScreen({
               <p className="text-sm text-muted-foreground font-medium">Today</p>
             </div>
 
-            <Card className="p-5 bg-gradient-to-br from-orange-600/20 to-red-600/10 border-orange-500/40 mt-6">
+            <Card className="p-5 bg-gradient-to-br from-orange-600/20 to-red-600/10 border border-orange-500/40 mt-6 shadow-lg shadow-orange-500/10 hover:shadow-xl hover:shadow-orange-500/20 transition-all duration-300">
               <h4 className="font-bold text-white mb-2 flex items-center gap-2">
-                <Trophy className="w-4 h-4" />
+                <div className="p-1.5 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
+                  <Trophy className="w-4 h-4 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+                </div>
                 Weekly Challenge
               </h4>
               <p className="text-sm text-white/80 mb-3">
                 First to hit 95+ score wins!
               </p>
-              <div className="w-full h-2 bg-black/30 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full" style={{ width: '87%' }} />
+              <div className="w-full h-2.5 bg-black/40 rounded-full overflow-hidden shadow-inner">
+                <div className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.5)] transition-all duration-500" style={{ width: '87%' }} />
               </div>
-              <p className="text-xs text-white/70 mt-2 font-medium">87/95 - Keep pushing!</p>
+              <p className="text-xs text-orange-300 mt-2 font-medium">87/95 - Keep pushing!</p>
             </Card>
 
             <div className="space-y-2">
               {mockFriends.map((friend, i) => (
                 <Card
                   key={friend.id}
-                  className={`p-4 flex items-center justify-between ${
+                  className={`group p-4 flex items-center justify-between transition-all duration-300 hover:scale-[1.02] ${
                     friend.name === 'You'
-                      ? 'bg-gradient-to-br from-blue-600/30 to-blue-500/20 border-blue-500/50'
-                      : 'bg-card/50 border-white/10'
+                      ? 'bg-gradient-to-br from-blue-600/30 to-blue-500/20 border border-blue-500/50 shadow-lg shadow-blue-500/20'
+                      : 'bg-gradient-to-br from-card to-gray-900/50 border border-border/50 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/10'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        i === 0 ? 'bg-gradient-to-br from-yellow-500 to-orange-500' :
-                        i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
-                        i === 2 ? 'bg-gradient-to-br from-orange-600 to-orange-700' :
-                        'bg-gradient-to-br from-blue-600 to-blue-700'
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
+                        i === 0 ? 'bg-gradient-to-br from-yellow-500 to-orange-500 shadow-yellow-500/40' :
+                        i === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400 shadow-gray-400/40' :
+                        i === 2 ? 'bg-gradient-to-br from-orange-600 to-orange-700 shadow-orange-600/40' :
+                        'bg-gradient-to-br from-blue-600 to-blue-700 shadow-blue-600/40'
                       }`}>
-                        <div className="text-white">
+                        <div className="text-white drop-shadow-md">
                           {getAvatarIcon(friend.avatar)}
                         </div>
                       </div>
                       {i < 3 && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-black border-2 border-white flex items-center justify-center">
-                          <span className="text-xs font-black">{i + 1}</span>
+                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-black border-2 border-white flex items-center justify-center shadow-md">
+                          <span className="text-xs font-black text-white">{i + 1}</span>
                         </div>
                       )}
                     </div>
                     <div>
                       <p className="font-bold text-white">{friend.name}</p>
-                      <p className="text-xs text-white/70 font-medium">Avg: {friend.weeklyAverage}</p>
+                      <p className={`text-xs font-medium ${getScoreColor(friend.weeklyAverage)}`}>Avg: {friend.weeklyAverage}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-black text-white">{friend.todayScore}</p>
-                    <p className="text-xs text-white/70 font-medium">today</p>
+                    <p className={`text-2xl font-black ${getScoreColor(friend.todayScore)} ${getScoreGlow(friend.todayScore)}`}>{friend.todayScore}</p>
+                    <p className="text-xs text-muted-foreground font-medium">today</p>
                   </div>
                 </Card>
               ))}
@@ -273,31 +278,41 @@ export function ProfileScreen({
 
       default:
         return (
-          <div className="space-y-4">
-            {/* Stats Grid */}
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Stats Grid with enhanced depth */}
             <div className="grid grid-cols-3 gap-3">
-              <Card className="p-4 bg-gradient-to-br from-blue-600/20 to-blue-500/10 border-blue-500/40 text-center">
-                <Dumbbell className="w-6 h-6 mx-auto mb-1 text-blue-400" />
+              <Card className="p-4 bg-gradient-to-br from-blue-600/20 to-blue-500/10 border border-blue-500/40 text-center shadow-lg shadow-blue-500/10 hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                <div className="p-2 bg-blue-500/20 rounded-lg inline-flex mb-2 border border-blue-500/30">
+                  <Dumbbell className="w-6 h-6 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
+                </div>
                 <p className="text-2xl font-black text-white mb-1">{totalWorkouts}</p>
-                <p className="text-xs text-white/70 font-medium">Workouts</p>
+                <p className="text-xs text-muted-foreground font-medium">Workouts</p>
               </Card>
-              <Card className="p-4 bg-gradient-to-br from-orange-600/20 to-orange-500/10 border-orange-500/40 text-center">
-                <Flame className="w-6 h-6 mx-auto mb-1 text-orange-400" />
-                <p className="text-2xl font-black text-white mb-1">{dayStreak}</p>
-                <p className="text-xs text-white/70 font-medium">Day Streak</p>
+              <Card className="p-4 bg-gradient-to-br from-red-600/20 to-orange-600/10 border border-red-500/40 text-center shadow-lg shadow-red-500/10 hover:shadow-xl hover:shadow-red-500/20 transition-all duration-300 hover:scale-105">
+                <div className="p-2 bg-red-500/20 rounded-lg inline-flex mb-2 border border-red-500/30">
+                  <Flame className="w-6 h-6 text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.6)]" />
+                </div>
+                <p className="text-2xl font-black text-red-400 mb-1 drop-shadow-[0_0_8px_rgba(248,113,113,0.4)]">{dayStreak}</p>
+                <p className="text-xs text-muted-foreground font-medium">Day Streak</p>
               </Card>
-              <Card className="p-4 bg-gradient-to-br from-green-600/20 to-green-500/10 border-green-500/40 text-center">
-                <Star className="w-6 h-6 mx-auto mb-1 text-green-400" />
-                <p className="text-2xl font-black text-white mb-1">{avgScore}</p>
-                <p className="text-xs text-white/70 font-medium">Avg Score</p>
+              <Card className={`p-4 bg-gradient-to-br ${getScoreBgColor(avgScore)} border ${getScoreBorderColor(avgScore)} text-center shadow-lg ${getScoreShadowColor(avgScore)} hover:shadow-xl transition-all duration-300 hover:scale-105`}>
+                <div className={`p-2 ${getScoreBgColor(avgScore)} rounded-lg inline-flex mb-2 border ${getScoreBorderColor(avgScore)}`}>
+                  <Star className={`w-6 h-6 ${getScoreColor(avgScore)} drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]`} />
+                </div>
+                <p className={`text-2xl font-black mb-1 ${getScoreColor(avgScore)} ${getScoreGlow(avgScore)}`}>{avgScore}</p>
+                <p className="text-xs text-muted-foreground font-medium">Avg Score</p>
               </Card>
             </div>
 
-            {/* Personal Bests */}
-            <Card className="p-5 bg-card/50 border-white/10">
+            {/* Personal Bests with enhanced styling */}
+            <Card className="p-5 bg-gradient-to-br from-gray-900/90 to-gray-900/70 border border-gray-800/50 shadow-xl">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="font-bold text-white">Personal Bests</h4>
-                <Trophy className="w-5 h-5 text-yellow-500" />
+                <h4 className="font-bold text-white flex items-center gap-2">
+                  <div className="p-1.5 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
+                    <Trophy className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+                  </div>
+                  Personal Bests
+                </h4>
               </div>
               <div className="space-y-3">
                 {[
@@ -305,22 +320,24 @@ export function ProfileScreen({
                   { name: 'Push-ups', value: '50', icon: Zap },
                   { name: 'Plank', value: '3:00', icon: Flame },
                 ].map((record, i) => (
-                  <div key={i} className="flex items-center justify-between">
+                  <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-800/50 transition-colors">
                     <div className="flex items-center gap-2">
-                      <record.icon className="w-4 h-4 text-blue-400" />
+                      <div className="p-1.5 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                        <record.icon className="w-4 h-4 text-blue-400" />
+                      </div>
                       <span className="text-sm text-white/80 font-medium">{record.name}</span>
                     </div>
-                    <span className="font-bold text-white">{record.value}</span>
+                    <span className="font-bold text-blue-400">{record.value}</span>
                   </div>
                 ))}
               </div>
             </Card>
 
-            {/* Quick Actions */}
+            {/* Quick Actions with enhanced styling */}
             <div className="space-y-2">
               <Button
                 onClick={() => setShowGoals(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 border-none justify-between"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 border-none justify-between shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="flex items-center gap-2">
                   <Target className="w-4 h-4" />
@@ -331,7 +348,7 @@ export function ProfileScreen({
               <Button
                 onClick={onOpenSettings}
                 variant="outline"
-                className="w-full justify-between border-white/20"
+                className="w-full justify-between border border-border/50 hover:border-blue-500/40 hover:bg-gray-800/50 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span className="flex items-center gap-2">
                   <Settings className="w-4 h-4" />
@@ -346,35 +363,39 @@ export function ProfileScreen({
   };
 
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
+    <div className="h-full flex flex-col relative overflow-hidden">
+      {/* Enhanced background with subtle gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/15 via-transparent to-transparent z-0" />
+      
+      {/* Header with depth */}
+      <div className="relative z-10 flex items-center justify-between p-4 border-b border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="flex items-center gap-3">
           <div
             onClick={() => setShowProfileEdit(true)}
-            className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center cursor-pointer"
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center cursor-pointer shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-blue-400/30"
           >
-            <div className="text-white">
+            <div className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
               {getAvatarIcon(profileAvatar)}
             </div>
           </div>
           <div>
-            <h2 className="font-bold text-white">{profileName}</h2>
-            <p className="text-xs text-white/70 font-medium">Tap to edit profile</p>
+            <h2 className="font-bold text-white text-lg">{ profileName}</h2>
+            <p className="text-xs text-muted-foreground font-medium">Tap to edit profile</p>
           </div>
         </div>
         <Button
           onClick={onOpenSettings}
           variant="ghost"
           size="sm"
-          className="text-white/80"
+          className="text-muted-foreground hover:text-white hover:bg-gray-800/50 transition-all duration-200"
         >
           <Settings className="w-5 h-5" />
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-white/10">
+      {/* Tabs with enhanced styling */}
+      <div className="relative z-10 flex border-b border-border/50 bg-black/20 backdrop-blur-sm">
         {[
           { id: 'overview', label: 'Overview', icon: TrendingUp },
           { id: 'history', label: 'History', icon: BarChart3 },
@@ -384,20 +405,20 @@ export function ProfileScreen({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as Tab)}
-            className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors ${
+            className={`flex-1 py-3 text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-300 ${
               activeTab === tab.id
-                ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-white/50'
+                ? 'text-blue-400 border-b-2 border-blue-400 shadow-[0_-2px_8px_rgba(59,130,246,0.3)]'
+                : 'text-muted-foreground hover:text-white'
             }`}
           >
-            <tab.icon className="w-4 h-4" />
+            <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'drop-shadow-[0_0_6px_rgba(59,130,246,0.6)]' : ''}`} />
             {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* Content with enhanced scrolling */}
+      <div className="relative z-10 flex-1 overflow-y-auto p-4">
         {renderContent()}
       </div>
 

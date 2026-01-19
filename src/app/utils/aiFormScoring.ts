@@ -1,30 +1,33 @@
-/**
- * AI form analysis using Gradio backend
- * Connects to Hugging Face Space for real computer vision analysis
- */
+import { Client } from "@gradio/client";
 
+/**
+ * Result of AI form analysis
+ */
 export interface FormAnalysisResult {
-  score: number; // 0-100
-  sets: number; // Detected number of sets (rep count)
+  score: number;        // 0-100
+  sets: number;         // detected rep count
   feedback: string;
   strengths: string[];
   improvements: string[];
 }
 
-const SPACE_URL = "https://gibil-pushup-prototype.hf.space";
-let gradioClient: any = null;
+/**
+ * Gradio API endpoint for AI analysis
+ */
+const GRADIO_API_URL = "https://tonyhqanguyen-push-up-analyzer.hf.space";
 
+/**
+ * Get or create Gradio client instance with timeout
+ */
 async function getGradioClient() {
-  if (gradioClient) return gradioClient;
-  try {
-    // Dynamic import for @gradio/client to ensure browser compatibility
-    const { Client } = await import('@gradio/client');
-    gradioClient = await Client.connect(SPACE_URL);
-    return gradioClient;
-  } catch (error) {
-    console.error('Failed to connect to Gradio backend:', error);
-    throw new Error('Unable to connect to AI analysis backend');
-  }
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error('Connection timeout. Unable to reach analysis server.')), 30000)
+  );
+  
+  const clientPromise = Client.connect(GRADIO_API_URL);
+  
+  const client = await Promise.race([clientPromise, timeoutPromise]) as Client;
+  return client;
 }
 
 /**
@@ -37,11 +40,23 @@ export async function analyzeWorkoutForm(exerciseName: string, videoBlob?: Blob)
   }
 
   try {
+    console.log('Starting AI analysis for:', exerciseName, 'Video size:', videoBlob.size, 'bytes');
     const app = await getGradioClient();
+    console.log('Gradio client connected, sending video...');
+
+    // Add timeout for the prediction call (2 minutes for video processing)
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Analysis timeout after 2 minutes. Please try with a shorter video (10-15 seconds recommended).')), 120000)
+    );
 
     // Call the Gradio named endpoint: "/analyze"
     // Input must be an array because the endpoint takes 1 argument: the video file
-    const result = await app.predict("/analyze", [videoBlob]);
+    const result = await Promise.race([
+      app.predict("/analyze", [videoBlob]),
+      timeoutPromise
+    ]) as any;
+
+    console.log('Received analysis result:', result);
 
     // Gradio returns: { data: [output1, output2, ...] }
     const summary = result?.data?.[0];        // JSON summary

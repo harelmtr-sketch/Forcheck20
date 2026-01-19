@@ -1,88 +1,80 @@
 import { useState } from 'react';
-import { ChevronLeft, Bell, Shield, Zap, Users, Moon, Globe, HelpCircle, LogOut, ChevronRight, Info, Heart, Mail, Twitter, Instagram, Github } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  Bell, 
+  Shield, 
+  Zap, 
+  Moon, 
+  ChevronRight, 
+  Info, 
+  Heart, 
+  Mail, 
+  Twitter, 
+  Instagram, 
+  Github,
+  Activity,
+  Sparkles,
+  Eye,
+  Settings as SettingsIcon
+} from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
+import type { AppSettings } from '../utils/settingsStore';
 
 interface SettingsScreenProps {
   onBack: () => void;
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
-  clearOnTemplate: boolean;
-  setClearOnTemplate: (value: boolean) => void;
-  autoSaveWorkouts: boolean;
-  setAutoSaveWorkouts: (value: boolean) => void;
-  showFormScore: boolean;
-  setShowFormScore: (value: boolean) => void;
-  scoreDisplayMode: 'letter' | 'number' | 'both';
-  setScoreDisplayMode: (value: 'letter' | 'number' | 'both') => void;
-  workoutReminders: boolean;
-  setWorkoutReminders: (value: boolean) => void;
-  formTips: boolean;
-  setFormTips: (value: boolean) => void;
-  friendActivity: boolean;
-  setFriendActivity: (value: boolean) => void;
-  achievements: boolean;
-  setAchievements: (value: boolean) => void;
-  profileVisibility: string;
-  setProfileVisibility: (value: string) => void;
-  workoutSharing: boolean;
-  setWorkoutSharing: (value: boolean) => void;
-  leaderboard: boolean;
-  setLeaderboard: (value: boolean) => void;
-  aiCoaching: boolean;
-  setAiCoaching: (value: boolean) => void;
-  aiRecommendations: boolean;
-  setAiRecommendations: (value: boolean) => void;
-  aiDifficulty: string;
-  setAiDifficulty: (value: string) => void;
-  hapticFeedback: boolean;
-  setHapticFeedback: (value: boolean) => void;
+  settings: AppSettings;
+  onSettingChange: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
 }
 
 type SettingsView = 'main' | 'about' | 'support';
 
 export function SettingsScreen({ 
   onBack, 
-  darkMode, 
-  setDarkMode,
-  clearOnTemplate,
-  setClearOnTemplate,
-  autoSaveWorkouts,
-  setAutoSaveWorkouts,
-  showFormScore,
-  setShowFormScore,
-  scoreDisplayMode,
-  setScoreDisplayMode,
-  workoutReminders,
-  setWorkoutReminders,
-  formTips,
-  setFormTips,
-  friendActivity,
-  setFriendActivity,
-  achievements,
-  setAchievements,
-  profileVisibility,
-  setProfileVisibility,
-  workoutSharing,
-  setWorkoutSharing,
-  leaderboard,
-  setLeaderboard,
-  aiCoaching,
-  setAiCoaching,
-  aiRecommendations,
-  setAiRecommendations,
-  aiDifficulty,
-  setAiDifficulty,
-  hapticFeedback,
-  setHapticFeedback
+  settings,
+  onSettingChange
 }: SettingsScreenProps) {
   const [currentView, setCurrentView] = useState<SettingsView>('main');
+  
+  // Handle notification permission request
+  const handleNotificationToggle = async (key: keyof AppSettings, currentValue: boolean) => {
+    if (!currentValue && 'Notification' in window) {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          onSettingChange(key, true);
+        }
+      } catch (error) {
+        console.error('Notification permission error:', error);
+      }
+    } else {
+      onSettingChange(key, !currentValue);
+    }
+  };
+
+  // Toggle component
+  const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: () => void }) => (
+    <button
+      onClick={onChange}
+      className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
+        enabled
+          ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30'
+          : 'bg-gray-700'
+      }`}
+    >
+      <div
+        className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${
+          enabled ? 'left-6' : 'left-1'
+        }`}
+      />
+    </button>
+  );
   
   // ABOUT VIEW
   if (currentView === 'about') {
     return (
       <div className="flex flex-col h-full bg-background">
-        <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-indigo-600/10 to-purple-600/10">
+        <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-blue-950/30 to-blue-900/20">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setCurrentView('main')}
@@ -101,16 +93,16 @@ export function SettingsScreen({
 
         <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
           {/* App Info */}
-          <Card className="p-6 bg-gradient-to-br from-indigo-600/20 to-purple-600/15 border-indigo-500/40">
+          <Card className="p-6 bg-gradient-to-br from-blue-950/40 to-blue-900/30 border-blue-500/40">
             <div className="text-center mb-6">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mb-4 shadow-2xl shadow-purple-500/30">
-                <span className="text-4xl">💪</span>
+              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mb-4 shadow-2xl shadow-blue-500/30">
+                <Activity className="w-10 h-10 text-white" />
               </div>
               <h2 className="font-bold text-foreground text-2xl mb-2">Forcheck</h2>
-              <p className="text-sm text-purple-300 dark:text-purple-200 font-medium">
+              <p className="text-sm text-blue-300 font-medium">
                 AI-Powered Calisthenics Form Analysis
               </p>
-              <p className="text-xs text-purple-400 dark:text-purple-300 mt-2">Version 1.0.0</p>
+              <p className="text-xs text-blue-400 mt-2">Version 1.0.0</p>
             </div>
             <p className="text-sm text-foreground/80 text-center leading-relaxed">
               Forcheck uses advanced computer vision to analyze your workout form in real-time, providing instant feedback and personalized coaching to maximize your gains while minimizing injury risk.
@@ -123,8 +115,8 @@ export function SettingsScreen({
             
             <Card className="p-5 bg-card border-border mb-3">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl shadow-lg">
-                  👨‍💻
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                  <Activity className="w-8 h-8 text-white" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold mb-1">Harel Meltser</h4>
@@ -140,8 +132,8 @@ export function SettingsScreen({
 
             <Card className="p-5 bg-card border-border">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
-                  👨‍💻
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold mb-1">Gibor Bashari</h4>
@@ -157,9 +149,9 @@ export function SettingsScreen({
           </div>
 
           {/* Mission */}
-          <Card className="p-5 bg-gradient-to-br from-green-600/15 to-emerald-600/10 border-green-500/30">
+          <Card className="p-5 bg-gradient-to-br from-green-950/40 to-emerald-950/30 border-green-500/30">
             <h4 className="font-bold mb-3 flex items-center gap-2">
-              <span className="text-xl">🎯</span>
+              <Heart className="w-5 h-5 text-green-400" />
               Our Mission
             </h4>
             <p className="text-sm text-foreground/80 leading-relaxed">
@@ -181,8 +173,8 @@ export function SettingsScreen({
           </div>
 
           <div className="text-center pt-4 pb-2">
-            <p className="text-xs text-muted-foreground">© 2024 Forcheck. All rights reserved.</p>
-            <p className="text-xs text-muted-foreground mt-1">Made with ❤️ by Meltser & Gibor</p>
+            <p className="text-xs text-muted-foreground">© 2026 Forcheck. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground mt-1">Made with care by Meltser & Gibor</p>
           </div>
         </div>
       </div>
@@ -193,7 +185,7 @@ export function SettingsScreen({
   if (currentView === 'support') {
     return (
       <div className="flex flex-col h-full bg-background">
-        <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-pink-600/10 to-rose-600/10">
+        <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-pink-950/30 to-rose-950/20">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setCurrentView('main')}
@@ -212,11 +204,13 @@ export function SettingsScreen({
 
         <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
           {/* Support Card */}
-          <Card className="p-6 bg-gradient-to-br from-pink-600/20 to-rose-600/15 border-pink-500/40">
+          <Card className="p-6 bg-gradient-to-br from-pink-950/40 to-rose-950/30 border-pink-500/40">
             <div className="text-center mb-4">
-              <div className="text-6xl mb-4">❤️</div>
+              <div className="mb-4">
+                <Heart className="w-16 h-16 text-pink-400 mx-auto" />
+              </div>
               <h3 className="font-bold text-xl mb-2">Love Forcheck?</h3>
-              <p className="text-sm text-pink-200 dark:text-pink-100 leading-relaxed">
+              <p className="text-sm text-pink-200 leading-relaxed">
                 Your support helps us improve the app, add new features, and keep our servers running. Every contribution makes a difference!
               </p>
             </div>
@@ -227,12 +221,12 @@ export function SettingsScreen({
             <h3 className="font-bold mb-4">Ways to Support</h3>
             
             <div className="space-y-3">
-              <Card className="p-5 bg-gradient-to-r from-blue-600/20 to-cyan-600/15 border-blue-500/30">
+              <Card className="p-5 bg-gradient-to-r from-blue-950/40 to-cyan-950/30 border-blue-500/30">
                 <h4 className="font-bold mb-2 flex items-center gap-2">
-                  <span className="text-xl">⭐</span>
+                  <Activity className="w-5 h-5 text-blue-400" />
                   Rate & Review
                 </h4>
-                <p className="text-sm text-blue-200 dark:text-blue-100 mb-3">
+                <p className="text-sm text-blue-200 mb-3">
                   Leave a 5-star review on the App Store to help others discover Forcheck
                 </p>
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
@@ -240,12 +234,12 @@ export function SettingsScreen({
                 </Button>
               </Card>
 
-              <Card className="p-5 bg-gradient-to-r from-purple-600/20 to-pink-600/15 border-purple-500/30">
+              <Card className="p-5 bg-gradient-to-r from-purple-950/40 to-pink-950/30 border-purple-500/30">
                 <h4 className="font-bold mb-2 flex items-center gap-2">
-                  <span className="text-xl">📢</span>
+                  <ChevronRight className="w-5 h-5 text-purple-400" />
                   Spread the Word
                 </h4>
-                <p className="text-sm text-purple-200 dark:text-purple-100 mb-3">
+                <p className="text-sm text-purple-200 mb-3">
                   Share Forcheck with your workout buddies and on social media
                 </p>
                 <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
@@ -253,12 +247,12 @@ export function SettingsScreen({
                 </Button>
               </Card>
 
-              <Card className="p-5 bg-gradient-to-r from-green-600/20 to-emerald-600/15 border-green-500/30">
+              <Card className="p-5 bg-gradient-to-r from-green-950/40 to-emerald-950/30 border-green-500/30">
                 <h4 className="font-bold mb-2 flex items-center gap-2">
-                  <span className="text-xl">☕</span>
+                  <Heart className="w-5 h-5 text-green-400" />
                   Buy Us a Coffee
                 </h4>
-                <p className="text-sm text-green-200 dark:text-green-100 mb-3">
+                <p className="text-sm text-green-200 mb-3">
                   Support development with a one-time contribution
                 </p>
                 <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
@@ -319,9 +313,9 @@ export function SettingsScreen({
             </div>
           </div>
 
-          <Card className="p-4 bg-blue-600/10 border border-blue-500/30">
-            <p className="text-sm text-blue-400 dark:text-blue-300 text-center font-medium">
-              💙 Thank you for being part of the Forcheck community!
+          <Card className="p-4 bg-blue-950/30 border border-blue-500/30">
+            <p className="text-sm text-blue-400 text-center font-medium">
+              Thank you for being part of the Forcheck community!
             </p>
           </Card>
         </div>
@@ -333,7 +327,7 @@ export function SettingsScreen({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-indigo-600/10 to-purple-600/10">
+      <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-blue-950/30 to-blue-900/20">
         <div className="flex items-center gap-3">
           <button 
             onClick={onBack}
@@ -352,10 +346,33 @@ export function SettingsScreen({
 
       {/* Settings List */}
       <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
+        {/* Appearance */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Moon className="w-5 h-5 text-blue-400" />
+            <h3 className="font-bold">Appearance</h3>
+          </div>
+
+          <div className="space-y-3">
+            <Card className="p-4 bg-card border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">Dark Mode</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Use dark theme across the app</p>
+                </div>
+                <Toggle 
+                  enabled={settings.darkMode} 
+                  onChange={() => onSettingChange('darkMode', !settings.darkMode)} 
+                />
+              </div>
+            </Card>
+          </div>
+        </div>
+
         {/* Workout Preferences */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-yellow-400" />
+            <SettingsIcon className="w-5 h-5 text-yellow-400" />
             <h3 className="font-bold">Workout Preferences</h3>
           </div>
 
@@ -366,20 +383,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Clear on Template Select</h4>
                   <p className="text-xs text-muted-foreground font-medium">When selecting a template, remove any custom exercises you've added</p>
                 </div>
-                <button
-                  onClick={() => setClearOnTemplate(!clearOnTemplate)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    clearOnTemplate
-                      ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30'
-                      : 'bg-gray-700'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${
-                      clearOnTemplate ? 'left-6' : 'left-1'
-                    }`}
-                  />
-                </button>
+                <Toggle 
+                  enabled={settings.clearOnTemplate} 
+                  onChange={() => onSettingChange('clearOnTemplate', !settings.clearOnTemplate)} 
+                />
               </div>
             </Card>
 
@@ -389,20 +396,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Auto-Save Workouts</h4>
                   <p className="text-xs text-muted-foreground font-medium">Automatically save completed workouts to history without confirmation</p>
                 </div>
-                <button
-                  onClick={() => setAutoSaveWorkouts(!autoSaveWorkouts)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    autoSaveWorkouts
-                      ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30'
-                      : 'bg-gray-700'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${
-                      autoSaveWorkouts ? 'left-6' : 'left-1'
-                    }`}
-                  />
-                </button>
+                <Toggle 
+                  enabled={settings.autoSaveWorkouts} 
+                  onChange={() => onSettingChange('autoSaveWorkouts', !settings.autoSaveWorkouts)} 
+                />
               </div>
             </Card>
 
@@ -412,20 +409,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Show Form Scores During Recording</h4>
                   <p className="text-xs text-muted-foreground font-medium">Display AI form analysis scores in real-time while recording videos</p>
                 </div>
-                <button
-                  onClick={() => setShowFormScore(!showFormScore)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    showFormScore
-                      ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30'
-                      : 'bg-gray-700'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${
-                      showFormScore ? 'left-6' : 'left-1'
-                    }`}
-                  />
-                </button>
+                <Toggle 
+                  enabled={settings.showFormScore} 
+                  onChange={() => onSettingChange('showFormScore', !settings.showFormScore)} 
+                />
               </div>
             </Card>
 
@@ -436,16 +423,16 @@ export function SettingsScreen({
               </div>
               <div className="flex gap-2">
                 {[
-                  { value: 'letter', label: 'Letter (A, B)', example: 'A' },
-                  { value: 'number', label: 'Number', example: '95' },
-                  { value: 'both', label: 'Both', example: 'A 95' }
+                  { value: 'letter' as const, label: 'Letter (A, B)', example: 'A' },
+                  { value: 'number' as const, label: 'Number', example: '95' },
+                  { value: 'both' as const, label: 'Both', example: 'A 95' }
                 ].map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setScoreDisplayMode(option.value as any)}
+                    onClick={() => onSettingChange('scoreDisplayMode', option.value)}
                     className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                      scoreDisplayMode === option.value
-                        ? 'bg-gradient-to-r from-purple-600/30 to-purple-500/20 text-foreground border border-purple-500/50 shadow-lg'
+                      settings.scoreDisplayMode === option.value
+                        ? 'bg-gradient-to-r from-yellow-600/30 to-yellow-500/20 text-foreground border border-yellow-500/50 shadow-lg'
                         : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                     }`}
                   >
@@ -460,7 +447,7 @@ export function SettingsScreen({
         {/* Notifications */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Bell className="w-5 h-5 text-blue-400" />
+            <Bell className="w-5 h-5 text-purple-400" />
             <h3 className="font-bold">Notifications</h3>
           </div>
 
@@ -471,14 +458,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Workout Reminders</h4>
                   <p className="text-xs text-muted-foreground font-medium">Daily notifications to stay on track</p>
                 </div>
-                <button
-                  onClick={() => setWorkoutReminders(!workoutReminders)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    workoutReminders ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${workoutReminders ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.workoutReminders} 
+                  onChange={() => handleNotificationToggle('workoutReminders', settings.workoutReminders)} 
+                />
               </div>
             </Card>
 
@@ -488,14 +471,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Form Tips</h4>
                   <p className="text-xs text-muted-foreground font-medium">Get AI-powered form suggestions</p>
                 </div>
-                <button
-                  onClick={() => setFormTips(!formTips)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    formTips ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${formTips ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.formTips} 
+                  onChange={() => handleNotificationToggle('formTips', settings.formTips)} 
+                />
               </div>
             </Card>
 
@@ -505,14 +484,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Friend Activity</h4>
                   <p className="text-xs text-muted-foreground font-medium">See when friends complete workouts</p>
                 </div>
-                <button
-                  onClick={() => setFriendActivity(!friendActivity)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    friendActivity ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${friendActivity ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.friendActivity} 
+                  onChange={() => handleNotificationToggle('friendActivity', settings.friendActivity)} 
+                />
               </div>
             </Card>
 
@@ -522,14 +497,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Achievement Alerts</h4>
                   <p className="text-xs text-muted-foreground font-medium">Celebrate your milestones</p>
                 </div>
-                <button
-                  onClick={() => setAchievements(!achievements)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    achievements ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${achievements ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.achievements} 
+                  onChange={() => handleNotificationToggle('achievements', settings.achievements)} 
+                />
               </div>
             </Card>
           </div>
@@ -538,7 +509,7 @@ export function SettingsScreen({
         {/* Privacy & Friends */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Shield className="w-5 h-5 text-purple-400" />
+            <Shield className="w-5 h-5 text-red-400" />
             <h3 className="font-bold">Privacy & Friends</h3>
           </div>
 
@@ -546,20 +517,24 @@ export function SettingsScreen({
             <Card className="p-4 bg-card border-border">
               <div className="flex-1 mb-3">
                 <h4 className="font-bold text-sm mb-1">Profile Visibility</h4>
-                <p className="text-xs text-muted-foreground font-medium">Who can see your profile</p>
+                <p className="text-xs text-muted-foreground font-medium">Who can see your profile and workout data</p>
               </div>
               <div className="flex gap-2">
-                {['public', 'friends', 'private'].map((option) => (
+                {[
+                  { value: 'public' as const, label: 'Public' },
+                  { value: 'friends' as const, label: 'Friends' },
+                  { value: 'private' as const, label: 'Private' }
+                ].map((option) => (
                   <button
-                    key={option}
-                    onClick={() => setProfileVisibility(option)}
+                    key={option.value}
+                    onClick={() => onSettingChange('profileVisibility', option.value)}
                     className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold capitalize transition-all ${
-                      profileVisibility === option
-                        ? 'bg-gradient-to-r from-purple-600/30 to-purple-500/20 text-foreground border border-purple-500/50 shadow-lg'
+                      settings.profileVisibility === option.value
+                        ? 'bg-gradient-to-r from-red-600/30 to-red-500/20 text-foreground border border-red-500/50 shadow-lg'
                         : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                     }`}
                   >
-                    {option}
+                    {option.label}
                   </button>
                 ))}
               </div>
@@ -571,14 +546,10 @@ export function SettingsScreen({
                   <h4 className="font-bold text-sm">Workout Sharing</h4>
                   <p className="text-xs text-muted-foreground font-medium">Auto-share workouts with friends</p>
                 </div>
-                <button
-                  onClick={() => setWorkoutSharing(!workoutSharing)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    workoutSharing ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${workoutSharing ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.workoutSharing} 
+                  onChange={() => onSettingChange('workoutSharing', !settings.workoutSharing)} 
+                />
               </div>
             </Card>
 
@@ -586,16 +557,12 @@ export function SettingsScreen({
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <h4 className="font-bold text-sm">Show on Leaderboard</h4>
-                  <p className="text-xs text-muted-foreground font-medium">Appear in friend rankings</p>
+                  <p className="text-xs text-muted-foreground font-medium">Appear in friend rankings and competition</p>
                 </div>
-                <button
-                  onClick={() => setLeaderboard(!leaderboard)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    leaderboard ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${leaderboard ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.leaderboard} 
+                  onChange={() => onSettingChange('leaderboard', !settings.leaderboard)} 
+                />
               </div>
             </Card>
           </div>
@@ -604,7 +571,7 @@ export function SettingsScreen({
         {/* AI Preferences */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-orange-400" />
+            <Sparkles className="w-5 h-5 text-cyan-400" />
             <h3 className="font-bold">AI Preferences</h3>
           </div>
 
@@ -613,53 +580,49 @@ export function SettingsScreen({
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <h4 className="font-bold text-sm">AI Coaching</h4>
-                  <p className="text-xs text-muted-foreground font-medium">Real-time form analysis</p>
+                  <p className="text-xs text-muted-foreground font-medium">Get personalized workout coaching and form tips</p>
                 </div>
-                <button
-                  onClick={() => setAiCoaching(!aiCoaching)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    aiCoaching ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${aiCoaching ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.aiCoaching} 
+                  onChange={() => onSettingChange('aiCoaching', !settings.aiCoaching)} 
+                />
               </div>
             </Card>
 
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h4 className="font-bold text-sm">Smart Recommendations</h4>
-                  <p className="text-xs text-muted-foreground font-medium">Personalized workout suggestions</p>
+                  <h4 className="font-bold text-sm">AI Recommendations</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Suggest exercises and workout templates based on your progress</p>
                 </div>
-                <button
-                  onClick={() => setAiRecommendations(!aiRecommendations)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    aiRecommendations ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${aiRecommendations ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.aiRecommendations} 
+                  onChange={() => onSettingChange('aiRecommendations', !settings.aiRecommendations)} 
+                />
               </div>
             </Card>
 
             <Card className="p-4 bg-card border-border">
               <div className="flex-1 mb-3">
-                <h4 className="font-bold text-sm mb-1">AI Difficulty</h4>
-                <p className="text-xs text-muted-foreground font-medium">Exercise difficulty adjustment</p>
+                <h4 className="font-bold text-sm mb-1">AI Difficulty Level</h4>
+                <p className="text-xs text-muted-foreground font-medium">Adjust how challenging AI recommendations should be</p>
               </div>
               <div className="flex gap-2">
-                {['conservative', 'moderate', 'aggressive'].map((option) => (
+                {[
+                  { value: 'beginner' as const, label: 'Beginner' },
+                  { value: 'intermediate' as const, label: 'Intermediate' },
+                  { value: 'advanced' as const, label: 'Advanced' }
+                ].map((option) => (
                   <button
-                    key={option}
-                    onClick={() => setAiDifficulty(option)}
+                    key={option.value}
+                    onClick={() => onSettingChange('aiDifficulty', option.value)}
                     className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold capitalize transition-all ${
-                      aiDifficulty === option
-                        ? 'bg-gradient-to-r from-orange-600/30 to-orange-500/20 text-foreground border border-orange-500/50 shadow-lg'
+                      settings.aiDifficulty === option.value
+                        ? 'bg-gradient-to-r from-cyan-600/30 to-cyan-500/20 text-foreground border border-cyan-500/50 shadow-lg'
                         : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                     }`}
                   >
-                    {option}
+                    {option.label}
                   </button>
                 ))}
               </div>
@@ -667,67 +630,45 @@ export function SettingsScreen({
           </div>
         </div>
 
-        {/* App Settings */}
+        {/* Accessibility */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-5 h-5 text-green-400" />
-            <h3 className="font-bold">App Settings</h3>
+            <Eye className="w-5 h-5 text-green-400" />
+            <h3 className="font-bold">Accessibility</h3>
           </div>
 
           <div className="space-y-3">
             <Card className="p-4 bg-card border-border">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h4 className="font-bold text-sm">Dark Mode</h4>
-                  <p className="text-xs text-muted-foreground font-medium">Toggle dark/light theme</p>
-                </div>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    darkMode ? 'bg-gradient-to-r from-indigo-600 to-purple-500 shadow-lg shadow-purple-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg flex items-center justify-center ${darkMode ? 'left-6' : 'left-1'}`}>
-                    <Moon className="w-3 h-3 text-gray-600" />
-                  </div>
-                </button>
-              </div>
-            </Card>
-            
-            <Card className="p-4 bg-card border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
                   <h4 className="font-bold text-sm">Haptic Feedback</h4>
-                  <p className="text-xs text-muted-foreground font-medium">Vibration on interactions</p>
+                  <p className="text-xs text-muted-foreground font-medium">Vibrate on button presses and interactions</p>
                 </div>
-                <button
-                  onClick={() => setHapticFeedback(!hapticFeedback)}
-                  className={`relative w-12 h-7 rounded-full transition-all duration-300 ${
-                    hapticFeedback ? 'bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg shadow-green-500/30' : 'bg-gray-700'
-                  }`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-lg ${hapticFeedback ? 'left-6' : 'left-1'}`} />
-                </button>
+                <Toggle 
+                  enabled={settings.hapticFeedback} 
+                  onChange={() => onSettingChange('hapticFeedback', !settings.hapticFeedback)} 
+                />
               </div>
             </Card>
           </div>
         </div>
 
-        {/* More */}
+        {/* About & Support */}
         <div>
-          <h3 className="font-bold mb-4">More</h3>
-          <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Info className="w-5 h-5 text-orange-400" />
+            <h3 className="font-bold">About & Support</h3>
+          </div>
+
+          <div className="space-y-3">
             <Card 
               onClick={() => setCurrentView('about')}
-              className="p-4 bg-card border-border hover:bg-foreground/5 cursor-pointer transition-colors"
+              className="p-4 bg-card border-border cursor-pointer hover:bg-foreground/5 transition-colors"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Info className="w-5 h-5 text-blue-400" />
-                  <div>
-                    <h4 className="font-bold text-sm">About Forcheck</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Meet the developers</p>
-                  </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">About Forcheck</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Version, team, and mission</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </div>
@@ -735,56 +676,17 @@ export function SettingsScreen({
 
             <Card 
               onClick={() => setCurrentView('support')}
-              className="p-4 bg-card border-border hover:bg-foreground/5 cursor-pointer transition-colors"
+              className="p-4 bg-card border-border cursor-pointer hover:bg-foreground/5 transition-colors"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Heart className="w-5 h-5 text-pink-400" />
-                  <div>
-                    <h4 className="font-bold text-sm">Support Us</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Help us grow and improve</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </Card>
-
-            <Card 
-              onClick={() => alert('Opening Help Center...')}
-              className="p-4 bg-card border-border hover:bg-foreground/5 cursor-pointer transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <HelpCircle className="w-5 h-5 text-green-400" />
-                  <div>
-                    <h4 className="font-bold text-sm">Help & Support</h4>
-                    <p className="text-xs text-muted-foreground font-medium">FAQs and contact us</p>
-                  </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">Support Us</h4>
+                  <p className="text-xs text-muted-foreground font-medium">Help us grow and improve</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </div>
             </Card>
           </div>
-        </div>
-
-        {/* Logout Button */}
-        <Card className="p-4 bg-gradient-to-r from-red-600/20 to-pink-600/10 border-red-500/40">
-          <button
-            onClick={() => alert('Logout functionality would be implemented here')}
-            className="flex items-center gap-3 w-full"
-          >
-            <LogOut className="w-5 h-5 text-red-400" />
-            <div className="flex-1 text-left">
-              <h4 className="font-bold text-sm">Log Out</h4>
-              <p className="text-xs text-red-400 dark:text-red-300 font-medium">Sign out of your account</p>
-            </div>
-          </button>
-        </Card>
-
-        {/* App Info */}
-        <div className="text-center py-4">
-          <p className="text-xs text-muted-foreground font-medium">Forcheck v1.0.0</p>
-          <p className="text-xs text-muted-foreground">© 2024 All rights reserved</p>
         </div>
       </div>
     </div>

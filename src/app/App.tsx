@@ -5,6 +5,7 @@ import { DailyScreen } from './components/DailyScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { loadWorkoutFromStorage, saveWorkoutToStorage } from './utils/workoutStorage';
+import { loadSettings, updateSetting, type AppSettings } from './utils/settingsStore';
 
 type Tab = 'camera' | 'daily' | 'profile';
 type View = Tab | 'settings';
@@ -60,24 +61,9 @@ export interface MuscleStatus {
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('camera');
   const [currentView, setCurrentView] = useState<View>('camera');
-  const [darkMode, setDarkMode] = useState(true);
   
-  // Settings state - lifted to persist across tabs
-  const [clearOnTemplate, setClearOnTemplate] = useState(false);
-  const [autoSaveWorkouts, setAutoSaveWorkouts] = useState(true);
-  const [showFormScore, setShowFormScore] = useState(true);
-  const [scoreDisplayMode, setScoreDisplayMode] = useState<'letter' | 'number' | 'both'>('both');
-  const [workoutReminders, setWorkoutReminders] = useState(true);
-  const [formTips, setFormTips] = useState(true);
-  const [friendActivity, setFriendActivity] = useState(false);
-  const [achievements, setAchievements] = useState(true);
-  const [profileVisibility, setProfileVisibility] = useState('friends');
-  const [workoutSharing, setWorkoutSharing] = useState(false);
-  const [leaderboard, setLeaderboard] = useState(true);
-  const [aiCoaching, setAiCoaching] = useState(true);
-  const [aiRecommendations, setAiRecommendations] = useState(true);
-  const [aiDifficulty, setAiDifficulty] = useState('moderate');
-  const [hapticFeedback, setHapticFeedback] = useState(true);
+  // Settings state - loaded from localStorage, persisted on every change
+  const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
   
   // Lift exercises state up to App level so it persists across tab changes
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -142,38 +128,10 @@ export default function App() {
       case 'settings':
         return <SettingsScreen 
           onBack={handleBackFromSettings} 
-          darkMode={darkMode} 
-          setDarkMode={setDarkMode}
-          clearOnTemplate={clearOnTemplate}
-          setClearOnTemplate={setClearOnTemplate}
-          autoSaveWorkouts={autoSaveWorkouts}
-          setAutoSaveWorkouts={setAutoSaveWorkouts}
-          showFormScore={showFormScore}
-          setShowFormScore={setShowFormScore}
-          scoreDisplayMode={scoreDisplayMode}
-          setScoreDisplayMode={setScoreDisplayMode}
-          workoutReminders={workoutReminders}
-          setWorkoutReminders={setWorkoutReminders}
-          formTips={formTips}
-          setFormTips={setFormTips}
-          friendActivity={friendActivity}
-          setFriendActivity={setFriendActivity}
-          achievements={achievements}
-          setAchievements={setAchievements}
-          profileVisibility={profileVisibility}
-          setProfileVisibility={setProfileVisibility}
-          workoutSharing={workoutSharing}
-          setWorkoutSharing={setWorkoutSharing}
-          leaderboard={leaderboard}
-          setLeaderboard={setLeaderboard}
-          aiCoaching={aiCoaching}
-          setAiCoaching={setAiCoaching}
-          aiRecommendations={aiRecommendations}
-          setAiRecommendations={setAiRecommendations}
-          aiDifficulty={aiDifficulty}
-          setAiDifficulty={setAiDifficulty}
-          hapticFeedback={hapticFeedback}
-          setHapticFeedback={setHapticFeedback}
+          settings={settings}
+          onSettingChange={(key, value) => {
+            setSettings(prev => updateSetting(key, value, prev));
+          }}
         />;
       default:
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
@@ -196,19 +154,19 @@ export default function App() {
   }, [exercises, meals, muscleStatus]);
 
   return (
-    <div className={`h-screen w-full ${currentView === 'camera' ? '' : 'max-w-md mx-auto'} text-foreground flex flex-col overflow-hidden ${darkMode ? 'dark' : ''}`}>
-      {/* Pure black background - no gradient */}
+    <div className={`h-screen w-full ${currentView === 'camera' ? '' : 'max-w-md mx-auto'} text-foreground flex flex-col overflow-hidden ${settings.darkMode ? 'dark' : ''}`}>
+      {/* Pure black background */}
       <div className="absolute inset-0 bg-black -z-10" />
       
       {/* Main Content Area */}
-      <div className={`flex-1 overflow-hidden relative ${currentView === 'camera' ? 'bg-black' : 'bg-background'}`}>
+      <div className={`flex-1 overflow-hidden relative ${currentView === 'camera' ? 'bg-black' : 'bg-black'}`}>
         {renderScreen()}
       </div>
 
       {/* Bottom Navigation */}
       {currentView !== 'settings' && (
-        <div className={`border-t border-border bg-background ${currentView === 'camera' ? 'absolute bottom-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-md border-white/10' : ''}`}>
-          <nav className="flex items-center justify-around px-4 py-3">
+        <div className={`border-t border-border/50 bg-black/90 backdrop-blur-sm ${currentView === 'camera' ? 'absolute bottom-0 left-0 right-0 z-50' : ''}`}>
+          <nav className="flex items-center justify-around px-4 py-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -217,14 +175,14 @@ export default function App() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${
+                  className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-all duration-200 active:scale-95 ${
                     isActive
-                      ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-blue-400'
+                      : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : ''}`} />
-                  <span className="text-xs font-semibold">{tab.label}</span>
+                  <Icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
+                  <span className={`text-xs font-semibold ${isActive ? '' : 'font-medium'}`}>{tab.label}</span>
                 </button>
               );
             })}

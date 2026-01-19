@@ -1,4 +1,29 @@
 @import 'tailwindcss' source(none);
 @source '../**/*.{js,ts,jsx,tsx}';
 
-@import 'tw-animate-css';
+/* Custom animations for production-ready polish */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-very-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 16s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-very-slow {
+  animation: pulse-very-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

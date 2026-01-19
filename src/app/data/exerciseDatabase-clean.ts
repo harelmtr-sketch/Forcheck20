@@ -725,6 +725,7 @@ export interface WorkoutTemplate {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   gradient: string;
   color: string;
+  icon: string; // lucide-react icon name
 }
 
 export const workoutTemplates: WorkoutTemplate[] = [
@@ -738,7 +739,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-blue-600/20 to-blue-500/10',
-    color: 'blue'
+    color: 'blue',
+    icon: 'Zap'
   },
   {
     id: 'beginner-push',
@@ -749,7 +751,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 20,
     difficulty: 'beginner',
     gradient: 'from-cyan-600/20 to-cyan-500/10',
-    color: 'cyan'
+    color: 'cyan',
+    icon: 'Play'
   },
   {
     id: 'advanced-push',
@@ -760,7 +763,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 40,
     difficulty: 'advanced',
     gradient: 'from-indigo-600/20 to-blue-600/10',
-    color: 'indigo'
+    color: 'indigo',
+    icon: 'Crown'
   },
   {
     id: 'chest-focus',
@@ -771,7 +775,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 30,
     difficulty: 'intermediate',
     gradient: 'from-sky-600/20 to-blue-500/10',
-    color: 'sky'
+    color: 'sky',
+    icon: 'Target'
   },
   {
     id: 'shoulder-focus',
@@ -782,7 +787,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 30,
     difficulty: 'advanced',
     gradient: 'from-violet-600/20 to-purple-500/10',
-    color: 'violet'
+    color: 'violet',
+    icon: 'TrendingUp'
   },
 
   // PULL TEMPLATES
@@ -795,7 +801,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-green-600/20 to-green-500/10',
-    color: 'green'
+    color: 'green',
+    icon: 'Dumbbell'
   },
   {
     id: 'beginner-pull',
@@ -806,7 +813,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 20,
     difficulty: 'beginner',
     gradient: 'from-teal-600/20 to-teal-500/10',
-    color: 'teal'
+    color: 'teal',
+    icon: 'Anchor'
   },
   {
     id: 'advanced-pull',
@@ -817,7 +825,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 40,
     difficulty: 'advanced',
     gradient: 'from-emerald-600/20 to-green-600/10',
-    color: 'emerald'
+    color: 'emerald',
+    icon: 'Award'
   },
   {
     id: 'back-thickness',
@@ -828,7 +837,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-lime-600/20 to-green-500/10',
-    color: 'lime'
+    color: 'lime',
+    icon: 'Shield'
   },
 
   // LEG TEMPLATES
@@ -841,7 +851,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 40,
     difficulty: 'intermediate',
     gradient: 'from-orange-600/20 to-orange-500/10',
-    color: 'orange'
+    color: 'orange',
+    icon: 'Flame'
   },
   {
     id: 'beginner-legs',
@@ -852,7 +863,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 25,
     difficulty: 'beginner',
     gradient: 'from-amber-600/20 to-orange-500/10',
-    color: 'amber'
+    color: 'amber',
+    icon: 'ArrowUp'
   },
   {
     id: 'advanced-legs',
@@ -863,7 +875,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 45,
     difficulty: 'advanced',
     gradient: 'from-red-600/20 to-orange-600/10',
-    color: 'red'
+    color: 'red',
+    icon: 'Rocket'
   },
   {
     id: 'quad-focus',
@@ -874,7 +887,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'advanced',
     gradient: 'from-yellow-600/20 to-amber-500/10',
-    color: 'yellow'
+    color: 'yellow',
+    icon: 'Bolt'
   },
   {
     id: 'glute-hamstring',
@@ -885,7 +899,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 35,
     difficulty: 'intermediate',
     gradient: 'from-rose-600/20 to-pink-500/10',
-    color: 'rose'
+    color: 'rose',
+    icon: 'Layers'
   },
 
   // FULL BODY & CONDITIONING
@@ -898,7 +913,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 45,
     difficulty: 'intermediate',
     gradient: 'from-purple-600/20 to-pink-600/10',
-    color: 'purple'
+    color: 'purple',
+    icon: 'Activity'
   },
   {
     id: 'hiit-cardio',
@@ -909,7 +925,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 25,
     difficulty: 'intermediate',
     gradient: 'from-fuchsia-600/20 to-pink-500/10',
-    color: 'fuchsia'
+    color: 'fuchsia',
+    icon: 'HeartPulse'
   },
   {
     id: 'core-crusher',
@@ -920,7 +937,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 25,
     difficulty: 'intermediate',
     gradient: 'from-pink-600/20 to-rose-500/10',
-    color: 'pink'
+    color: 'pink',
+    icon: 'CircleDot'
   },
   {
     id: 'beginner-fullbody',
@@ -931,7 +949,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 30,
     difficulty: 'beginner',
     gradient: 'from-slate-600/20 to-gray-500/10',
-    color: 'slate'
+    color: 'slate',
+    icon: 'User'
   },
   {
     id: 'advanced-beast',
@@ -942,7 +961,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 50,
     difficulty: 'advanced',
     gradient: 'from-red-600/20 to-purple-600/10',
-    color: 'red'
+    color: 'red',
+    icon: 'Skull'
   },
   {
     id: 'mobility-recovery',
@@ -953,7 +973,8 @@ export const workoutTemplates: WorkoutTemplate[] = [
     duration: 20,
     difficulty: 'beginner',
     gradient: 'from-cyan-600/20 to-blue-500/10',
-    color: 'cyan'
+    color: 'cyan',
+    icon: 'Wind'
   },
 ];
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2, Info, Play, Edit2, RotateCcw, Share2, Flame, Dumbbell, Trophy, Zap, Utensils, Activity, Star, Crown, TrendingUp, Anchor, Shield, ArrowUp, Rocket, Bolt, Layers, HeartPulse, CircleDot, User, Skull, Wind } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
@@ -58,7 +58,7 @@ const getTemplateIcon = (iconName: string) => {
   return IconComponent;
 };
 
-export function DailyScreen({ 
+const DailyScreenComponent = ({ 
   exercises, 
   setExercises, 
   meals, 
@@ -66,7 +66,7 @@ export function DailyScreen({
   muscleStatus,
   setMuscleStatus,
   onRecordExercise
-}: DailyScreenProps) {
+}: DailyScreenProps) => {
   const [currentView, setCurrentView] = useState<View>('main');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -1879,4 +1879,7 @@ export function DailyScreen({
       )}
     </div>
   );
-}
+};
+
+// Memoize to prevent unnecessary re-renders
+export const DailyScreen = memo(DailyScreenComponent);

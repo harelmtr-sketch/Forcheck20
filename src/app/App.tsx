@@ -67,12 +67,10 @@ export interface MuscleStatus {
 }
 
 export default function App() {
-  // Initial splash and login swoosh states - only show splash once per browser session
-  const [showInitialSplash, setShowInitialSplash] = useState(() => {
-    const splashShown = sessionStorage.getItem('forcheck_splash_shown');
-    return splashShown !== 'true';
-  });
+  // Initial splash - only show once when app first loads (not authenticated AND splash not shown)
+  const [showInitialSplash, setShowInitialSplash] = useState(false);
   const [showLoginSwoosh, setShowLoginSwoosh] = useState(false);
+  const [splashChecked, setSplashChecked] = useState(false);
   
   // Authentication state
   const [authState, setAuthState] = useState<AuthState>(() => loadAuthState());
@@ -192,6 +190,17 @@ export default function App() {
   useEffect(() => {
     saveWorkoutToStorage(exercises, meals, muscleStatus);
   }, [exercises, meals, muscleStatus]);
+
+  // Check if splash should be shown
+  useEffect(() => {
+    if (!authState.isAuthenticated && !splashChecked) {
+      const splashShown = sessionStorage.getItem('forcheck_splash_shown');
+      if (splashShown !== 'true') {
+        setShowInitialSplash(true);
+      }
+      setSplashChecked(true);
+    }
+  }, [authState.isAuthenticated, splashChecked]);
 
   // Show login screen if not authenticated
   if (!authState.isAuthenticated) {

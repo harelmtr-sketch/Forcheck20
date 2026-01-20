@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import {
   Settings,
   Trophy,
@@ -72,11 +72,11 @@ const mockHistory = [
   { date: 'Dec 21', score: 86, exercises: 4, grade: 'B' },
 ];
 
-export function ProfileScreen({
+const ProfileScreenComponent = ({
   onOpenSettings,
   exercises,
   muscleStatus,
-}: ProfileScreenProps) {
+}: ProfileScreenProps) => {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [profileName, setProfileName] = useState('Your Profile');
@@ -567,4 +567,7 @@ export function ProfileScreen({
       )}
     </div>
   );
-}
+};
+
+// Memoize to prevent unnecessary re-renders
+export const ProfileScreen = memo(ProfileScreenComponent);

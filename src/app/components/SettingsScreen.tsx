@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { 
   ChevronLeft, 
   Bell, 
@@ -31,12 +31,12 @@ interface SettingsScreenProps {
 
 type SettingsView = 'main' | 'about' | 'support';
 
-export function SettingsScreen({ 
+const SettingsScreenComponent = ({ 
   onBack, 
   settings,
   onSettingChange,
   onLogout
-}: SettingsScreenProps) {
+}: SettingsScreenProps) => {
   const [currentView, setCurrentView] = useState<SettingsView>('main');
   
   // Handle notification permission request
@@ -719,4 +719,7 @@ export function SettingsScreen({
       </div>
     </div>
   );
-}
+};
+
+// Memoize to prevent unnecessary re-renders
+export const SettingsScreen = memo(SettingsScreenComponent);

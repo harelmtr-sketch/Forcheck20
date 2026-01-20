@@ -205,12 +205,12 @@ export default function App() {
   }
 
   return (
-    <div className={`h-screen w-full ${currentView === 'camera' ? '' : 'max-w-md mx-auto'} text-foreground flex flex-col overflow-hidden ${settings.darkMode ? 'dark' : ''}`}>
+    <div className={`h-screen w-full max-w-md mx-auto text-foreground flex flex-col overflow-hidden ${settings.darkMode ? 'dark' : ''}`}>
       {/* Background with more lively gray */}
       <div className="absolute inset-0 bg-[#1a1d23] -z-10" />
       
       {/* Main Content Area */}
-      <div className={`flex-1 overflow-hidden relative ${currentView === 'camera' ? 'bg-[#1a1d23]' : 'bg-[#1a1d23]'}`}>
+      <div className={`flex-1 overflow-hidden relative bg-[#1a1d23]`}>
         <ScreenTransition transitionKey={currentView}>
           {renderScreen()}
         </ScreenTransition>
@@ -218,7 +218,7 @@ export default function App() {
 
       {/* Bottom Navigation */}
       {currentView !== 'settings' && (
-        <div className={`border-t border-white/[0.08] bg-[#1d2128]/95 backdrop-blur-xl ${currentView === 'camera' ? 'absolute bottom-0 left-0 right-0 z-50' : ''}`}>
+        <div className={`border-t border-white/[0.08] bg-[#1d2128]/95 backdrop-blur-xl`}>
           <nav className="flex items-center justify-around px-2 py-3 relative">
             {tabs.map((tab) => {
               const Icon = tab.icon;

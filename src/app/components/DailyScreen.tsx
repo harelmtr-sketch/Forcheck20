@@ -565,7 +565,7 @@ export function DailyScreen({
       <div className="flex flex-col h-full relative overflow-hidden">
         {/* Consistent background */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1d23] via-[#1a1d23] to-[#1a1d23]" />
           <div 
             className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5 animate-pulse-slow"
             style={{ animationDuration: '16s' }}
@@ -578,7 +578,7 @@ export function DailyScreen({
               setSelectedExerciseIndex(null);
               setCurrentView('main');
             }}
-            className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors mb-4 -ml-2 active:scale-95"
+            className="p-2 hover:bg-[#2a2e38]/50 rounded-lg transition-all duration-200 mb-4 -ml-2 active:scale-95 hover:shadow-lg"
           >
             <ChevronLeft className="w-5 h-5 text-white" />
           </button>
@@ -976,8 +976,8 @@ export function DailyScreen({
             {/* Ambient glow behind card */}
             <div className={`absolute inset-0 blur-2xl opacity-20 rounded-3xl -z-10 ${getScoreBgColor(dailyScoreData.score)}`} />
             
-            <Card className="relative p-8 bg-gradient-to-br from-gray-900/90 via-gray-900/80 to-gray-900/90 border border-gray-800/50 overflow-hidden shadow-2xl shadow-black/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-800/5 via-transparent to-transparent" />
+            <Card className="relative p-8 bg-gradient-to-br from-[#252932]/90 via-[#252932]/80 to-[#252932]/90 border border-white/10 overflow-hidden shadow-2xl shadow-black/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
               <div className="relative text-center">
                 <p className="text-sm text-gray-400 font-semibold mb-4 tracking-wider uppercase">Daily Score</p>
                 <div className={`text-6xl font-black transition-all duration-500 ${getScoreColor(dailyScoreData.score)} ${getScoreGlow(dailyScoreData.score)}`}>
@@ -1003,7 +1003,7 @@ export function DailyScreen({
             </h3>
             <Card 
               onClick={() => setCurrentView('templates')}
-              className="group p-6 bg-gradient-to-br from-card to-gray-900/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
+              className="group p-6 bg-gradient-to-br from-card to-[#252932]/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -1017,7 +1017,7 @@ export function DailyScreen({
             </Card>
             <Card 
               onClick={() => setCurrentView('exercise-picker')}
-              className="group p-6 bg-gradient-to-br from-card to-gray-900/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
+              className="group p-6 bg-gradient-to-br from-card to-[#252932]/50 border border-blue-500/20 cursor-pointer hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 active:scale-[0.98]"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -1228,7 +1228,7 @@ export function DailyScreen({
             </div>
 
             {/* Nutrition Progress Bars with enhanced depth */}
-            <Card className="p-5 bg-gradient-to-br from-gray-900/90 to-gray-900/70 border border-blue-500/20 shadow-lg shadow-blue-500/5">
+            <Card className="p-5 bg-gradient-to-br from-[#252932]/90 to-[#1a1d23]/70 border border-blue-500/20 shadow-lg shadow-blue-500/5">
               <div className="space-y-4">
                 {/* Calories */}
                 <div>
@@ -1310,7 +1310,7 @@ export function DailyScreen({
         {/* Friends Section with enhanced depth */}
         {(hasWorkout || hasMeals) && (
           <div className="mt-8 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-            <Card className="border border-blue-500/20 overflow-hidden shadow-2xl shadow-blue-500/10 bg-gradient-to-br from-gray-900/90 to-gray-900/70">
+            <Card className="border border-blue-500/20 overflow-hidden shadow-2xl shadow-blue-500/10 bg-gradient-to-br from-[#252932]/90 to-[#1a1d23]/70">
               {/* Header */}
               <div className="px-5 py-4 border-b border-border/50 bg-gradient-to-r from-blue-950/20 to-transparent">
                 <div className="flex items-center justify-between">
@@ -1356,7 +1356,7 @@ export function DailyScreen({
                             : 'p-[3px] bg-gray-600 rounded-full'
                           : 'p-[3px] bg-gray-800 rounded-full'
                       }`}>
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center text-2xl border-[3px] border-background shadow-inner">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#252932] to-[#1a1d23] flex items-center justify-center text-2xl border-[3px] border-background shadow-inner">
                           {friend.avatar}
                         </div>
                         {friend.hasStory && !friend.storyViewed && (
@@ -1380,7 +1380,7 @@ export function DailyScreen({
 
               {/* Podium-style Leaderboard with enhanced depth */}
               <div className="px-5 pb-5">
-                <div className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl p-4 border border-blue-500/20 shadow-xl shadow-blue-500/5">
+                <div className="bg-gradient-to-br from-[#252932] to-[#1a1d23] rounded-2xl p-4 border border-blue-500/20 shadow-xl shadow-blue-500/5">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="p-1 bg-gradient-to-br from-yellow-500/20 to-orange-500/10 rounded-lg border border-yellow-500/30">
                       <Trophy className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
@@ -1396,8 +1396,8 @@ export function DailyScreen({
                           key={friend.id}
                           className={`relative flex-1 rounded-xl p-3 border transition-all duration-300 hover:scale-105 ${ 
                             index === 0 ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 border-blue-500/40 shadow-lg shadow-blue-500/20' :
-                            index === 1 ? 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border-gray-600/50 shadow-md' :
-                            'bg-gradient-to-br from-card to-gray-900/50 border-border/50 shadow-sm'
+                            index === 1 ? 'bg-gradient-to-br from-[#2a2e38]/50 to-[#252932]/50 border-white/20 shadow-md' :
+                            'bg-gradient-to-br from-card to-[#252932]/50 border-border/50 shadow-sm'
                           }`}
                         >
                           {/* Zap for first place with animation */}
@@ -1410,8 +1410,8 @@ export function DailyScreen({
                           <div className="flex flex-col items-center gap-2">
                             <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md ${
                               index === 0 ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/40' :
-                              index === 1 ? 'bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-gray-600/40' :
-                              'bg-gradient-to-br from-gray-700 to-gray-800 text-white shadow-gray-700/40'
+                              index === 1 ? 'bg-gradient-to-br from-[#3a3e48] to-[#2a2e38] text-white shadow-[#3a3e48]/40' :
+                              'bg-gradient-to-br from-[#2a2e38] to-[#252932] text-white shadow-[#2a2e38]/40'
                             }`}>
                               {index === 0 ? '👑' : index + 1}
                             </div>
@@ -1544,11 +1544,11 @@ export function DailyScreen({
       {/* Form Video Modal */}
       {showFormVideo && selectedFormExercise && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
-          <Card className="p-0 max-w-md w-full bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 overflow-hidden">
+          <Card className="p-0 max-w-md w-full bg-gradient-to-br from-[#252932] to-[#1a1d23] border-white/10 overflow-hidden">
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-slate-700">
+            <div className="p-4 bg-gradient-to-r from-blue-600/20 to-blue-500/10 border-b border-white/10">
               <h3 className="font-bold text-white">{selectedFormExercise.name}</h3>
-              <p className="text-xs text-slate-400 mt-1">Proper Form Tutorial</p>
+              <p className="text-xs text-gray-400 mt-1">Proper Form Tutorial</p>
             </div>
 
             {/* Mock Video Player */}
@@ -1624,11 +1624,11 @@ export function DailyScreen({
       {/* Customize Exercise Modal - Must be outside view checks to always render */}
       {showCustomizeExercise && pendingExercise && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-6 z-[100]">
-          <Card className="p-0 max-w-sm w-full bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 overflow-hidden">
+          <Card className="p-0 max-w-sm w-full bg-gradient-to-br from-[#252932] to-[#1a1d23] border-white/10 overflow-hidden">
             {/* Header */}
-            <div className="p-5 bg-gradient-to-r from-green-600/20 to-blue-600/20 border-b border-slate-700">
+            <div className="p-5 bg-gradient-to-r from-blue-600/20 to-blue-500/10 border-b border-white/10">
               <h3 className="font-bold text-white">{pendingExercise.name}</h3>
-              <p className="text-xs text-slate-400 mt-1">{editingExerciseIndex !== null ? 'Edit your workout' : 'Customize your workout'}</p>
+              <p className="text-xs text-gray-400 mt-1">{editingExerciseIndex !== null ? 'Edit your workout' : 'Customize your workout'}</p>
             </div>
 
             {/* Content */}

@@ -108,7 +108,7 @@ export function ProfileScreen({
             </div>
 
             {/* Line graph with enhanced styling */}
-            <Card className="p-5 bg-gradient-to-br from-gray-900/90 to-gray-900/70 border border-blue-500/30 shadow-xl shadow-blue-500/10">
+            <Card className="p-5 bg-gradient-to-br from-[#252932]/90 to-[#1a1d23]/70 border border-blue-500/30 shadow-xl shadow-blue-500/10">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-xs text-muted-foreground font-medium mb-1">Weekly Average</p>
@@ -139,7 +139,7 @@ export function ProfileScreen({
               {mockHistory.map((day, i) => (
                 <Card
                   key={i}
-                  className="group p-4 bg-gradient-to-br from-card to-gray-900/50 border border-border/50 flex items-center justify-between hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300"
+                  className="group p-4 bg-gradient-to-br from-card to-[#252932]/50 border border-border/50 flex items-center justify-between hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300"
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getScoreBgColor(day.score)} border ${getScoreBorderColor(day.score)} flex items-center justify-center shadow-md ${getScoreShadowColor(day.score)}`}>
@@ -305,7 +305,7 @@ export function ProfileScreen({
             </div>
 
             {/* Personal Bests with enhanced styling */}
-            <Card className="p-5 bg-gradient-to-br from-gray-900/90 to-gray-900/70 border border-gray-800/50 shadow-xl">
+            <Card className="p-5 bg-gradient-to-br from-[#252932]/90 to-[#1a1d23]/70 border border-white/10 shadow-xl">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-bold text-white flex items-center gap-2">
                   <div className="p-1.5 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
@@ -395,7 +395,7 @@ export function ProfileScreen({
       </div>
 
       {/* Tabs with enhanced styling */}
-      <div className="relative z-10 flex border-b border-border/50 bg-black/20 backdrop-blur-sm">
+      <div className="relative z-10 flex border-b border-border/50 bg-[#252932]/80 backdrop-blur-sm">
         {[
           { id: 'overview', label: 'Overview', icon: TrendingUp },
           { id: 'history', label: 'History', icon: BarChart3 },

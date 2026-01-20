@@ -342,7 +342,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
   );
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-black">
+    <div className="fixed inset-0 flex flex-col bg-[#1a1d23]">
       {/* Hidden file input for capture - uses native camera on mobile */}
       <input
         ref={fileInputRef}
@@ -368,7 +368,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
         {/* Error State */}
         {error && (
-          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-[#252932] to-[#1a1d23] flex flex-col items-center justify-center">
             <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
             <div className="px-8 text-center">
               <h3 className="text-white text-lg font-bold mb-2">Camera Access Needed</h3>
@@ -381,7 +381,7 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
         {/* Loading State / Fallback */}
         {!stream && !error && (
-          <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center px-8">
+          <div className="w-full h-full bg-gradient-to-br from-[#252932] to-[#1a1d23] flex flex-col items-center justify-center px-8">
             <CameraIcon className="w-32 h-32 text-gray-600/30 mb-6" />
             <div className="text-center">
               <h3 className="text-white text-lg font-bold mb-2">Camera Ready</h3>

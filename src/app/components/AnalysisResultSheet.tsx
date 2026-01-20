@@ -122,7 +122,7 @@ export function AnalysisResultSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
       <div
-        className={`w-full max-w-md bg-gradient-to-b from-slate-900 to-black rounded-3xl border border-white/10 shadow-2xl transition-all duration-220 ease-out ${
+        className={`w-full max-w-md bg-gradient-to-b from-[#252932] to-[#1a1d23] rounded-3xl border border-white/10 shadow-2xl transition-all duration-220 ease-out ${
           showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2.5'
         }`}
       >

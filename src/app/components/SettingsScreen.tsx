@@ -15,7 +15,8 @@ import {
   Activity,
   Sparkles,
   Eye,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  LogOut
 } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
@@ -25,6 +26,7 @@ interface SettingsScreenProps {
   onBack: () => void;
   settings: AppSettings;
   onSettingChange: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
+  onLogout?: () => void;
 }
 
 type SettingsView = 'main' | 'about' | 'support';
@@ -32,7 +34,8 @@ type SettingsView = 'main' | 'about' | 'support';
 export function SettingsScreen({ 
   onBack, 
   settings,
-  onSettingChange
+  onSettingChange,
+  onLogout
 }: SettingsScreenProps) {
   const [currentView, setCurrentView] = useState<SettingsView>('main');
   
@@ -688,6 +691,31 @@ export function SettingsScreen({
             </Card>
           </div>
         </div>
+
+        {/* Logout */}
+        {onLogout && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <LogOut className="w-5 h-5 text-red-400" />
+              <h3 className="font-bold">Account</h3>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={onLogout}
+                className="w-full p-5 bg-gradient-to-r from-red-950/40 to-red-900/30 border border-red-500/30 rounded-xl hover:from-red-900/50 hover:to-red-800/40 hover:border-red-500/50 transition-all duration-200 active:scale-[0.98]"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 text-left">
+                    <h4 className="font-bold text-sm text-red-400 mb-1">Sign Out</h4>
+                    <p className="text-xs text-red-300/70 font-medium">Log out of your Forcheck account</p>
+                  </div>
+                  <LogOut className="w-6 h-6 text-red-400" />
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

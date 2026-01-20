@@ -4,11 +4,19 @@ import { CameraScreen } from './components/CameraScreen';
 import { DailyScreen } from './components/DailyScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { LoginScreen } from './components/LoginScreen';
+import { SplashScreen } from './components/SplashScreen';
+import { LoginSwoosh } from './components/LoginSwoosh';
+import { ScreenTransition } from './components/ScreenTransition';
 import { loadWorkoutFromStorage, saveWorkoutToStorage } from './utils/workoutStorage';
 import { loadSettings, updateSetting, type AppSettings } from './utils/settingsStore';
+import { loadAuthState, login, logout, type AuthState } from './utils/auth';
 
 type Tab = 'camera' | 'daily' | 'profile';
 type View = Tab | 'settings';
+
+// Animation direction for page transitions
+type AnimationDirection = 'left' | 'right' | 'none';
 
 export interface Exercise {
   name: string;
@@ -59,6 +67,18 @@ export interface MuscleStatus {
 }
 
 export default function App() {
+  // Initial splash and login swoosh states
+  const [showInitialSplash, setShowInitialSplash] = useState(true);
+  const [showLoginSwoosh, setShowLoginSwoosh] = useState(false);
+  
+  // Authentication state - FORCE LOGOUT FOR TESTING
+  const [authState, setAuthState] = useState<AuthState>({ isAuthenticated: false });
+  
+  // Clear auth on mount for testing
+  useEffect(() => {
+    logout();
+  }, []);
+  
   const [activeTab, setActiveTab] = useState<Tab>('camera');
   const [currentView, setCurrentView] = useState<View>('camera');
   
@@ -117,6 +137,26 @@ export default function App() {
     setCurrentView('camera');
   };
 
+  const handleLogin = (email: string) => {
+    const newAuthState = login(email);
+    setAuthState(newAuthState);
+    // Show login swoosh after login
+    setShowLoginSwoosh(true);
+  };
+
+  const handleSplashComplete = () => {
+    setShowInitialSplash(false);
+  };
+
+  const handleLoginSwooshComplete = () => {
+    setShowLoginSwoosh(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setAuthState({ isAuthenticated: false });
+  };
+
   const renderScreen = () => {
     switch (currentView) {
       case 'camera':
@@ -132,6 +172,7 @@ export default function App() {
           onSettingChange={(key, value) => {
             setSettings(prev => updateSetting(key, value, prev));
           }}
+          onLogout={handleLogout}
         />;
       default:
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
@@ -153,20 +194,33 @@ export default function App() {
     saveWorkoutToStorage(exercises, meals, muscleStatus);
   }, [exercises, meals, muscleStatus]);
 
+  // Show login screen if not authenticated
+  if (!authState.isAuthenticated) {
+    return (
+      <>
+        <LoginScreen onLogin={handleLogin} />
+        {/* Show initial splash on first load */}
+        {showInitialSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      </>
+    );
+  }
+
   return (
     <div className={`h-screen w-full ${currentView === 'camera' ? '' : 'max-w-md mx-auto'} text-foreground flex flex-col overflow-hidden ${settings.darkMode ? 'dark' : ''}`}>
-      {/* Pure black background */}
-      <div className="absolute inset-0 bg-black -z-10" />
+      {/* Background with more lively gray */}
+      <div className="absolute inset-0 bg-[#1a1d23] -z-10" />
       
       {/* Main Content Area */}
-      <div className={`flex-1 overflow-hidden relative ${currentView === 'camera' ? 'bg-black' : 'bg-black'}`}>
-        {renderScreen()}
+      <div className={`flex-1 overflow-hidden relative ${currentView === 'camera' ? 'bg-[#1a1d23]' : 'bg-[#1a1d23]'}`}>
+        <ScreenTransition transitionKey={currentView}>
+          {renderScreen()}
+        </ScreenTransition>
       </div>
 
       {/* Bottom Navigation */}
       {currentView !== 'settings' && (
-        <div className={`border-t border-border/50 bg-black/90 backdrop-blur-sm ${currentView === 'camera' ? 'absolute bottom-0 left-0 right-0 z-50' : ''}`}>
-          <nav className="flex items-center justify-around px-4 py-2">
+        <div className={`border-t border-white/[0.08] bg-[#1d2128]/95 backdrop-blur-xl ${currentView === 'camera' ? 'absolute bottom-0 left-0 right-0 z-50' : ''}`}>
+          <nav className="flex items-center justify-around px-2 py-3 relative">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -175,20 +229,39 @@ export default function App() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-all duration-200 active:scale-95 ${
+                  className={`relative flex flex-col items-center gap-1.5 px-8 py-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 ${
                     isActive
-                      ? 'text-blue-400'
+                      ? 'text-white'
                       : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
-                  <span className={`text-xs font-semibold ${isActive ? '' : 'font-medium'}`}>{tab.label}</span>
+                  {/* Active indicator background */}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-blue-500/20 rounded-2xl transition-all duration-300 ease-out" />
+                  )}
+                  
+                  {/* Icon with enhanced styling */}
+                  <div className={`relative transition-all duration-300 ease-out ${isActive ? 'scale-110' : ''}`}>
+                    <Icon className={`w-6 h-6 transition-all duration-300 ${isActive ? 'stroke-[2.5] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'stroke-[2]'}`} />
+                  </div>
+                  
+                  {/* Label */}
+                  <span className={`relative text-xs transition-all duration-300 ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                    {tab.label}
+                  </span>
+                  
+                  {/* Active dot indicator */}
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full" />
+                  )}
                 </button>
               );
             })}
           </nav>
         </div>
       )}
+      {/* Login Swoosh */}
+      {showLoginSwoosh && <LoginSwoosh onComplete={handleLoginSwooshComplete} />}
     </div>
   );
 }

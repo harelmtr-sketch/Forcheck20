@@ -109,7 +109,7 @@ export function DailyBreakdownStory({ story, onClose, isOwnStory = false }: Dail
           className="flex-1 overflow-y-auto rounded-2xl"
           style={{ maxHeight: isOwnStory ? 'calc(100vh - 6rem)' : 'calc(100vh - 2rem)' }}
         >
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 space-y-6">
+          <div className="bg-gradient-to-br from-[#252932] via-[#1a1d23] to-[#252932] p-6 space-y-6">
             {/* Header with Profile */}
             <div className="flex items-center gap-4 pb-4 border-b border-white/10">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl shadow-lg">

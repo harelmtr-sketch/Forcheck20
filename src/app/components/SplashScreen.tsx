@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import imgLightning from "figma:asset/5555c2b30f1483d03dcc626d83175209bc7b27f4.png";
+import { Zap } from 'lucide-react';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -38,22 +38,16 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
       {/* Logo content */}
       <div className="relative flex flex-col items-center gap-6">
-        {/* Lightning Icon */}
+        {/* Lightning Icon - Forcheck Logo */}
         <div className="relative w-40 h-40 flex items-center justify-center animate-in zoom-in-90 duration-1000">
           {/* Glow effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl blur-3xl opacity-60 animate-pulse" />
           
-          {/* Icon container with blue filter */}
+          {/* Lightning bolt icon */}
           <div className="relative w-full h-full flex items-center justify-center">
-            <img
-              src={imgLightning}
-              alt="Forcheck"
-              className="w-32 h-32 object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] animate-pulse"
-              style={{
-                filter: 'brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(200deg) brightness(101%) contrast(97%)',
-                imageRendering: 'crisp-edges',
-                transform: 'scale(1.2)',
-              }}
+            <Zap 
+              className="w-32 h-32 text-blue-500 fill-blue-500 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] animate-pulse" 
+              strokeWidth={2}
             />
           </div>
         </div>

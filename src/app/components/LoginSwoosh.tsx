@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import imgLightning from "figma:asset/5555c2b30f1483d03dcc626d83175209bc7b27f4.png";
+import { Zap } from 'lucide-react';
 
 interface LoginSwooshProps {
   onComplete: () => void;
@@ -34,7 +34,7 @@ export function LoginSwoosh({ onComplete }: LoginSwooshProps) {
     >
       {/* Fast swoosh effect */}
       <div className="relative">
-        {/* Lightning Icon with swoosh animation */}
+        {/* Lightning Icon with swoosh animation - Forcheck Logo */}
         <div
           className={`relative w-24 h-24 flex items-center justify-center transition-all duration-500 ${
             phase === 'entering'
@@ -45,15 +45,10 @@ export function LoginSwoosh({ onComplete }: LoginSwooshProps) {
           {/* Glow trail effect */}
           <div className="absolute inset-0 bg-blue-500/40 blur-2xl rounded-full" />
           
-          {/* Icon */}
-          <img
-            src={imgLightning}
-            alt="Forcheck"
-            className="w-16 h-16 object-contain drop-shadow-[0_0_20px_rgba(59,130,246,0.9)]"
-            style={{
-              filter: 'brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(200deg) brightness(101%) contrast(97%)',
-              imageRendering: 'crisp-edges',
-            }}
+          {/* Lightning bolt icon */}
+          <Zap 
+            className="w-16 h-16 text-blue-500 fill-blue-500 drop-shadow-[0_0_20px_rgba(59,130,246,0.9)]" 
+            strokeWidth={2}
           />
         </div>
 

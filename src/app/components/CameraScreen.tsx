@@ -343,6 +343,12 @@ export function CameraScreen({ exercises, setExercises, muscleStatus, setMuscleS
 
   return (
     <div className="fixed inset-0 flex flex-col bg-[#1a1d23]">
+      {/* Subtle blue glow background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute top-1/3 right-1/3 w-48 h-48 bg-blue-400/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1.5s' }} />
+      </div>
+
       {/* Hidden file input for capture - uses native camera on mobile */}
       <input
         ref={fileInputRef}

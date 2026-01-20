@@ -367,6 +367,9 @@ export function ProfileScreen({
       {/* Enhanced background with subtle gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black z-0" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-950/15 via-transparent to-transparent z-0" />
+      {/* Subtle blue glow orbs */}
+      <div className="absolute top-32 right-1/4 w-56 h-56 bg-blue-500/5 rounded-full blur-[90px] animate-pulse z-0" />
+      <div className="absolute bottom-1/3 left-1/4 w-48 h-48 bg-blue-400/5 rounded-full blur-[70px] animate-pulse z-0" style={{ animationDelay: '1.5s' }} />
       
       {/* Header with depth */}
       <div className="relative z-10 flex items-center justify-between p-4 border-b border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">

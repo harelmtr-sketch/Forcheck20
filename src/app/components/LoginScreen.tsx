@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Mail, Lock, Dumbbell, User, ArrowLeft, Phone } from 'lucide-react';
+import { useState, memo } from 'react';
+import { Mail, Lock, Zap, User, ArrowLeft, Phone } from 'lucide-react';
 
 interface LoginScreenProps {
   onLogin: (email: string) => void;
 }
 
-export function LoginScreen({ onLogin }: LoginScreenProps) {
+export const LoginScreen = memo(function LoginScreen({ onLogin }: LoginScreenProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -193,7 +193,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           <div className="relative w-20 h-20 flex items-center justify-center">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-50" />
             <div className="relative bg-[#252932] rounded-2xl w-full h-full flex items-center justify-center border border-white/10">
-              <Dumbbell className="w-10 h-10 text-blue-500" strokeWidth={2.5} />
+              <Zap className="w-10 h-10 text-blue-500" strokeWidth={2.5} />
             </div>
           </div>
           <div className="text-center">
@@ -380,4 +380,4 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       </div>
     </div>
   );
-}
+});

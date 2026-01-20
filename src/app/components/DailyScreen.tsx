@@ -927,6 +927,9 @@ export function DailyScreen({
           className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5 animate-pulse-slow"
           style={{ animationDuration: '16s' }}
         />
+        {/* Additional subtle blue glow orbs */}
+        <div className="absolute top-20 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute top-40 right-1/4 w-48 h-48 bg-blue-400/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       {/* Header */}

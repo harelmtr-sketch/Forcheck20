@@ -67,17 +67,15 @@ export interface MuscleStatus {
 }
 
 export default function App() {
-  // Initial splash and login swoosh states
-  const [showInitialSplash, setShowInitialSplash] = useState(true);
+  // Initial splash and login swoosh states - only show splash once per browser session
+  const [showInitialSplash, setShowInitialSplash] = useState(() => {
+    const splashShown = sessionStorage.getItem('forcheck_splash_shown');
+    return splashShown !== 'true';
+  });
   const [showLoginSwoosh, setShowLoginSwoosh] = useState(false);
   
-  // Authentication state - FORCE LOGOUT FOR TESTING
-  const [authState, setAuthState] = useState<AuthState>({ isAuthenticated: false });
-  
-  // Clear auth on mount for testing
-  useEffect(() => {
-    logout();
-  }, []);
+  // Authentication state
+  const [authState, setAuthState] = useState<AuthState>(() => loadAuthState());
   
   const [activeTab, setActiveTab] = useState<Tab>('camera');
   const [currentView, setCurrentView] = useState<View>('camera');
@@ -146,6 +144,7 @@ export default function App() {
 
   const handleSplashComplete = () => {
     setShowInitialSplash(false);
+    sessionStorage.setItem('forcheck_splash_shown', 'true');
   };
 
   const handleLoginSwooshComplete = () => {

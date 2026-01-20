@@ -330,17 +330,17 @@ const SettingsScreenComponent = ({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-r from-blue-950/30 to-blue-900/20">
-        <div className="flex items-center gap-3">
+      <div className="px-4 py-3 border-b border-border/50 bg-gradient-to-r from-blue-950/30 to-blue-900/20">
+        <div className="flex items-center gap-2">
           <button 
             onClick={onBack}
-            className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-foreground/10 rounded-lg transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="font-bold">Settings</h1>
-            <p className="text-sm text-muted-foreground font-medium">
+            <h1 className="font-bold text-base">Settings</h1>
+            <p className="text-xs text-muted-foreground font-medium">
               Customize your experience
             </p>
           </div>
@@ -348,7 +348,7 @@ const SettingsScreenComponent = ({
       </div>
 
       {/* Settings List */}
-      <div className="flex-1 px-6 py-6 overflow-y-auto space-y-6">
+      <div className="flex-1 px-4 py-4 overflow-y-auto space-y-4">
         {/* Appearance */}
         <div>
           <div className="flex items-center gap-2 mb-4">

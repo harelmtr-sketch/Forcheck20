@@ -9,14 +9,14 @@ export function LoginSwoosh({ onComplete }: LoginSwooshProps) {
   const [phase, setPhase] = useState<'entering' | 'exiting'>('entering');
 
   useEffect(() => {
-    // Quick swoosh timing
+    // Faster and smoother swoosh timing
     const exitTimer = setTimeout(() => {
       setPhase('exiting');
-    }, 350);
+    }, 400);
 
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 700);
+    }, 800);
 
     return () => {
       clearTimeout(exitTimer);

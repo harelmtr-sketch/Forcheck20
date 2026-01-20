@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo } from 'react';
-import { Upload, SwitchCamera, Camera as CameraIcon, X, Check, Search, Video, Play, Sparkles } from 'lucide-react';
+import { Upload, SwitchCamera, Camera as CameraIcon, X, Check, Search, Video, Play, Sparkles, Utensils } from 'lucide-react';
 import { Card } from './ui/card';
 import { exerciseDatabase } from '../data/exerciseDatabase-clean';
 import { analyzeWorkoutForm } from '../utils/aiFormScoring';
@@ -18,6 +18,7 @@ interface CameraScreenProps {
 }
 
 const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscleStatus, exerciseToRecord, onRecordingComplete }: CameraScreenProps) => {
+  const [mode, setMode] = useState<'exercise' | 'meal'>('exercise');
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('user');
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -111,7 +112,12 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
 
   const handleUsePhoto = () => {
     setCapturedPhoto(null);
-    setShowExercisePicker(true);
+    if (mode === 'exercise') {
+      setShowExercisePicker(true);
+    } else {
+      // Meal mode - show success message and return to daily
+      onRecordingComplete();
+    }
   };
 
   const handleUploadClick = () => {
@@ -201,16 +207,31 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
         className="hidden"
       />
 
-      {/* Vibrant animated background gradients */}
+      {/* Vibrant animated background gradients - color changes based on mode */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Large blue glow orbs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/15 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-purple-500/10 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: '2s' }} />
-        
-        {/* Moving gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-cyan-600/5 animate-pulse" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-purple-600/5 via-transparent to-blue-600/5 animate-pulse" style={{ animationDelay: '1.5s' }} />
+        {mode === 'exercise' ? (
+          <>
+            {/* Exercise mode - Blue/Cyan/Purple theme */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/15 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-purple-500/10 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: '2s' }} />
+            
+            {/* Moving gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-cyan-600/5 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-tl from-purple-600/5 via-transparent to-blue-600/5 animate-pulse" style={{ animationDelay: '1.5s' }} />
+          </>
+        ) : (
+          <>
+            {/* Meal mode - Orange/Amber/Yellow theme */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-500/15 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-yellow-500/10 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: '2s' }} />
+            
+            {/* Moving gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 via-transparent to-amber-600/5 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-tl from-yellow-600/5 via-transparent to-orange-600/5 animate-pulse" style={{ animationDelay: '1.5s' }} />
+          </>
+        )}
       </div>
 
       {/* Camera Feed or Captured Photo */}
@@ -289,10 +310,42 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
       {/* Top Controls with colorful styling */}
       {!capturedPhoto && (
         <div className="absolute top-0 left-0 right-0 z-20 pt-safe">
-          <div className="flex justify-between items-center px-6 py-6">
+          {/* Mode Toggle - Exercise vs Meal */}
+          <div className="px-6 pt-4 pb-2">
+            <div className="flex gap-2 bg-[#1a1d23]/90 backdrop-blur-xl rounded-2xl p-1.5 border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+              <button
+                onClick={() => setMode('exercise')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all ${
+                  mode === 'exercise'
+                    ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(59,130,246,0.6)]'
+                    : 'text-blue-400/70 hover:text-blue-300 hover:bg-blue-500/10'
+                }`}
+              >
+                <Video className={`w-4 h-4 ${mode === 'exercise' ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : ''}`} />
+                <span>Exercise</span>
+              </button>
+              <button
+                onClick={() => setMode('meal')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all ${
+                  mode === 'meal'
+                    ? 'bg-gradient-to-br from-orange-600 to-amber-600 text-white shadow-[0_0_20px_rgba(251,146,60,0.6)]'
+                    : 'text-orange-400/70 hover:text-orange-300 hover:bg-orange-500/10'
+                }`}
+              >
+                <Utensils className={`w-4 h-4 ${mode === 'meal' ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : ''}`} />
+                <span>Meal</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center px-6 py-4">
             <div className="flex-1">
-              <h1 className="font-bold text-xl text-white drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">Record Form</h1>
-              <p className="text-sm text-blue-300 font-medium drop-shadow-lg">Position yourself in frame</p>
+              <h1 className="font-bold text-xl text-white drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
+                {mode === 'exercise' ? 'Record Form' : 'Log Meal'}
+              </h1>
+              <p className="text-sm text-blue-300 font-medium drop-shadow-lg">
+                {mode === 'exercise' ? 'Position yourself in frame' : 'Capture your meal'}
+              </p>
             </div>
             
             <button

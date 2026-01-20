@@ -372,18 +372,18 @@ const ProfileScreenComponent = ({
       <div className="absolute bottom-1/3 left-1/4 w-48 h-48 bg-blue-400/5 rounded-full blur-[70px] animate-pulse z-0" style={{ animationDelay: '1.5s' }} />
       
       {/* Header with depth */}
-      <div className="relative z-10 flex items-center justify-between p-4 border-b border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
-        <div className="flex items-center gap-3">
+      <div className="relative z-10 flex items-center justify-between p-3 border-b border-border/50 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex items-center gap-2.5">
           <div
             onClick={() => setShowProfileEdit(true)}
-            className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center cursor-pointer shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-blue-400/30"
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center cursor-pointer shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-blue-400/30"
           >
             <div className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
               {getAvatarIcon(profileAvatar)}
             </div>
           </div>
           <div>
-            <h2 className="font-bold text-white text-lg">{ profileName}</h2>
+            <h2 className="font-bold text-white text-base">{ profileName}</h2>
             <p className="text-xs text-muted-foreground font-medium">Tap to edit profile</p>
           </div>
         </div>
@@ -391,9 +391,9 @@ const ProfileScreenComponent = ({
           onClick={onOpenSettings}
           variant="ghost"
           size="sm"
-          className="text-muted-foreground hover:text-white hover:bg-gray-800/50 transition-all duration-200"
+          className="text-muted-foreground hover:text-white hover:bg-gray-800/50 transition-all duration-200 h-9 w-9 p-0"
         >
-          <Settings className="w-5 h-5" />
+          <Settings className="w-4 h-4" />
         </Button>
       </div>
 

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Camera, BarChart3, User } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Camera, BarChart3, User, Users } from 'lucide-react';
 import { CameraScreen } from './components/CameraScreen';
 import { DailyScreen } from './components/DailyScreen';
+import { FriendsScreen } from './components/FriendsScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { LoginScreen } from './components/LoginScreen';
@@ -12,7 +13,7 @@ import { loadWorkoutFromStorage, saveWorkoutToStorage } from './utils/workoutSto
 import { loadSettings, updateSetting, type AppSettings } from './utils/settingsStore';
 import { loadAuthState, login, logout, type AuthState } from './utils/auth';
 
-type Tab = 'camera' | 'daily' | 'profile';
+type Tab = 'camera' | 'daily' | 'friends' | 'profile';
 type View = Tab | 'settings';
 
 // Animation direction for page transitions
@@ -113,49 +114,50 @@ export default function App() {
 
   const tabs = [
     { id: 'daily' as Tab, label: 'Daily', icon: BarChart3 },
+    { id: 'friends' as Tab, label: 'Friends', icon: Users },
     { id: 'camera' as Tab, label: 'Camera', icon: Camera },
     { id: 'profile' as Tab, label: 'Profile', icon: User },
   ];
 
-  const handleTabChange = (tab: Tab) => {
+  const handleTabChange = useCallback((tab: Tab) => {
     setActiveTab(tab);
     setCurrentView(tab);
-  };
+  }, []);
 
-  const handleOpenSettings = () => {
+  const handleOpenSettings = useCallback(() => {
     setCurrentView('settings');
-  };
+  }, []);
 
-  const handleBackFromSettings = () => {
+  const handleBackFromSettings = useCallback(() => {
     setCurrentView(activeTab);
-  };
+  }, [activeTab]);
 
-  const handleRecordExercise = (exerciseIndex: number) => {
+  const handleRecordExercise = useCallback((exerciseIndex: number) => {
     setExerciseToRecord(exerciseIndex);
     setActiveTab('camera');
     setCurrentView('camera');
-  };
+  }, []);
 
-  const handleLogin = (email: string) => {
+  const handleLogin = useCallback((email: string) => {
     const newAuthState = login(email);
     setAuthState(newAuthState);
     // Show login swoosh after login
     setShowLoginSwoosh(true);
-  };
+  }, []);
 
-  const handleSplashComplete = () => {
+  const handleSplashComplete = useCallback(() => {
     setShowInitialSplash(false);
     sessionStorage.setItem('forcheck_splash_shown', 'true');
-  };
+  }, []);
 
-  const handleLoginSwooshComplete = () => {
+  const handleLoginSwooshComplete = useCallback(() => {
     setShowLoginSwoosh(false);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     setAuthState({ isAuthenticated: false });
-  };
+  }, []);
 
   const renderScreen = () => {
     switch (currentView) {
@@ -163,6 +165,8 @@ export default function App() {
         return <CameraScreen exercises={exercises} setExercises={setExercises} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} exerciseToRecord={exerciseToRecord} onRecordingComplete={() => setExerciseToRecord(null)} />;
       case 'daily':
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
+      case 'friends':
+        return <FriendsScreen />;
       case 'profile':
         return <ProfileScreen onOpenSettings={handleOpenSettings} exercises={exercises} muscleStatus={muscleStatus} />;
       case 'settings':
@@ -220,7 +224,7 @@ export default function App() {
       {/* Bottom Navigation */}
       {currentView !== 'settings' && (
         <div className={`border-t border-white/[0.08] bg-[#1d2128]/95 backdrop-blur-xl`}>
-          <nav className="flex items-center justify-around px-2 py-3 relative">
+          <nav className="flex items-center justify-around px-1 py-3 relative">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -229,7 +233,7 @@ export default function App() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`relative flex flex-col items-center gap-1.5 px-8 py-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 ${
+                  className={`relative flex flex-col items-center gap-1.5 px-6 py-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 ${
                     isActive
                       ? 'text-white'
                       : 'text-gray-500 hover:text-gray-300'
@@ -246,7 +250,7 @@ export default function App() {
                   </div>
                   
                   {/* Label */}
-                  <span className={`relative text-xs transition-all duration-300 ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                  <span className={`relative text-[10px] transition-all duration-300 ${isActive ? 'font-semibold' : 'font-medium'}`}>
                     {tab.label}
                   </span>
                   

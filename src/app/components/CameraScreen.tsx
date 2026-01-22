@@ -222,14 +222,14 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
           </>
         ) : (
           <>
-            {/* Meal mode - Orange/Amber/Yellow theme */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-500/15 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-            <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-yellow-500/10 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: '2s' }} />
+            {/* Meal mode - Green theme */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-500/20 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-500/15 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-1/3 right-1/3 w-72 h-72 bg-teal-500/10 rounded-full blur-[90px] animate-pulse" style={{ animationDelay: '2s' }} />
             
             {/* Moving gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 via-transparent to-amber-600/5 animate-pulse" />
-            <div className="absolute inset-0 bg-gradient-to-tl from-yellow-600/5 via-transparent to-orange-600/5 animate-pulse" style={{ animationDelay: '1.5s' }} />
+            <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 via-transparent to-emerald-600/5 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-tl from-teal-600/5 via-transparent to-green-600/5 animate-pulse" style={{ animationDelay: '1.5s' }} />
           </>
         )}
       </div>
@@ -328,8 +328,8 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
                 onClick={() => setMode('meal')}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all ${
                   mode === 'meal'
-                    ? 'bg-gradient-to-br from-orange-600 to-amber-600 text-white shadow-[0_0_20px_rgba(251,146,60,0.6)]'
-                    : 'text-orange-400/70 hover:text-orange-300 hover:bg-orange-500/10'
+                    ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]'
+                    : 'text-green-400/70 hover:text-green-300 hover:bg-green-500/10'
                 }`}
               >
                 <Utensils className={`w-4 h-4 ${mode === 'meal' ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]' : ''}`} />

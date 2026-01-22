@@ -7,8 +7,6 @@ import { calculateWorkoutScore, getWorkoutScoreFeedback } from '../utils/workout
 import { calculateDietScore, calculateDailyScore } from '../utils/dailyScoring';
 import type { Exercise, Meal, MuscleStatus, ArchivedWorkout, CustomTemplate } from '../App';
 import type { ExerciseData, WorkoutTemplate } from '../data/exerciseDatabase-clean';
-import { mockFriendsDatabase, type FriendData, type FriendStory } from '../data/mockFriendsData';
-import { DailyBreakdownStory } from './DailyBreakdownStory';
 import { getScoreColor, getScoreGlow, getScoreBgColor, getScoreBorderColor, getScoreShadowColor } from '../utils/scoreColors';
 
 interface DailyScreenProps {
@@ -86,11 +84,6 @@ const DailyScreenComponent = ({
   const [customReps, setCustomReps] = useState(12);
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
-  
-  // Friends and Story state
-  const [friends, setFriends] = useState<FriendData[]>(mockFriendsDatabase);
-  const [viewingStory, setViewingStory] = useState<FriendStory | null>(null);
-  const [viewingOwnStory, setViewingOwnStory] = useState(false);
   
   // Meal form state
   const [mealName, setMealName] = useState('');
@@ -277,8 +270,11 @@ const DailyScreenComponent = ({
       }));
     }
 
-    setSelectedExerciseIndex(null);
-    setCurrentView('main');
+    // Smooth delay before returning to main view
+    setTimeout(() => {
+      setSelectedExerciseIndex(null);
+      setCurrentView('main');
+    }, 400);
   };
 
   const handleResetWorkout = () => {
@@ -443,42 +439,7 @@ const DailyScreenComponent = ({
     setShowSavedMeals(false);
   };
 
-  // Friends and Story handlers
-  const handleViewFriendStory = (friend: FriendData) => {
-    if (friend.currentStory) {
-      setViewingStory(friend.currentStory);
-      // Mark story as viewed
-      setFriends(friends.map(f => 
-        f.id === friend.id ? { ...f, storyViewed: true } : f
-      ));
-    }
-  };
 
-  const handleViewOwnStory = () => {
-    // Generate user's own daily breakdown story
-    const ownStory: FriendStory = {
-      id: 'own-story',
-      userId: 'me',
-      userName: 'You',
-      userAvatar: '🔥',
-      date: new Date().toISOString(),
-      timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-      dailyScore: dailyScoreData.score,
-      workoutScore: workoutScoreData.score,
-      dietScore: dietScoreData.score,
-      exercises: exercises,
-      meals: meals,
-      isViewed: false,
-      isPublic: true,
-    };
-    setViewingStory(ownStory);
-    setViewingOwnStory(true);
-  };
-
-  const handleCloseStory = () => {
-    setViewingStory(null);
-    setViewingOwnStory(false);
-  };
 
   const filteredExercises = exerciseDatabase.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -563,13 +524,10 @@ const DailyScreenComponent = ({
 
     return (
       <div className="flex flex-col h-full relative overflow-hidden">
-        {/* Consistent background */}
+        {/* Consistent background - static */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-[#1a1d23] via-[#1a1d23] to-[#1a1d23]" />
-          <div 
-            className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5 animate-pulse-slow"
-            style={{ animationDuration: '16s' }}
-          />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5" />
         </div>
 
         <div className="px-6 py-6 border-b border-border/50 backdrop-blur-sm relative z-10">
@@ -601,12 +559,12 @@ const DailyScreenComponent = ({
           
           {/* Score Feedback */}
           {exercise.score !== undefined && (
-            <div className={`mb-6 p-4 rounded-xl border-2 ${getScoreBorderColor(exercise.score)} ${getScoreSelectedBg(exercise.score)} ${getScoreGlowColor(exercise.score)} animate-in fade-in slide-in-from-top-2 duration-300`}>
+            <div className={`mb-6 p-4 rounded-xl border-2 ${getScoreBorderColor(exercise.score)} ${getScoreSelectedBg(exercise.score)} ${getScoreGlowColor(exercise.score)} transition-all duration-500 ease-out`}>
               <div className="text-center">
-                <div className={`text-sm font-bold mb-1 ${getScoreTextColor(exercise.score)}`}>
+                <div className={`text-sm font-bold mb-1 ${getScoreTextColor(exercise.score)} transition-colors duration-500`}>
                   {getScoreLabel(exercise.score)}
                 </div>
-                <p className="text-xs text-white/70">
+                <p className="text-xs text-white/70 transition-opacity duration-500">
                   {exercise.score >= 80 ? 'Excellent work! Keep it up.' : 
                    exercise.score >= 60 ? 'Good effort. Focus on form next time.' : 
                    'Room to improve. Watch technique videos.'}
@@ -630,19 +588,19 @@ const DailyScreenComponent = ({
                   )}
                   <button
                     onClick={() => handleScoreSelect(score)}
-                    className={`w-full p-5 rounded-xl transition-all duration-300 ${
+                    className={`w-full p-5 rounded-xl transition-all duration-500 ease-out ${
                       isSelected 
-                        ? `${getScoreSelectedBg(score)} ${getScoreBorderColor(score)} border-2 ${getScoreGlowColor(score)} scale-[1.02]`
-                        : `${getScoreBaseBg(score)} border border-gray-800/50 hover:border-gray-700/70 hover:scale-[1.01] ${!isSelected && exercise.score !== undefined ? 'opacity-60' : ''}`
+                        ? `${getScoreSelectedBg(score)} ${getScoreBorderColor(score)} border-2 ${getScoreGlowColor(score)}`
+                        : `${getScoreBaseBg(score)} border border-gray-800/50 hover:border-gray-700/70 ${!isSelected && exercise.score !== undefined ? 'opacity-50' : ''}`
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className={`text-base font-bold transition-all duration-300 ${
+                      <div className={`text-base font-bold transition-all duration-500 ${
                         isSelected ? 'text-white' : 'text-white/90'
                       }`}>
                         {getScoreLabel(score)}
                       </div>
-                      <div className={`text-3xl font-black transition-all duration-300 ${getScoreTextColor(score)} ${
+                      <div className={`text-3xl font-black transition-all duration-500 ${getScoreTextColor(score)} ${
                         isSelected ? 'drop-shadow-[0_0_12px_currentColor]' : ''
                       }`}>
                         {score}
@@ -920,16 +878,13 @@ const DailyScreenComponent = ({
   // MAIN VIEW
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
-      {/* Animated background gradient - very subtle, slow loop */}
+      {/* Static background gradient - no animation */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
-        <div 
-          className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5 animate-pulse-slow"
-          style={{ animationDuration: '16s' }}
-        />
-        {/* Additional subtle blue glow orbs */}
-        <div className="absolute top-20 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute top-40 right-1/4 w-48 h-48 bg-blue-400/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/10 via-transparent to-blue-950/5" />
+        {/* Additional subtle blue glow orbs - static */}
+        <div className="absolute top-20 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-40 right-1/4 w-48 h-48 bg-blue-400/5 rounded-full blur-[80px]" />
       </div>
 
       {/* Header */}
@@ -937,7 +892,7 @@ const DailyScreenComponent = ({
         {/* Subtle "Today" indicator line */}
         <div className="absolute left-0 right-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
         
-        <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="mb-1 font-bold">Today's Progress</h1>
             <p className="text-sm text-muted-foreground font-medium">
@@ -945,11 +900,8 @@ const DailyScreenComponent = ({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Streak with subtle pulse animation */}
-            <div 
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-red-950/50 to-orange-950/30 border border-red-500/40 shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 transition-all duration-300 animate-pulse-very-slow"
-              style={{ animationDuration: '4s' }}
-            >
+            {/* Streak badge - static */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br from-red-950/50 to-orange-950/30 border border-red-500/40 shadow-lg shadow-red-500/20">
               <Flame className="w-6 h-6 text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.7)]" />
               <div className="flex flex-col items-start">
                 <div className="text-2xl font-black text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]">7</div>
@@ -1310,128 +1262,7 @@ const DailyScreenComponent = ({
           </div>
         )}
 
-        {/* Friends Section with enhanced depth */}
-        {(hasWorkout || hasMeals) && (
-          <div className="mt-8 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-            <Card className="border border-blue-500/20 overflow-hidden shadow-2xl shadow-blue-500/10 bg-gradient-to-br from-[#252932]/90 to-[#1a1d23]/70">
-              {/* Header */}
-              <div className="px-5 py-4 border-b border-border/50 bg-gradient-to-r from-blue-950/20 to-transparent">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-br from-blue-500/30 to-blue-600/20 rounded-lg border border-blue-500/50 shadow-lg shadow-blue-500/20">
-                      <Trophy className="w-5 h-5 text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white">Friends</h3>
-                      <p className="text-xs text-muted-foreground">See who's crushing it today</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleViewOwnStory}
-                    className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-500/50 hover:border-blue-500/70 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Share2 className="w-4 h-4 text-blue-400" />
-                      <span className="text-xs font-bold text-blue-400">Share</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
 
-              {/* Stories Row with enhanced animations */}
-              <div className="px-5 py-5 flex gap-4 overflow-x-auto scrollbar-hide">
-                {friends.map((friend, idx) => (
-                  <button
-                    key={friend.id}
-                    onClick={() => handleViewFriendStory(friend)}
-                    disabled={!friend.hasStory}
-                    className={`flex-shrink-0 flex flex-col items-center gap-2 ${
-                      !friend.hasStory ? 'opacity-40' : 'hover:scale-110 cursor-pointer'
-                    } transition-all duration-300 animate-in fade-in slide-in-from-bottom-2`}
-                    style={{ animationDelay: `${idx * 50}ms` }}
-                  >
-                    {/* Story Ring with glow */}
-                    <div className="relative">
-                      <div className={`relative ${ 
-                        friend.hasStory 
-                          ? !friend.storyViewed 
-                            ? 'p-[3px] bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg shadow-blue-500/40' 
-                            : 'p-[3px] bg-gray-600 rounded-full'
-                          : 'p-[3px] bg-gray-800 rounded-full'
-                      }`}>
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#252932] to-[#1a1d23] flex items-center justify-center text-2xl border-[3px] border-background shadow-inner">
-                          {friend.avatar}
-                        </div>
-                        {friend.hasStory && !friend.storyViewed && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-background shadow-lg shadow-blue-500/50 animate-pulse"></div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Name & Score */}
-                    <div className="text-center max-w-[70px]">
-                      <p className="text-xs font-bold text-white truncate mb-0.5">
-                        {friend.name}
-                      </p>
-                      <div className={`text-xs font-black px-2 py-0.5 rounded-full border shadow-md ${getScoreBgColor(friend.todayScore)} ${getScoreColor(friend.todayScore)} ${getScoreBorderColor(friend.todayScore)} ${getScoreShadowColor(friend.todayScore)}`}>
-                        {friend.todayScore}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Podium-style Leaderboard with enhanced depth */}
-              <div className="px-5 pb-5">
-                <div className="bg-gradient-to-br from-[#252932] to-[#1a1d23] rounded-2xl p-4 border border-blue-500/20 shadow-xl shadow-blue-500/5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1 bg-gradient-to-br from-yellow-500/20 to-orange-500/10 rounded-lg border border-yellow-500/30">
-                      <Trophy className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
-                    </div>
-                    <h4 className="text-sm font-bold text-white">Today's Top 3</h4>
-                  </div>
-                  <div className="flex gap-2">
-                    {friends
-                      .sort((a, b) => b.todayScore - a.todayScore)
-                      .slice(0, 3)
-                      .map((friend, index) => (
-                        <div
-                          key={friend.id}
-                          className={`relative flex-1 rounded-xl p-3 border transition-all duration-300 hover:scale-105 ${ 
-                            index === 0 ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/10 border-blue-500/40 shadow-lg shadow-blue-500/20' :
-                            index === 1 ? 'bg-gradient-to-br from-[#2a2e38]/50 to-[#252932]/50 border-white/20 shadow-md' :
-                            'bg-gradient-to-br from-card to-[#252932]/50 border-border/50 shadow-sm'
-                          }`}
-                        >
-                          {/* Zap for first place with animation */}
-                          {index === 0 && (
-                            <div className="absolute top-1 right-1 animate-pulse">
-                              <Zap className="w-4 h-4 text-blue-400 drop-shadow-[0_0_6px_rgba(96,165,250,0.8)] fill-blue-400" />
-                            </div>
-                          )}
-                          
-                          <div className="flex flex-col items-center gap-2">
-                            <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shadow-md ${
-                              index === 0 ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/40' :
-                              index === 1 ? 'bg-gradient-to-br from-[#3a3e48] to-[#2a2e38] text-white shadow-[#3a3e48]/40' :
-                              'bg-gradient-to-br from-[#2a2e38] to-[#252932] text-white shadow-[#2a2e38]/40'
-                            }`}>
-                              {index === 0 ? '👑' : index + 1}
-                            </div>
-                            <div className="text-xl">{friend.avatar}</div>
-                            <p className="text-xs font-bold text-white truncate max-w-full">{friend.name}</p>
-                            <div className={`text-lg font-black ${getScoreColor(friend.todayScore)} ${getScoreGlow(friend.todayScore)}`}>
-                              {friend.todayScore}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        )}
       </div>
 
       {/* Progress Pic Modal */}
@@ -1869,14 +1700,7 @@ const DailyScreenComponent = ({
         </div>
       )}
 
-      {/* Daily Breakdown Story Modal */}
-      {viewingStory && (
-        <DailyBreakdownStory
-          story={viewingStory}
-          onClose={handleCloseStory}
-          isOwnStory={viewingOwnStory}
-        />
-      )}
+
     </div>
   );
 };

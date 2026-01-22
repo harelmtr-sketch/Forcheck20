@@ -181,4 +181,25 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+
+  /* Score picker animations */
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: scaleY(0);
+    }
+    to {
+      opacity: 0.9;
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes pulseGlow {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }

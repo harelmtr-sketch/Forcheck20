@@ -85,6 +85,10 @@ const DailyScreenComponent = ({
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   
+  // Score picker touch state
+  const [activeScore, setActiveScore] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  
   // Meal form state
   const [mealName, setMealName] = useState('');
   const [mealCalories, setMealCalories] = useState('');
@@ -555,7 +559,7 @@ const DailyScreenComponent = ({
 
         <div className="flex-1 px-6 py-6 overflow-y-auto relative z-10">
           <h3 className="font-bold text-center mb-2">Rate Your Form</h3>
-          <p className="text-sm text-white/60 text-center mb-6">How did your form feel for this exercise?</p>
+          <p className="text-sm text-white/60 text-center mb-6">Tap or drag to select</p>
           
           {/* Score Feedback */}
           {exercise.score !== undefined && (
@@ -574,10 +578,50 @@ const DailyScreenComponent = ({
           )}
           
           {/* Score List */}
-          <div className="space-y-2">
+          <div 
+            className="space-y-2"
+            onTouchMove={(e) => {
+              // Find which element we're currently over
+              const touch = e.touches[0];
+              const element = document.elementFromPoint(touch.clientX, touch.clientY);
+              const scoreButton = element?.closest('[data-score]');
+              if (scoreButton) {
+                const score = parseInt(scoreButton.getAttribute('data-score') || '0');
+                setActiveScore(score);
+                setIsDragging(true);
+              }
+            }}
+            onTouchEnd={() => {
+              if (isDragging && activeScore !== null) {
+                handleScoreSelect(activeScore);
+              }
+              setIsDragging(false);
+              setActiveScore(null);
+            }}
+          >
             {scoreValues.map((score, index) => {
               const isSelected = exercise.score === score;
+              const isActive = activeScore === score;
               const showDivider = score === 10 || score === 30 || score === 50;
+              
+              // Helper functions for more obvious active state
+              const getActiveBg = (score: number) => {
+                if (score >= 90) return 'bg-green-500/25';
+                if (score >= 80) return 'bg-green-400/25';
+                if (score >= 70) return 'bg-yellow-400/25';
+                if (score >= 60) return 'bg-orange-400/25';
+                if (score >= 50) return 'bg-orange-500/25';
+                return 'bg-red-500/25';
+              };
+
+              const getActiveGlow = (score: number) => {
+                if (score >= 90) return 'shadow-lg shadow-green-500/40';
+                if (score >= 80) return 'shadow-lg shadow-green-400/40';
+                if (score >= 70) return 'shadow-lg shadow-yellow-400/40';
+                if (score >= 60) return 'shadow-lg shadow-orange-400/40';
+                if (score >= 50) return 'shadow-lg shadow-orange-500/40';
+                return 'shadow-lg shadow-red-500/40';
+              };
               
               return (
                 <div key={score}>
@@ -587,22 +631,80 @@ const DailyScreenComponent = ({
                     </div>
                   )}
                   <button
-                    onClick={() => handleScoreSelect(score)}
-                    className={`w-full p-5 rounded-xl transition-all duration-500 ease-out ${
+                    data-score={score}
+                    onClick={() => {
+                      if (!isDragging) {
+                        handleScoreSelect(score);
+                      }
+                    }}
+                    onTouchStart={() => {
+                      setActiveScore(score);
+                    }}
+                    onMouseEnter={() => {
+                      if (!isDragging) {
+                        setActiveScore(score);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (!isDragging) {
+                        setActiveScore(null);
+                      }
+                    }}
+                    className={`relative w-full p-5 rounded-xl overflow-hidden ${
                       isSelected 
                         ? `${getScoreSelectedBg(score)} ${getScoreBorderColor(score)} border-2 ${getScoreGlowColor(score)}`
-                        : `${getScoreBaseBg(score)} border border-gray-800/50 hover:border-gray-700/70 ${!isSelected && exercise.score !== undefined ? 'opacity-50' : ''}`
-                    }`}
+                        : isActive
+                        ? `${getActiveBg(score)} ${getScoreBorderColor(score)} border-2 ${getActiveGlow(score)}`
+                        : `${getScoreBaseBg(score)} border border-gray-800/50 ${!isSelected && exercise.score !== undefined ? 'opacity-50' : ''}`
+                    } transition-all ease-out`}
+                    style={{
+                      transform: isActive && !isSelected ? 'scale(1.02)' : 'scale(1)',
+                      transitionProperty: 'transform, opacity, background-color, border-color, box-shadow',
+                      transitionDuration: isActive ? '140ms' : '200ms',
+                    }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className={`text-base font-bold transition-all duration-500 ${
-                        isSelected ? 'text-white' : 'text-white/90'
-                      }`}>
+                    {/* Left accent bar - more visible */}
+                    {isActive && !isSelected && (
+                      <div 
+                        className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${getScoreTextColor(score)} opacity-90`}
+                        style={{
+                          animation: 'slideInFromLeft 160ms ease-out',
+                        }}
+                      />
+                    )}
+
+                    {/* Inner glow highlight */}
+                    {isActive && !isSelected && (
+                      <div 
+                        className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent`}
+                        style={{
+                          animation: 'pulseGlow 160ms ease-out',
+                        }}
+                      />
+                    )}
+                    
+                    <div className="flex items-center justify-between relative z-10">
+                      <div 
+                        className={`text-base font-bold transition-all ${
+                          isSelected || isActive ? 'text-white' : 'text-white/70'
+                        }`}
+                        style={{
+                          transitionDuration: isActive ? '140ms' : '200ms',
+                        }}
+                      >
                         {getScoreLabel(score)}
                       </div>
-                      <div className={`text-3xl font-black transition-all duration-500 ${getScoreTextColor(score)} ${
-                        isSelected ? 'drop-shadow-[0_0_12px_currentColor]' : ''
-                      }`}>
+                      <div 
+                        className={`text-3xl font-black ${getScoreTextColor(score)} ${
+                          isSelected ? 'drop-shadow-[0_0_12px_currentColor]' : isActive ? 'drop-shadow-[0_0_10px_currentColor]' : ''
+                        }`}
+                        style={{
+                          transform: isActive || isSelected ? 'scale(1.08)' : 'scale(1)',
+                          transitionProperty: 'transform, filter',
+                          transitionDuration: isActive ? '140ms' : '200ms',
+                          transitionTimingFunction: 'ease-out',
+                        }}
+                      >
                         {score}
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-const AUTH_KEY = 'forcheck_auth';
+const AUTH_KEY = 'kinetic_auth';
 
 export interface AuthState {
   isAuthenticated: boolean;

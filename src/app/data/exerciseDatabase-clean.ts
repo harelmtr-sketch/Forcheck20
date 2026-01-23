@@ -713,6 +713,162 @@ export const exerciseDatabase: ExerciseData[] = [
     baseReps: 20,
     baseSets: 3
   },
+
+  // COMPOUND BARBELL/WEIGHT EXERCISES
+  {
+    id: 'bench-press',
+    name: 'Bench Press',
+    category: 'push',
+    primaryMuscles: ['chest', 'triceps'],
+    secondaryMuscles: ['front-delts'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 8,
+    baseSets: 4
+  },
+  {
+    id: 'incline-bench-press',
+    name: 'Incline Bench Press',
+    category: 'push',
+    primaryMuscles: ['chest', 'front-delts'],
+    secondaryMuscles: ['triceps'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 8,
+    baseSets: 4
+  },
+  {
+    id: 'overhead-press',
+    name: 'Overhead Press',
+    category: 'push',
+    primaryMuscles: ['front-delts', 'triceps'],
+    secondaryMuscles: ['traps', 'core'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 8,
+    baseSets: 4
+  },
+  {
+    id: 'barbell-squat',
+    name: 'Barbell Squat',
+    category: 'legs',
+    primaryMuscles: ['quads', 'glutes'],
+    secondaryMuscles: ['hamstrings', 'core'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 10,
+    baseSets: 4
+  },
+  {
+    id: 'front-squat',
+    name: 'Front Squat',
+    category: 'legs',
+    primaryMuscles: ['quads', 'core'],
+    secondaryMuscles: ['glutes', 'hamstrings'],
+    difficulty: 'advanced',
+    equipment: 'weights',
+    baseReps: 8,
+    baseSets: 4
+  },
+  {
+    id: 'deadlift',
+    name: 'Deadlift',
+    category: 'legs',
+    primaryMuscles: ['hamstrings', 'glutes', 'back'],
+    secondaryMuscles: ['traps', 'forearms', 'core'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 6,
+    baseSets: 4
+  },
+  {
+    id: 'romanian-deadlift',
+    name: 'Romanian Deadlift',
+    category: 'legs',
+    primaryMuscles: ['hamstrings', 'glutes'],
+    secondaryMuscles: ['back', 'core'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 10,
+    baseSets: 4
+  },
+  {
+    id: 'barbell-row',
+    name: 'Barbell Row',
+    category: 'pull',
+    primaryMuscles: ['back', 'traps'],
+    secondaryMuscles: ['biceps', 'rear-delts'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 10,
+    baseSets: 4
+  },
+  {
+    id: 'dumbbell-row',
+    name: 'Dumbbell Row',
+    category: 'pull',
+    primaryMuscles: ['back'],
+    secondaryMuscles: ['biceps', 'rear-delts', 'traps'],
+    difficulty: 'beginner',
+    equipment: 'weights',
+    baseReps: 12,
+    baseSets: 3
+  },
+  {
+    id: 'weighted-pull-up',
+    name: 'Weighted Pull-ups',
+    category: 'pull',
+    primaryMuscles: ['back', 'biceps'],
+    secondaryMuscles: ['rear-delts', 'forearms'],
+    difficulty: 'advanced',
+    equipment: 'weights',
+    baseReps: 6,
+    baseSets: 4
+  },
+  {
+    id: 'walking-barbell-lunge',
+    name: 'Walking Barbell Lunge',
+    category: 'legs',
+    primaryMuscles: ['quads', 'glutes'],
+    secondaryMuscles: ['hamstrings', 'calves'],
+    difficulty: 'intermediate',
+    equipment: 'weights',
+    baseReps: 12,
+    baseSets: 3
+  },
+  {
+    id: 'goblet-squat',
+    name: 'Goblet Squat',
+    category: 'legs',
+    primaryMuscles: ['quads', 'glutes'],
+    secondaryMuscles: ['core'],
+    difficulty: 'beginner',
+    equipment: 'weights',
+    baseReps: 12,
+    baseSets: 3
+  },
+  {
+    id: 'dumbbell-bench-press',
+    name: 'Dumbbell Bench Press',
+    category: 'push',
+    primaryMuscles: ['chest'],
+    secondaryMuscles: ['triceps', 'front-delts'],
+    difficulty: 'beginner',
+    equipment: 'weights',
+    baseReps: 10,
+    baseSets: 4
+  },
+  {
+    id: 'dumbbell-shoulder-press',
+    name: 'Dumbbell Shoulder Press',
+    category: 'push',
+    primaryMuscles: ['front-delts'],
+    secondaryMuscles: ['triceps', 'traps'],
+    difficulty: 'beginner',
+    equipment: 'weights',
+    baseReps: 10,
+    baseSets: 3
+  },
 ];
 
 export interface WorkoutTemplate {

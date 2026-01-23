@@ -199,7 +199,7 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
     setExercises(prev => [...prev, newExercise]);
 
     // Update muscle status
-    const targetedMuscles = exerciseData.targetMuscles;
+    const targetedMuscles = [...exerciseData.primaryMuscles, ...exerciseData.secondaryMuscles];
     setMuscleStatus(prev => prev.map(muscle => {
       if (targetedMuscles.includes(muscle.key)) {
         return {
@@ -218,6 +218,8 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
 
   const handleCloseResult = () => {
     setAnalysisResult(null);
+    // Navigate back to daily/home when closing without saving
+    onRecordingComplete();
   };
 
   const filteredExercises = exerciseDatabase.filter(exercise =>

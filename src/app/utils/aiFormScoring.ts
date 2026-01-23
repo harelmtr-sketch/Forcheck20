@@ -94,36 +94,36 @@ export async function analyzeWorkoutForm(exerciseName: string, videoBlob?: Blob)
     // Generate feedback based on score
     let feedback = '';
     if (finalScore >= 90) {
-      feedback = 'Excellent form! Your technique is outstanding.';
+      feedback = 'Explosive power output with excellent eccentric control. Strong time under tension hitting all major muscle groups.';
     } else if (finalScore >= 75) {
-      feedback = 'Great form! Minor adjustments could help.';
+      feedback = 'Solid mechanical advantage maintained. Good muscle activation pattern with steady tempo throughout the set.';
     } else if (finalScore >= 60) {
-      feedback = 'Good effort! Focus on form improvements.';
+      feedback = 'Moderate intensity detected. Work on increasing range of motion and time under tension for better hypertrophy stimulus.';
     } else if (finalScore >= 40) {
-      feedback = 'Decent attempt! More practice needed.';
+      feedback = 'Limited depth and muscle engagement. Focus on deliberate eccentric lowering and full contraction at peak position.';
     } else {
-      feedback = 'Form needs work! Focus on the basics.';
+      feedback = 'Minimal effective range detected. Prioritize control over speed—slow down the descent and feel the muscle working.';
     }
 
-    // Generate strengths and improvements based on score
+    // Generate strengths and improvements based on score with coach-like feedback
     const strengths: string[] = [];
     const improvements: string[] = [];
 
     if (finalScore >= 70) {
-      strengths.push('Controlled movement');
-      strengths.push('Good range of motion');
+      strengths.push('Maintained stable shoulder position throughout descent');
+      strengths.push('Good hip alignment — kept glutes engaged to protect lower back');
       if (finalScore >= 85) {
-        strengths.push('Excellent form consistency');
+        strengths.push('Controlled tempo on both eccentric and concentric phases');
       }
     } else {
-      improvements.push('Work on form consistency');
-      improvements.push('Control the movement');
+      improvements.push('Engage your core harder to prevent hip sag');
+      improvements.push('Focus on a 2-second descent for better muscle control');
     }
 
     if (finalScore < 80) {
-      improvements.push('Increase range of motion');
+      improvements.push('Go deeper — chest should nearly touch the ground for full pec activation');
       if (finalScore < 60) {
-        improvements.push('Focus on proper technique');
+        improvements.push('Keep elbows at 45° angle, not flared out wide');
       }
     }
 

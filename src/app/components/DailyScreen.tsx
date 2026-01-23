@@ -131,7 +131,7 @@ const DailyScreenComponent = ({
 
   // Load saved meals from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('forcheck-saved-meals');
+    const saved = localStorage.getItem('kinetic-saved-meals');
     if (saved) {
       try {
         setSavedMeals(JSON.parse(saved));
@@ -143,7 +143,7 @@ const DailyScreenComponent = ({
 
   // Save to localStorage whenever savedMeals changes
   useEffect(() => {
-    localStorage.setItem('forcheck-saved-meals', JSON.stringify(savedMeals));
+    localStorage.setItem('kinetic-saved-meals', JSON.stringify(savedMeals));
   }, [savedMeals]);
 
   const handleTemplateStart = (template: WorkoutTemplate) => {

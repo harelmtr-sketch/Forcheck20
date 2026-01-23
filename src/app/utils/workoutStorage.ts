@@ -3,17 +3,17 @@ import type { Exercise, Meal, MuscleStatus } from '../App';
 export interface WorkoutSession {
   exercises: Exercise[];
   meals: Meal[];
-  muscleStatus: MuscleStatus[];
+  muscles: MuscleStatus[];
   date: string;
 }
 
-const STORAGE_KEY = 'forcheck_current_workout';
+const STORAGE_KEY = 'kinetic_current_workout';
 
 export const saveWorkoutToStorage = (exercises: Exercise[], meals: Meal[], muscleStatus: MuscleStatus[]) => {
   const session: WorkoutSession = {
     exercises,
     meals,
-    muscleStatus,
+    muscles: muscleStatus,
     date: new Date().toISOString()
   };
   

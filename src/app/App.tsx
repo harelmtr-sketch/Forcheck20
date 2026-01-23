@@ -71,7 +71,7 @@ export default function App() {
   // Initial splash - only show once when app first loads
   const [showInitialSplash, setShowInitialSplash] = useState(() => {
     // Check if splash was already shown in this session
-    const splashShown = sessionStorage.getItem('forcheck_splash_shown');
+    const splashShown = sessionStorage.getItem('kinetic_splash_shown');
     return splashShown !== 'true';
   });
   const [showLoginSwoosh, setShowLoginSwoosh] = useState(false);
@@ -147,7 +147,7 @@ export default function App() {
 
   const handleSplashComplete = useCallback(() => {
     setShowInitialSplash(false);
-    sessionStorage.setItem('forcheck_splash_shown', 'true');
+    sessionStorage.setItem('kinetic_splash_shown', 'true');
   }, []);
 
   const handleLoginSwooshComplete = useCallback(() => {

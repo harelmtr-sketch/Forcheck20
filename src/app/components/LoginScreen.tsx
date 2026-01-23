@@ -21,7 +21,7 @@ export const LoginScreen = memo(function LoginScreen({ onLogin }: LoginScreenPro
     if (email.trim()) {
       // Store remember device preference
       if (rememberDevice) {
-        localStorage.setItem('forcheck_remember_device', 'true');
+        localStorage.setItem('kinetic_remember_device', 'true');
       }
       onLogin(email.trim());
     }
@@ -161,7 +161,7 @@ export const LoginScreen = memo(function LoginScreen({ onLogin }: LoginScreenPro
 
           {/* Copyright */}
           <div className="flex-shrink-0 text-center pt-6 border-t border-white/5 animate-in fade-in duration-700 delay-300">
-            <p className="text-gray-600 text-xs uppercase tracking-wider">© 2026 Forcheck Team</p>
+            <p className="text-gray-600 text-xs uppercase tracking-wider">© 2026 Kinetic Team</p>
           </div>
         </div>
       </div>
@@ -197,7 +197,7 @@ export const LoginScreen = memo(function LoginScreen({ onLogin }: LoginScreenPro
             </div>
           </div>
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-white mb-1">Forcheck</h1>
+            <h1 className="text-3xl font-bold text-white mb-1">Kinetic</h1>
             <p className="text-gray-400 text-sm tracking-wider uppercase">Fitness Tracking</p>
           </div>
         </div>
@@ -375,7 +375,7 @@ export const LoginScreen = memo(function LoginScreen({ onLogin }: LoginScreenPro
 
         {/* Copyright */}
         <div className="flex-shrink-0 text-center pt-6 border-t border-white/5 animate-in fade-in duration-700 delay-300">
-          <p className="text-gray-600 text-xs uppercase tracking-wider">© 2026 Forcheck Team</p>
+          <p className="text-gray-600 text-xs uppercase tracking-wider">© 2026 Kinetic Team</p>
         </div>
       </div>
     </div>

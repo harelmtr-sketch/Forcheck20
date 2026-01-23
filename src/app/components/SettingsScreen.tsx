@@ -86,7 +86,7 @@ const SettingsScreenComponent = ({
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="font-bold">About Forcheck</h1>
+              <h1 className="font-bold">About Kinetic</h1>
               <p className="text-sm text-muted-foreground font-medium">
                 Meet the team
               </p>
@@ -101,14 +101,14 @@ const SettingsScreenComponent = ({
               <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mb-4 shadow-2xl shadow-blue-500/30">
                 <Activity className="w-10 h-10 text-white" />
               </div>
-              <h2 className="font-bold text-foreground text-2xl mb-2">Forcheck</h2>
+              <h2 className="font-bold text-foreground text-2xl mb-2">Kinetic</h2>
               <p className="text-sm text-blue-300 font-medium">
                 AI-Powered Calisthenics Form Analysis
               </p>
               <p className="text-xs text-blue-400 mt-2">Version 1.0.0</p>
             </div>
             <p className="text-sm text-foreground/80 text-center leading-relaxed">
-              Forcheck uses advanced computer vision to analyze your workout form in real-time, providing instant feedback and personalized coaching to maximize your gains while minimizing injury risk.
+              Kinetic uses advanced computer vision to analyze your workout form in real-time, providing instant feedback and personalized coaching to maximize your gains while minimizing injury risk.
             </p>
           </Card>
 
@@ -176,7 +176,7 @@ const SettingsScreenComponent = ({
           </div>
 
           <div className="text-center pt-4 pb-2">
-            <p className="text-xs text-muted-foreground">© 2026 Forcheck. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground">© 2026 Kinetic. All rights reserved.</p>
             <p className="text-xs text-muted-foreground mt-1">Made with care by Meltser & Gibor</p>
           </div>
         </div>
@@ -212,7 +212,7 @@ const SettingsScreenComponent = ({
               <div className="mb-4">
                 <Heart className="w-16 h-16 text-pink-400 mx-auto" />
               </div>
-              <h3 className="font-bold text-xl mb-2">Love Forcheck?</h3>
+              <h3 className="font-bold text-xl mb-2">Love Kinetic?</h3>
               <p className="text-sm text-pink-200 leading-relaxed">
                 Your support helps us improve the app, add new features, and keep our servers running. Every contribution makes a difference!
               </p>
@@ -230,7 +230,7 @@ const SettingsScreenComponent = ({
                   Rate & Review
                 </h4>
                 <p className="text-sm text-blue-200 mb-3">
-                  Leave a 5-star review on the App Store to help others discover Forcheck
+                  Leave a 5-star review on the App Store to help others discover Kinetic
                 </p>
                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                   Leave a Review
@@ -243,7 +243,7 @@ const SettingsScreenComponent = ({
                   Spread the Word
                 </h4>
                 <p className="text-sm text-purple-200 mb-3">
-                  Share Forcheck with your workout buddies and on social media
+                  Share Kinetic with your workout buddies and on social media
                 </p>
                 <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
                   Share App
@@ -271,40 +271,40 @@ const SettingsScreenComponent = ({
             
             <div className="grid grid-cols-2 gap-3">
               <Card 
-                onClick={() => window.open('https://twitter.com/forcheck', '_blank')}
+                onClick={() => window.open('https://twitter.com/kinetic', '_blank')}
                 className="p-4 bg-card border-border cursor-pointer hover:bg-foreground/5 transition-colors"
               >
                 <div className="flex flex-col items-center gap-2">
                   <Twitter className="w-8 h-8 text-blue-400" />
                   <p className="text-sm font-semibold">Twitter</p>
-                  <p className="text-xs text-muted-foreground">@forcheck</p>
+                  <p className="text-xs text-muted-foreground">@kinetic</p>
                 </div>
               </Card>
 
               <Card 
-                onClick={() => window.open('https://instagram.com/forcheck', '_blank')}
+                onClick={() => window.open('https://instagram.com/kinetic', '_blank')}
                 className="p-4 bg-card border-border cursor-pointer hover:bg-foreground/5 transition-colors"
               >
                 <div className="flex flex-col items-center gap-2">
                   <Instagram className="w-8 h-8 text-pink-400" />
                   <p className="text-sm font-semibold">Instagram</p>
-                  <p className="text-xs text-muted-foreground">@forcheck</p>
+                  <p className="text-xs text-muted-foreground">@kinetic</p>
                 </div>
               </Card>
 
               <Card 
-                onClick={() => window.open('https://github.com/forcheck', '_blank')}
+                onClick={() => window.open('https://github.com/kinetic', '_blank')}
                 className="p-4 bg-card border-border cursor-pointer hover:bg-foreground/5 transition-colors"
               >
                 <div className="flex flex-col items-center gap-2">
                   <Github className="w-8 h-8 text-gray-500 dark:text-gray-300" />
                   <p className="text-sm font-semibold">GitHub</p>
-                  <p className="text-xs text-muted-foreground">@forcheck</p>
+                  <p className="text-xs text-muted-foreground">@kinetic</p>
                 </div>
               </Card>
 
               <Card 
-                onClick={() => window.open('mailto:support@forcheck.app', '_blank')}
+                onClick={() => window.open('mailto:support@kinetic.app', '_blank')}
                 className="p-4 bg-card border-border cursor-pointer hover:bg-foreground/5 transition-colors"
               >
                 <div className="flex flex-col items-center gap-2">
@@ -318,7 +318,7 @@ const SettingsScreenComponent = ({
 
           <Card className="p-4 bg-blue-950/30 border border-blue-500/30">
             <p className="text-sm text-blue-400 text-center font-medium">
-              Thank you for being part of the Forcheck community!
+              Thank you for being part of the Kinetic community!
             </p>
           </Card>
         </div>
@@ -670,7 +670,7 @@ const SettingsScreenComponent = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h4 className="font-bold text-sm">About Forcheck</h4>
+                  <h4 className="font-bold text-sm">About Kinetic</h4>
                   <p className="text-xs text-muted-foreground font-medium">Version, team, and mission</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -708,7 +708,7 @@ const SettingsScreenComponent = ({
                 <div className="flex items-center justify-between">
                   <div className="flex-1 text-left">
                     <h4 className="font-bold text-sm text-red-400 mb-1">Sign Out</h4>
-                    <p className="text-xs text-red-300/70 font-medium">Log out of your Forcheck account</p>
+                    <p className="text-xs text-red-300/70 font-medium">Log out of your Kinetic account</p>
                   </div>
                   <LogOut className="w-6 h-6 text-red-400" />
                 </div>

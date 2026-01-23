@@ -30,7 +30,7 @@ export function DailyBreakdownStory({ story, onClose, isOwnStory = false }: Dail
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `forcheck-daily-${new Date().toISOString().split('T')[0]}.png`;
+          a.download = `kinetic-daily-${new Date().toISOString().split('T')[0]}.png`;
           a.click();
           URL.revokeObjectURL(url);
         }
@@ -52,12 +52,12 @@ export function DailyBreakdownStory({ story, onClose, isOwnStory = false }: Dail
       
       canvas.toBlob(async (blob) => {
         if (blob) {
-          const file = new File([blob], 'forcheck-daily.png', { type: 'image/png' });
+          const file = new File([blob], 'kinetic-daily.png', { type: 'image/png' });
           
           if (navigator.share && navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: 'My Daily Forcheck Stats',
+              title: 'My Daily Kinetic Stats',
               text: `Check out my daily score: ${story.dailyScore}! 💪`,
             });
           } else {
@@ -208,7 +208,7 @@ export function DailyBreakdownStory({ story, onClose, isOwnStory = false }: Dail
             {/* Footer Branding */}
             <div className="pt-6 border-t border-white/10 text-center">
               <div className="text-2xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-1">
-                FORCHECK
+                KINETIC
               </div>
               <p className="text-xs text-white/40 font-medium">
                 Track • Analyze • Improve

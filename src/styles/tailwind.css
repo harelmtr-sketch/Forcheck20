@@ -1,4 +1,4 @@
-@import 'tailwindcss' source(none);
+@import "tailwindcss";
 @source '../**/*.{js,ts,jsx,tsx}';
 
 /* Custom animations for production-ready polish */
@@ -26,4 +26,14 @@
 
 .animate-pulse-very-slow {
   animation: pulse-very-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hide scrollbar while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

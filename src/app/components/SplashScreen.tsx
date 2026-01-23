@@ -104,7 +104,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Text */}
           <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-            <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">Forcheck</h1>
+            <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">Kinetic</h1>
             <p className="text-gray-400 text-sm tracking-wider uppercase font-medium">Power Your Performance</p>
           </div>
 

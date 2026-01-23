@@ -28,28 +28,39 @@ export interface AppSettings {
   
   // Accessibility
   hapticFeedback: boolean;
-}
+};
+
+const STORAGE_KEY = 'kinetic_settings';
 
 const DEFAULT_SETTINGS: AppSettings = {
+  // Appearance
   darkMode: true,
-  clearOnTemplate: true,
+  
+  // Workout Preferences
+  clearOnTemplate: false,
   autoSaveWorkouts: true,
   showFormScore: true,
   scoreDisplayMode: 'both',
-  workoutReminders: false,
+  
+  // Notifications
+  workoutReminders: true,
   formTips: true,
   friendActivity: true,
   achievements: true,
-  profileVisibility: 'friends',
-  workoutSharing: false,
+  
+  // Privacy & Friends
+  profileVisibility: 'public',
+  workoutSharing: true,
   leaderboard: true,
+  
+  // AI Preferences
   aiCoaching: true,
   aiRecommendations: true,
   aiDifficulty: 'intermediate',
+  
+  // Accessibility
   hapticFeedback: true,
 };
-
-const STORAGE_KEY = 'forcheck_settings';
 
 export function loadSettings(): AppSettings {
   try {

@@ -8,12 +8,14 @@ interface AnalysisResultSheetProps {
   result: FormAnalysisResult & { exerciseName: string };
   onClose: () => void;
   onRetry?: () => void;
+  onSave?: (score: number) => void;
 }
 
 export function AnalysisResultSheet({
   result,
   onClose,
   onRetry,
+  onSave,
 }: AnalysisResultSheetProps) {
   const { exerciseName, score, sets: reps, feedback, strengths, improvements } = result;
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -335,7 +337,12 @@ export function AnalysisResultSheet({
         {/* E) PRIMARY ACTION */}
         <div className="px-6 pb-6">
           <Button
-            onClick={onClose}
+            onClick={() => {
+              if (onSave && isValidResult) {
+                onSave(score);
+              }
+              onClose();
+            }}
             className="w-full h-12 bg-white hover:bg-white/90 text-black font-bold shadow-lg transition-all"
           >
             Done

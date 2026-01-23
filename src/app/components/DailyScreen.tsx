@@ -1202,10 +1202,10 @@ const DailyScreenComponent = ({
                             e.stopPropagation();
                             handleRemoveExercise(index);
                           }}
-                          className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs font-medium text-red-400 hover:bg-red-500/20 transition-colors"
+                          className="flex items-center justify-center w-full py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs font-medium text-red-400 hover:bg-red-500/20 transition-colors"
+                          title="Remove exercise"
                         >
-                          <X className="w-3 h-3" />
-                          Remove Exercise
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     ) : (

@@ -141,9 +141,40 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
     setShowExercisePicker(false);
     setIsAnalyzing(true);
     
-    // Simulate AI analysis
+    // Simulate AI analysis with placeholder scores for non-pushup exercises
     setTimeout(() => {
-      const result = analyzeWorkoutForm(exercise.name, [], muscleStatus);
+      // Check if this is a pushup exercise - for now, only "Push-up" uses real AI
+      const isPushup = exercise.name.toLowerCase().includes('push-up') || exercise.name.toLowerCase().includes('pushup');
+      
+      let result;
+      if (isPushup) {
+        // For pushups, we would use real AI (but need video blob)
+        // For now, placeholder
+        result = {
+          score: 85,
+          sets: 10,
+          feedback: 'Good form! Keep practicing.',
+          strengths: ['Controlled movement', 'Good range of motion'],
+          improvements: ['Work on form consistency']
+        };
+      } else {
+        // For all other exercises, generate a high placeholder score (90-100)
+        const placeholderScore = Math.floor(Math.random() * 11) + 90; // 90-100
+        const placeholderReps = Math.floor(Math.random() * 6) + 10; // 10-15
+        
+        result = {
+          score: placeholderScore,
+          sets: placeholderReps,
+          feedback: placeholderScore >= 95 ? 'Excellent form! Outstanding technique.' : 'Great form! Minor adjustments could help.',
+          strengths: [
+            'Controlled movement',
+            'Good range of motion',
+            placeholderScore >= 95 ? 'Excellent form consistency' : 'Strong technique'
+          ],
+          improvements: placeholderScore >= 95 ? [] : ['Keep up the good work']
+        };
+      }
+      
       setAnalysisResult({ ...result, exerciseName: exercise.name });
       setIsAnalyzing(false);
     }, 2500);
@@ -280,30 +311,14 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
           </>
         )}
 
-        {/* Animated corner brackets with color - only when no photo */}
+        {/* Center crosshair with color - only when no photo */}
         {!capturedPhoto && stream && (
-          <>
-            <div className="absolute top-8 left-8 w-16 h-16 pointer-events-none z-20">
-              <div className="w-full h-full border-l-4 border-t-4 border-blue-400/80 rounded-tl-xl shadow-[0_0_20px_rgba(96,165,250,0.6)] animate-pulse" />
-            </div>
-            <div className="absolute top-8 right-8 w-16 h-16 pointer-events-none z-20">
-              <div className="w-full h-full border-r-4 border-t-4 border-cyan-400/80 rounded-tr-xl shadow-[0_0_20px_rgba(34,211,238,0.6)] animate-pulse" style={{ animationDelay: '0.5s' }} />
-            </div>
-            <div className="absolute bottom-32 left-8 w-16 h-16 pointer-events-none z-20">
-              <div className="w-full h-full border-l-4 border-b-4 border-purple-400/80 rounded-bl-xl shadow-[0_0_20px_rgba(192,132,252,0.6)] animate-pulse" style={{ animationDelay: '1s' }} />
-            </div>
-            <div className="absolute bottom-32 right-8 w-16 h-16 pointer-events-none z-20">
-              <div className="w-full h-full border-r-4 border-b-4 border-blue-400/80 rounded-br-xl shadow-[0_0_20px_rgba(96,165,250,0.6)] animate-pulse" style={{ animationDelay: '1.5s' }} />
-            </div>
-            
-            {/* Center crosshair with color */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 pointer-events-none z-20">
-              <div className="absolute inset-0 border-2 border-blue-400/60 rounded-full animate-ping" />
-              <div className="absolute inset-0 border-2 border-cyan-400/40 rounded-full" />
-              <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
-              <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-cyan-400/60 to-transparent" />
-            </div>
-          </>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 pointer-events-none z-20">
+            <div className="absolute inset-0 border-2 border-blue-400/60 rounded-full animate-ping" />
+            <div className="absolute inset-0 border-2 border-cyan-400/40 rounded-full" />
+            <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-cyan-400/60 to-transparent" />
+          </div>
         )}
       </div>
 

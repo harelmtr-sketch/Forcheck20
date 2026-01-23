@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple } from 'lucide-react';
+import { Plus, X, Search, ChevronLeft, Target, Award, ChevronRight, Archive, Save, Camera, Apple, Trash2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { exerciseDatabase, workoutTemplates } from '../data/exerciseDatabase-clean';
@@ -636,9 +636,10 @@ export function DailyScreen({
                             e.stopPropagation();
                             handleRemoveExercise(index);
                           }}
-                          className="p-1 hover:bg-destructive/20 rounded transition-colors"
+                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                          title="Remove exercise"
                         >
-                          <X className="w-4 h-4 text-muted-foreground" />
+                          <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
                       </div>
                     </div>

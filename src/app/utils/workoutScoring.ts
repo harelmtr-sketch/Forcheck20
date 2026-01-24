@@ -67,6 +67,11 @@ export function calculateWorkoutScore(exercises: Exercise[], muscleStatus: Muscl
     };
   }
 
+  // Safety check for muscleStatus
+  if (!muscleStatus || !Array.isArray(muscleStatus)) {
+    muscleStatus = [];
+  }
+
   // Filter out exercises that haven't been rated yet
   const ratedExercises = exercises.filter(ex => ex.score !== null && ex.score !== undefined);
   
@@ -128,6 +133,11 @@ export function calculateWorkoutScore(exercises: Exercise[], muscleStatus: Muscl
  */
 function getHitMuscles(exercises: Exercise[], muscleStatus: MuscleStatus[]): Set<string> {
   const hitMuscles = new Set<string>();
+  
+  // Safety check
+  if (!muscleStatus || !Array.isArray(muscleStatus)) {
+    return hitMuscles;
+  }
   
   for (const exercise of exercises) {
     // Check if this exercise qualifies as a "hit" (score > 50, 2+ sets, 5+ reps)

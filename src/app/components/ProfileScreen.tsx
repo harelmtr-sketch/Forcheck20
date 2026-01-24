@@ -259,7 +259,7 @@ const ProfileScreenComponent = ({
             </Card>
 
             <div className="space-y-2">
-              {muscleStatus.map((muscle, i) => (
+              {muscleStatus?.map((muscle, i) => (
                 <Card key={i} className="p-4 bg-card/50 border-white/10 flex items-center justify-between">
                   <p className="font-bold text-white">{muscle.name}</p>
                   <div className="flex items-center gap-2">

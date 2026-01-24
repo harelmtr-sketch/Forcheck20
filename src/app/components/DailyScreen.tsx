@@ -17,6 +17,7 @@ interface DailyScreenProps {
   muscleStatus: MuscleStatus[];
   setMuscleStatus: React.Dispatch<React.SetStateAction<MuscleStatus[]>>;
   onRecordExercise: (exerciseIndex: number) => void;
+  onRetryExercise: (exerciseName: string) => void;
 }
 
 type View = 'main' | 'exercise-picker' | 'templates' | 'score-picker' | 'meal-form';
@@ -63,7 +64,8 @@ const DailyScreenComponent = ({
   setMeals,
   muscleStatus,
   setMuscleStatus,
-  onRecordExercise
+  onRecordExercise,
+  onRetryExercise
 }: DailyScreenProps) => {
   const [currentView, setCurrentView] = useState<View>('main');
   const [searchQuery, setSearchQuery] = useState('');
@@ -175,16 +177,20 @@ const DailyScreenComponent = ({
     });
     
     // Mark muscles as being trained (set status to 'sore' and lastTrained to 'Today')
-    setMuscleStatus(prev => prev.map(muscle => {
-      if (musclesBeingTrained.has(muscle.key)) {
-        return {
-          ...muscle,
-          status: 'sore' as const,
-          lastTrained: 'Today'
-        };
-      }
-      return muscle;
-    }));
+    setMuscleStatus(prev => {
+      if (!prev || !Array.isArray(prev)) return prev;
+      
+      return prev.map(muscle => {
+        if (musclesBeingTrained.has(muscle.key)) {
+          return {
+            ...muscle,
+            status: 'sore' as const,
+            lastTrained: 'Today'
+          };
+        }
+        return muscle;
+      });
+    });
     
     setCurrentView('main');
   };
@@ -261,17 +267,21 @@ const DailyScreenComponent = ({
     
     if (exerciseData) {
       const affectedMuscles = [...exerciseData.primaryMuscles, ...exerciseData.secondaryMuscles];
-      setMuscleStatus(prev => prev.map(muscle => {
-        if (affectedMuscles.includes(muscle.key)) {
-          return {
-            ...muscle,
-            status: 'sore' as const,
-            lastTrained: 'Today',
-            setsToday: muscle.setsToday + exercise.sets
-          };
-        }
-        return muscle;
-      }));
+      setMuscleStatus(prev => {
+        if (!prev || !Array.isArray(prev)) return prev;
+        
+        return prev.map(muscle => {
+          if (affectedMuscles.includes(muscle.key)) {
+            return {
+              ...muscle,
+              status: 'sore' as const,
+              lastTrained: 'Today',
+              setsToday: muscle.setsToday + exercise.sets
+            };
+          }
+          return muscle;
+        });
+      });
     }
 
     // Smooth delay before returning to main view
@@ -1178,7 +1188,7 @@ const DailyScreenComponent = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onRecordExercise(index);
+                        onRetryExercise(exercise.name);
                       }}
                       className="flex items-center justify-center gap-2 w-full py-3 mb-3 rounded-lg bg-gradient-to-r from-red-950/50 to-red-900/30 border border-red-500/40 hover:border-red-500/60 hover:shadow-lg hover:shadow-red-500/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                     >

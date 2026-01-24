@@ -7,6 +7,8 @@ interface HumanBodyModelProps {
 export function HumanBodyModel({ muscleStatus }: HumanBodyModelProps) {
   // Helper to get muscle color
   const getMuscleColor = (muscleKey: string) => {
+    if (!muscleStatus || !Array.isArray(muscleStatus)) return 'fill-gray-600/30 stroke-gray-500/50';
+    
     const muscle = muscleStatus.find(m => m.key === muscleKey);
     if (!muscle) return 'fill-gray-600/30 stroke-gray-500/50';
     
@@ -20,6 +22,8 @@ export function HumanBodyModel({ muscleStatus }: HumanBodyModelProps) {
   };
 
   const getGlowColor = (muscleKey: string) => {
+    if (!muscleStatus || !Array.isArray(muscleStatus)) return '';
+    
     const muscle = muscleStatus.find(m => m.key === muscleKey);
     if (!muscle) return '';
     
@@ -275,19 +279,19 @@ export function HumanBodyModel({ muscleStatus }: HumanBodyModelProps) {
       <div className="mt-6 grid grid-cols-3 gap-3">
         <div className="text-center p-3 bg-green-500/10 rounded-lg border border-green-500/30">
           <p className="text-2xl font-bold text-green-400">
-            {muscleStatus.filter(m => m.status === 'ready').length}
+            {muscleStatus?.filter(m => m.status === 'ready').length || 0}
           </p>
           <p className="text-xs text-green-300/80 font-semibold">Ready</p>
         </div>
         <div className="text-center p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
           <p className="text-2xl font-bold text-yellow-400">
-            {muscleStatus.filter(m => m.status === 'recovering').length}
+            {muscleStatus?.filter(m => m.status === 'recovering').length || 0}
           </p>
           <p className="text-xs text-yellow-300/80 font-semibold">Recovering</p>
         </div>
         <div className="text-center p-3 bg-red-500/10 rounded-lg border border-red-500/30">
           <p className="text-2xl font-bold text-red-400">
-            {muscleStatus.filter(m => m.status === 'sore').length}
+            {muscleStatus?.filter(m => m.status === 'sore').length || 0}
           </p>
           <p className="text-xs text-red-300/80 font-semibold">Sore</p>
         </div>

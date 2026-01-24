@@ -125,17 +125,21 @@ export function DailyScreen({
     
     if (exerciseData) {
       const affectedMuscles = [...exerciseData.primaryMuscles, ...exerciseData.secondaryMuscles];
-      setMuscleStatus(prev => prev.map(muscle => {
-        if (affectedMuscles.includes(muscle.key)) {
-          return {
-            ...muscle,
-            status: 'sore' as const,
-            lastTrained: 'Today',
-            setsToday: muscle.setsToday + exercise.sets
-          };
-        }
-        return muscle;
-      }));
+      setMuscleStatus(prev => {
+        if (!prev || !Array.isArray(prev)) return prev;
+        
+        return prev.map(muscle => {
+          if (affectedMuscles.includes(muscle.key)) {
+            return {
+              ...muscle,
+              status: 'sore' as const,
+              lastTrained: 'Today',
+              setsToday: muscle.setsToday + exercise.sets
+            };
+          }
+          return muscle;
+        });
+      });
     }
 
     setSelectedExerciseIndex(null);

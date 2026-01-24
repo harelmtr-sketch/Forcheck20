@@ -111,6 +111,9 @@ export default function App() {
 
   // Track specific exercise to record from Daily tab
   const [exerciseToRecord, setExerciseToRecord] = useState<number | null>(null);
+  
+  // Track retry exercise name for "Try Again" flow
+  const [retryExerciseName, setRetryExerciseName] = useState<string | null>(null);
 
   const tabs = [
     { id: 'daily' as Tab, label: 'Daily', icon: BarChart3 },
@@ -134,6 +137,12 @@ export default function App() {
 
   const handleRecordExercise = useCallback((exerciseIndex: number) => {
     setExerciseToRecord(exerciseIndex);
+    setActiveTab('camera');
+    setCurrentView('camera');
+  }, []);
+
+  const handleRetryExercise = useCallback((exerciseName: string) => {
+    setRetryExerciseName(exerciseName);
     setActiveTab('camera');
     setCurrentView('camera');
   }, []);
@@ -162,9 +171,12 @@ export default function App() {
   const renderScreen = () => {
     switch (currentView) {
       case 'camera':
-        return <CameraScreen exercises={exercises} setExercises={setExercises} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} exerciseToRecord={exerciseToRecord} onRecordingComplete={() => setExerciseToRecord(null)} />;
+        return <CameraScreen exercises={exercises} setExercises={setExercises} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} exerciseToRecord={exerciseToRecord} onRecordingComplete={() => {
+          setExerciseToRecord(null);
+          setRetryExerciseName(null); // Clear retry state after recording
+        }} retryExerciseName={retryExerciseName} />;
       case 'daily':
-        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
+        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} onRetryExercise={handleRetryExercise} />;
       case 'friends':
         return <FriendsScreen />;
       case 'profile':
@@ -179,7 +191,7 @@ export default function App() {
           onLogout={handleLogout}
         />;
       default:
-        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} />;
+        return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} onRetryExercise={handleRetryExercise} />;
     }
   };
 

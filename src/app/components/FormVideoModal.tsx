@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { X, PlayCircle, CheckCircle2, Target, Zap } from 'lucide-react';
+import { X, PlayCircle, CheckCircle2, Target, Zap, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface FormVideoModalProps {
   exerciseName: string;
   onClose: () => void;
+  onTryAgain?: () => void;
 }
 
-export function FormVideoModal({ exerciseName, onClose }: FormVideoModalProps) {
+export function FormVideoModal({ exerciseName, onClose, onTryAgain }: FormVideoModalProps) {
   const [currentCue, setCurrentCue] = useState(0);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Key coaching cues for the exercise
   const coachingCues = [
@@ -231,33 +233,31 @@ export function FormVideoModal({ exerciseName, onClose }: FormVideoModalProps) {
             <h4 className="text-sm font-bold text-white/90">Key Form Cues</h4>
             
             <div className="space-y-3">
-              <AnimatePresence mode="wait">
-                {coachingCues.map((cue, idx) => {
-                  const Icon = cue.icon;
-                  const isActive = idx === currentCue;
-                  
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0.4, x: 0 }}
-                      animate={{
-                        opacity: isActive ? 1 : 0.4,
-                        x: isActive ? 4 : 0,
-                        scale: isActive ? 1.02 : 1,
-                      }}
-                      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                      className={`flex items-start gap-3 px-4 py-3 rounded-xl border transition-all ${
-                        isActive
-                          ? 'bg-white/[0.08] border-white/20'
-                          : 'bg-white/[0.02] border-white/5'
-                      }`}
-                    >
-                      <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${cue.color}`} />
-                      <span className="text-sm text-white/85 leading-relaxed">{cue.text}</span>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+              {coachingCues.map((cue, idx) => {
+                const Icon = cue.icon;
+                const isActive = idx === currentCue;
+                
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0.4, x: 0 }}
+                    animate={{
+                      opacity: isActive ? 1 : 0.4,
+                      x: isActive ? 4 : 0,
+                      scale: isActive ? 1.02 : 1,
+                    }}
+                    transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                    className={`flex items-start gap-3 px-4 py-3 rounded-xl border transition-all ${
+                      isActive
+                        ? 'bg-white/[0.08] border-white/20'
+                        : 'bg-white/[0.02] border-white/5'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${cue.color}`} />
+                    <span className="text-sm text-white/85 leading-relaxed">{cue.text}</span>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Progress dots */}
@@ -277,7 +277,7 @@ export function FormVideoModal({ exerciseName, onClose }: FormVideoModalProps) {
           </div>
 
           {/* Footer Message */}
-          <div className="px-6 pb-6">
+          <div className="px-6 pb-4">
             <div className="px-4 py-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
               <p className="text-xs text-white/60 text-center leading-relaxed">
                 Professional form videos with step-by-step breakdowns will be available in a future update. 
@@ -285,7 +285,75 @@ export function FormVideoModal({ exerciseName, onClose }: FormVideoModalProps) {
               </p>
             </div>
           </div>
+
+          {/* Try Again Button */}
+          {onTryAgain && (
+            <div className="px-6 pb-6">
+              <motion.button
+                onClick={() => setShowConfirmation(true)}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 group"
+              >
+                <RotateCcw className="w-5 h-5 text-white group-hover:rotate-180 transition-transform duration-500" />
+                <span className="text-base font-bold text-white">Try Again</span>
+              </motion.button>
+            </div>
+          )}
         </motion.div>
+
+        {/* Confirmation Modal */}
+        <AnimatePresence>
+          {showConfirmation && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 z-10"
+              onClick={() => setShowConfirmation(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-sm bg-gradient-to-b from-[#252932] to-[#1a1d23] rounded-2xl border border-white/10 shadow-2xl p-6"
+              >
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <RotateCcw className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2">Want to correct your form?</h3>
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      Your previous score won't be saved. Only your next attempt will be logged.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    onClick={() => setShowConfirmation(false)}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-white/70">Cancel</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => {
+                      setShowConfirmation(false);
+                      onTryAgain?.();
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/25"
+                  >
+                    <span className="text-sm font-bold text-white">Try Again</span>
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </AnimatePresence>
   );

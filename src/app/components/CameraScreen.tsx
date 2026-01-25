@@ -30,9 +30,16 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
   const [retryMode, setRetryMode] = useState(false); // Track if we're in retry mode
   const [selectedExerciseForRetry, setSelectedExerciseForRetry] = useState<ExerciseData | null>(null);
   
+  // Video recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-start recording for retry flow
   useEffect(() => {
@@ -62,12 +69,12 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
 
   // Auto-analyze when photo is captured AND we have a retry exercise selected
   useEffect(() => {
-    if (selectedExerciseForRetry && capturedPhoto && !showExercisePicker && !isAnalyzing && !analysisResult) {
-      // Skip exercise picker and go straight to analysis
+    if (retryExerciseName && selectedExerciseForRetry && capturedPhoto && !showExercisePicker && !isAnalyzing && !analysisResult) {
+      // Skip exercise picker and go straight to analysis (only in retry mode)
       setCapturedPhoto(null);
       handleExerciseSelect(selectedExerciseForRetry);
     }
-  }, [capturedPhoto, selectedExerciseForRetry]);
+  }, [capturedPhoto, selectedExerciseForRetry, retryExerciseName]);
 
   // Start camera when component mounts or facingMode changes
   useEffect(() => {
@@ -122,6 +129,82 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
   const handleFlipCamera = () => {
     setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   };
+
+  // Start video recording
+  const handleStartRecording = async () => {
+    if (!stream) return;
+    
+    try {
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp8',
+      });
+      
+      const chunks: Blob[] = [];
+      
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+      
+      recorder.onstop = () => {
+        // Combine chunks into a single blob
+        const videoBlob = new Blob(chunks, { type: 'video/webm' });
+        const videoUrl = URL.createObjectURL(videoBlob);
+        
+        // For now, we'll capture a frame from the video for analysis
+        // In a real app, you'd upload the video blob to a server
+        handleTakePhoto();
+        
+        // Clean up
+        setRecordedChunks([]);
+        setRecordingTime(0);
+      };
+      
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      setRecordingTime(0);
+      recorder.start();
+      
+      // Start recording timer
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+      
+      // Auto-stop after 10 seconds
+      setTimeout(() => {
+        if (recorder.state === 'recording') {
+          handleStopRecording(recorder);
+        }
+      }, 10000);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  // Stop video recording
+  const handleStopRecording = (recorder?: MediaRecorder) => {
+    const recorderToStop = recorder || mediaRecorder;
+    
+    if (recorderToStop && recorderToStop.state === 'recording') {
+      recorderToStop.stop();
+      setIsRecording(false);
+      
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+    }
+  };
+
+  // Cleanup recording timer on unmount
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleTakePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -377,12 +460,25 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
         )}
 
         {/* Center crosshair with color - only when no photo */}
-        {!capturedPhoto && stream && (
+        {!capturedPhoto && stream && !isRecording && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 pointer-events-none z-20">
             <div className="absolute inset-0 border-2 border-blue-400/60 rounded-full animate-ping" />
             <div className="absolute inset-0 border-2 border-cyan-400/40 rounded-full" />
             <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent" />
             <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-cyan-400/60 to-transparent" />
+          </div>
+        )}
+        
+        {/* Recording indicator - red pulsing ring */}
+        {isRecording && !capturedPhoto && (
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-red-500/20 backdrop-blur-xl rounded-full py-2 px-4 border border-red-500/40">
+            <div className="relative w-3 h-3">
+              <div className="absolute inset-0 bg-red-500 rounded-full animate-ping" />
+              <div className="absolute inset-0 bg-red-500 rounded-full" />
+            </div>
+            <span className="text-sm font-bold text-white tabular-nums">
+              {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+            </span>
           </div>
         )}
       </div>
@@ -477,22 +573,35 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
                 <Upload className="w-6 h-6 text-purple-200 drop-shadow-lg" />
               </button>
 
-              {/* Capture button - large glowing circle */}
+              {/* Capture/Record button - large glowing circle */}
               <button
-                onClick={handleTakePhoto}
+                onClick={isRecording ? () => handleStopRecording() : handleStartRecording}
                 disabled={!stream}
                 className="relative w-24 h-24 rounded-full transition-all active:scale-95 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
-                {/* Outer glowing ring */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
-                {/* Middle ring */}
-                <div className="absolute inset-0 rounded-full border-4 border-white/30 shadow-[0_0_40px_rgba(96,165,250,0.8)]" />
-                {/* Inner button */}
-                <div className="absolute inset-3 rounded-full bg-white shadow-[0_0_30px_rgba(255,255,255,0.8)] group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-cyan-100 transition-all" />
-                {/* Center dot with sparkle */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <Sparkles className="w-8 h-8 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
-                </div>
+                {isRecording ? (
+                  // Recording state - red square button
+                  <>
+                    {/* Outer pulsing red ring */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-500 to-pink-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
+                    {/* Middle ring */}
+                    <div className="absolute inset-0 rounded-full border-4 border-red-400/50 shadow-[0_0_40px_rgba(239,68,68,0.8)]" />
+                    {/* Inner red background */}
+                    <div className="absolute inset-3 rounded-full bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.8)] flex items-center justify-center" />
+                    {/* Center square */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 bg-white rounded-sm" />
+                  </>
+                ) : (
+                  // Not recording - clean white button
+                  <>
+                    {/* Outer glowing ring */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
+                    {/* Middle ring */}
+                    <div className="absolute inset-0 rounded-full border-4 border-white/30 shadow-[0_0_40px_rgba(96,165,250,0.8)]" />
+                    {/* Inner white button - no red dot */}
+                    <div className="absolute inset-3 rounded-full bg-white shadow-[0_0_30px_rgba(255,255,255,0.8)] group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-cyan-100 transition-all" />
+                  </>
+                )}
               </button>
 
               {/* Placeholder for symmetry */}

@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle2, PlayCircle, AlertCircle, X, Activity, Check, FlaskConical } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Button } from './ui/button';
+import { X } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
 import type { FormAnalysisResult } from '../utils/aiFormScoring';
-import { getScoreColor, getScoreGlow } from '../utils/scoreColors';
-import { FormVideoModal } from './FormVideoModal';
 
 interface AnalysisResultSheetProps {
   result: FormAnalysisResult & { exerciseName: string };
@@ -16,610 +13,418 @@ interface AnalysisResultSheetProps {
 export function AnalysisResultSheet({
   result,
   onClose,
-  onRetry,
   onSave,
 }: AnalysisResultSheetProps) {
-  const { exerciseName, score: initialScore, sets: reps, feedback, strengths, improvements } = result;
-  const [animatedScore, setAnimatedScore] = useState(0);
-  const [animatedReps, setAnimatedReps] = useState(0);
-  const [showRingPulse, setShowRingPulse] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [showButton, setShowButton] = useState(false);
-  const [isSettled, setIsSettled] = useState(false);
-  const [showTestMode, setShowTestMode] = useState(false);
-  const [currentScore, setCurrentScore] = useState(initialScore); // Active score that persists
-  const [pendingScore, setPendingScore] = useState(initialScore); // Score being selected on slider
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const [resetKey, setResetKey] = useState(0); // Key to force remount
-  const [sliderTimeout, setSliderTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  // currentScore is the single source of truth
-  const displayScore = currentScore;
-
-  // For UI purposes, always show the score interface
-  const isValidResult = true;
+  const { exerciseName, score: initialScore, sets: reps, strengths, improvements } = result;
   
-  // But detect if score is 0 to show special messaging
-  const hasNoReps = displayScore === 0;
+  const [showScore, setShowScore] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [glowIntensity, setGlowIntensity] = useState(0);
 
-  // Get status label with clearer progression
-  const getStatusLabel = (s: number) => {
-    if (s >= 95) return 'Perfect';
+  // Motion values for smooth animation
+  const scoreMotionValue = useMotionValue(0);
+  const [displayedScore, setDisplayedScore] = useState(0);
+
+  // Transform for perfectly synced ring animation
+  const radius = 62;
+  const circumference = 2 * Math.PI * radius;
+  const ringProgress = useTransform(scoreMotionValue, [0, 100], [circumference, 0]);
+
+  // Get score descriptor
+  const getScoreLabel = (s: number) => {
     if (s >= 90) return 'Excellent';
-    if (s >= 85) return 'Great';
-    if (s >= 75) return 'Good';
-    if (s >= 65) return 'Fair';
-    if (s >= 50) return 'Needs Work';
+    if (s >= 80) return 'Great';
+    if (s >= 70) return 'Good';
+    if (s >= 60) return 'Decent';
+    if (s >= 50) return 'Fair';
     return 'Poor';
   };
 
-  // Get ring color based on score
+  // Get ring gradient color based on score
   const getRingColor = (s: number) => {
-    if (s >= 90) return 'stroke-green-500';
-    if (s >= 80) return 'stroke-green-500';
-    if (s >= 70) return 'stroke-yellow-400';
-    if (s >= 60) return 'stroke-orange-400';
-    return 'stroke-red-500';
+    if (s >= 85) return '#22c55e'; // green
+    if (s >= 75) return '#84cc16'; // lime
+    if (s >= 65) return '#eab308'; // yellow
+    if (s >= 50) return '#f97316'; // orange
+    return '#ef4444'; // red
   };
 
+  // Get glow color with higher opacity for LED effect
   const getGlowColor = (s: number) => {
-    if (s >= 90) return 'rgba(34, 197, 94, 0.5)';
-    if (s >= 80) return 'rgba(34, 197, 94, 0.4)';
-    if (s >= 70) return 'rgba(250, 204, 21, 0.4)';
-    if (s >= 60) return 'rgba(251, 146, 60, 0.4)';
-    return 'rgba(239, 68, 68, 0.4)';
+    const baseColor = getRingColor(s);
+    return baseColor;
   };
 
-  const getBadgeBg = (s: number) => {
-    if (s >= 80) return 'bg-green-500/20 border-green-500/60';
-    if (s >= 70) return 'bg-yellow-500/20 border-yellow-500/60';
-    if (s >= 60) return 'bg-orange-500/20 border-orange-500/60';
-    return 'bg-red-500/20 border-red-500/60';
-  };
+  const scoreLabel = getScoreLabel(initialScore);
+  const ringColor = getRingColor(initialScore);
+  const glowColor = getGlowColor(initialScore);
 
-  const ringColor = getRingColor(displayScore);
-  const glowColor = getGlowColor(displayScore);
-  const badgeBg = getBadgeBg(displayScore);
-  const status = getStatusLabel(displayScore);
-
-  // Generate dynamic feedback based on current score
-  const getReactiveFeedback = (s: number): string => {
-    if (s >= 90) {
-      return 'Explosive power output with excellent eccentric control. Strong time under tension hitting all major muscle groups.';
-    } else if (s >= 75) {
-      return 'Solid mechanical advantage maintained. Good muscle activation pattern with steady tempo throughout the set.';
-    } else if (s >= 60) {
-      return 'Moderate intensity detected. Work on increasing range of motion and time under tension for better hypertrophy stimulus.';
-    } else if (s >= 40) {
-      return 'Limited depth and muscle engagement. Focus on deliberate eccentric lowering and full contraction at peak position.';
-    } else {
-      return 'Minimal effective range detected. Prioritize control over speed—slow down the descent and feel the muscle working.';
-    }
-  };
-
-  // Use reactive feedback that updates with score changes
-  const reactiveFeedback = getReactiveFeedback(displayScore);
-
-  // Staged animation sequence
+  // Animation sequence
   useEffect(() => {
-    if (!isValidResult) {
-      setShowFeedback(true);
-      setShowButton(true);
-      return;
-    }
-    
-    // Delay to allow reset to complete before animating (for Test Mode)
-    const animationDelay = setTimeout(() => {
-      // Score count-up animation
-      const duration = 1200;
-      const steps = 60;
-      const increment = displayScore / steps;
-      const interval = duration / steps;
-      
-      let current = 0;
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= displayScore) {
-          setAnimatedScore(displayScore);
-          clearInterval(timer);
+    // Reset
+    scoreMotionValue.set(0);
+    setDisplayedScore(0);
+    setShowScore(false);
+    setShowContent(false);
+    setGlowIntensity(0);
+
+    // Start after brief delay
+    setTimeout(() => {
+      // Animate the ring from 0 to score
+      const scoreAnimation = animate(scoreMotionValue, initialScore, {
+        duration: 1.6,
+        ease: [0.16, 1, 0.3, 1], // Smooth ease
+        onUpdate: (latest) => {
+          setDisplayedScore(Math.floor(latest));
+          // Increase glow as ring fills
+          setGlowIntensity(latest / 100);
           
-          // Trigger settled state after score finishes
-          setTimeout(() => {
-            setShowRingPulse(true);
-            setIsSettled(true);
-          }, 100);
-        } else {
-          setAnimatedScore(Math.floor(current));
+          // Show score number earlier - when ring is ~75% complete
+          if (latest >= initialScore * 0.75 && !showScore) {
+            setShowScore(true);
+          }
+        },
+        onComplete: () => {
+          setDisplayedScore(initialScore);
+          setGlowIntensity(1);
+          setShowScore(true);
+          // Show rest of content
+          setTimeout(() => setShowContent(true), 400);
         }
-      }, interval);
-      
-      // Show feedback sections in sequence
-      setTimeout(() => setShowFeedback(true), 800);
-      setTimeout(() => setShowButton(true), 1200);
-      
+      });
+
       return () => {
-        clearInterval(timer);
+        scoreAnimation.stop();
       };
-    }, 50); // Small delay to ensure reset completes
-    
-    return () => clearTimeout(animationDelay);
-  }, [displayScore, isValidResult, resetKey]); // Add resetKey to retrigger animations after reset
-
-  // Reps count-up animation (synced with score)
-  useEffect(() => {
-    if (!isValidResult) return;
-    
-    const duration = 1000;
-    const steps = 60;
-    const increment = reps / steps;
-    const interval = duration / steps;
-    
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= reps) {
-        setAnimatedReps(reps);
-        clearInterval(timer);
-      } else {
-        setAnimatedReps(Math.floor(current));
-      }
-    }, interval);
-    
-    return () => clearInterval(timer);
-  }, [reps, isValidResult, resetKey]); // Reset when key changes
-
-  // Handle slider change with reset timeout
-  const handleSliderChange = (newScore: number) => {
-    setPendingScore(newScore);
-    
-    // Clear existing timeout
-    if (sliderTimeout) {
-      clearTimeout(sliderTimeout);
-    }
-    
-    // Set new timeout to trigger reset after 2 seconds of no slider movement
-    const timeout = setTimeout(() => {
-      // Reset all animation states
-      setAnimatedScore(0);
-      setAnimatedReps(0);
-      setShowRingPulse(false);
-      setShowFeedback(false);
-      setShowButton(false);
-      setIsSettled(false);
-      
-      // Update currentScore to trigger animation with new value
-      setCurrentScore(newScore);
-      
-      // Increment key to force remount and replay animations
-      setResetKey(prev => prev + 1);
-    }, 2000);
-    
-    setSliderTimeout(timeout);
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (sliderTimeout) {
-        clearTimeout(sliderTimeout);
-      }
-    };
-  }, [sliderTimeout]);
-
-  // Calculate SVG circle progress
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const progress = (animatedScore / 100) * circumference;
+    }, 300);
+  }, [initialScore, scoreMotionValue]);
 
   return (
-    <>
-      <AnimatePresence>
-        {!showVideoModal && (
-          <motion.div
-            key="result-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-0"
+        style={{ 
+          background: '#000000',
+        }}
+      >
+        {/* iPhone Screen Container */}
+        <div className="w-full h-full max-w-[448px] mx-auto relative overflow-hidden" style={{ aspectRatio: '9/16' }}>
+          {/* Dark gradient background */}
+          <div 
+            className="absolute inset-0 rounded-[32px] overflow-hidden"
+            style={{
+              background: 'radial-gradient(ellipse at center, #1a2332 0%, #0f1419 100%)',
+            }}
           >
+            {/* Vignette overlay */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%)',
+              }}
+            />
+
+            {/* Radial glow behind score circle */}
             <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.98 }}
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-              className="w-full max-w-md bg-gradient-to-b from-[#252932] to-[#1a1d23] rounded-3xl border border-white/10 shadow-2xl"
-            >
-              {/* A) HEADER ROW */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-blue-400" />
-                  <div className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-                    <span className="text-sm font-semibold text-white truncate max-w-[200px] block">
-                      {exerciseName}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {/* Test Mode Toggle */}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: glowIntensity * 0.4,
+                scale: 1 + (glowIntensity * 0.15),
+              }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                width: '420px',
+                height: '420px',
+                background: `radial-gradient(circle, ${glowColor}40 0%, transparent 70%)`,
+                filter: 'blur(60px)',
+              }}
+            />
+
+            {/* Fine grain texture overlay */}
+            <div 
+              className="absolute inset-0 opacity-[0.015] pointer-events-none mix-blend-overlay"
+              style={{
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
+              }}
+            />
+
+            {/* Content within safe area */}
+            <div className="absolute inset-0 pt-safe pb-safe">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full h-full relative flex flex-col"
+              >
+                {/* Close button */}
+                <div className="absolute top-6 right-6 z-20">
                   <motion.button
-                    onClick={() => setShowTestMode(!showTestMode)}
-                    whileTap={{ scale: 0.92, opacity: 0.7 }}
-                    className={`w-9 h-9 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center ${
-                      showTestMode ? 'bg-yellow-500/20 text-yellow-400' : 'text-white/40'
-                    }`}
-                    aria-label="Test Mode"
-                    title="Test Mode (for UI/animation testing)"
-                  >
-                    <FlaskConical className="w-4 h-4" />
-                  </motion.button>
-                  <motion.button
-                    onClick={onClose}
-                    whileTap={{ scale: 0.92, opacity: 0.7 }}
-                    className="w-11 h-11 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center -mr-2"
-                    aria-label="Close"
+                    onClick={() => {
+                      if (onSave) {
+                        onSave(initialScore);
+                      }
+                      onClose();
+                    }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.8, duration: 0.3 }}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-11 h-11 rounded-full bg-white/[0.08] hover:bg-white/[0.14] backdrop-blur-xl border border-white/10 flex items-center justify-center transition-colors shadow-lg"
                   >
                     <X className="w-5 h-5 text-white/70" />
                   </motion.button>
                 </div>
-              </div>
 
-              {/* Test Mode Slider */}
-              <AnimatePresence>
-                {showTestMode && (
+                {/* Main content */}
+                <div className="flex-1 flex flex-col px-8 py-8 overflow-y-auto">
+                  {/* Exercise name - Hero Title */}
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden border-b border-yellow-500/20 bg-yellow-500/5"
+                    initial={{ opacity: 0, y: -15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-center mb-12"
                   >
-                    <div className="px-6 py-4">
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-3">
-                          <FlaskConical className="w-3.5 h-3.5 text-yellow-400/70" />
-                          <span className="text-xs font-bold text-yellow-400/90 uppercase tracking-wide">
-                            Test Mode — Will be removed in production
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-yellow-400/70 mb-3 leading-relaxed">
-                        Adjust the slider to test different scores. After 2 seconds of inactivity, the animation will completely reset and replay with the new score. Have fun gibs!
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={pendingScore}
-                          onChange={(e) => handleSliderChange(Number(e.target.value))}
-                          className="flex-1 h-2 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-yellow-400 [&::-webkit-slider-thumb]:cursor-pointer"
-                        />
-                        <span className="text-sm font-bold text-yellow-400 w-10 text-right">{pendingScore}</span>
-                      </div>
-                    </div>
+                    <h1 
+                      className="text-3xl font-bold text-white tracking-tight leading-tight"
+                      style={{
+                        textShadow: '0 0 20px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3)',
+                      }}
+                    >
+                      {exerciseName}
+                    </h1>
                   </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Content - scrollable with hidden scrollbar */}
-              <div className="px-6 py-6 max-h-[68vh] overflow-y-auto scrollbar-hide">
-                <div className="space-y-6">
-                  {/* B) HERO METRICS - Circular Score with Reps Badge */}
-                  <div className="flex flex-col items-center justify-center">
-                    {/* Circular Score Ring Container */}
-                    <div className="relative flex-shrink-0">
-                      {/* Circular Glow Layer */}
-                      <motion.div
-                        className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
-                        initial={{ opacity: 0 }}
-                        animate={{ 
-                          opacity: showRingPulse ? 1 : 0,
-                        }}
-                        transition={{ 
-                          duration: 0.4, 
-                          ease: [0.4, 0, 0.2, 1] 
-                        }}
+                  {/* Hero: Circular Score */}
+                  <div className="flex flex-col items-center justify-center mb-8">
+                    <div className="relative">
+                      {/* Outer shadow for depth */}
+                      <div 
+                        className="absolute inset-0 rounded-full"
                         style={{
-                          background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
-                          filter: 'blur(16px)',
+                          filter: 'blur(24px)',
+                          opacity: glowIntensity * 0.6,
+                          background: `radial-gradient(circle, ${glowColor}60 0%, transparent 70%)`,
                         }}
                       />
-                      
-                      {/* SVG Ring */}
-                      <motion.svg
-                        className="w-44 h-44 -rotate-90 relative z-10"
-                        viewBox="0 0 120 120"
-                        animate={
-                          isSettled 
-                            ? { scale: 1 } 
-                            : showRingPulse 
-                            ? { scale: [1, 1.04, 1] } 
-                            : {}
-                        }
-                        transition={
-                          isSettled
-                            ? { 
-                                type: "spring", 
-                                stiffness: 300, 
-                                damping: 20,
-                                duration: 0.6 
-                              }
-                            : { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
-                        }
-                      >
-                        {/* Background ring */}
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r={radius}
-                          stroke="currentColor"
-                          strokeWidth="6"
-                          fill="none"
-                          className="text-white/5"
-                        />
-                        {/* Progress ring */}
-                        <motion.circle
-                          cx="60"
-                          cy="60"
-                          r={radius}
-                          stroke="currentColor"
-                          strokeWidth="6"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray={circumference}
-                          initial={{ strokeDashoffset: circumference }}
-                          animate={{ strokeDashoffset: circumference - progress }}
-                          transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
-                          className={ringColor}
-                        />
-                      </motion.svg>
-                      
-                      {/* Score + Status in center */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <motion.div
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ 
-                            scale: isSettled ? 1 : showRingPulse ? [1, 1.05, 1] : 1, 
-                            opacity: 1 
-                          }}
-                          transition={
-                            isSettled
-                              ? { 
-                                  type: "spring", 
-                                  stiffness: 300, 
-                                  damping: 20,
-                                  duration: 0.6 
-                                }
-                              : { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
-                          }
-                          className="text-6xl font-black text-white leading-none mb-0.5"
-                        >
-                          {animatedScore}
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.3, duration: 0.3 }}
-                          className="text-xs text-white/20 font-medium mb-3"
-                        >
-                          /100
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.3 }}
-                          className={`text-xs font-bold ${getScoreColor(displayScore)}`}
-                        >
-                          {status}
-                        </motion.div>
-                      </div>
-                      
-                      {/* Reps Badge - positioned outward from ring edge */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.7, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                        className="absolute bottom-0 right-0 z-20"
-                        style={{ transform: 'translate(28%, 28%)' }}
-                      >
-                        <div 
-                          className={`relative w-16 h-16 rounded-full border-2 ${badgeBg} flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-300`}
+
+                      {/* SVG Ring with LED glow */}
+                      <div className="relative">
+                        <svg
+                          className="w-64 h-64 -rotate-90"
+                          viewBox="0 0 152 152"
                           style={{
-                            background: `radial-gradient(circle, ${glowColor.replace('0.4', '0.15')} 0%, ${glowColor.replace('0.4', '0.05')} 100%)`,
+                            filter: `drop-shadow(0 0 ${glowIntensity * 12}px ${glowColor}80)`,
                           }}
                         >
-                          {/* Subtle ring glow */}
-                          <div 
-                            className="absolute inset-0 rounded-full transition-all duration-300"
-                            style={{
-                              boxShadow: `0 0 14px ${glowColor}`,
-                            }}
+                          {/* Background ring */}
+                          <circle
+                            cx="76"
+                            cy="76"
+                            r={radius}
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            className="text-white/[0.05]"
                           />
-                          <div className="relative flex flex-col items-center justify-center px-2">
-                            <span className="text-lg font-black text-white leading-none">{hasNoReps ? 0 : animatedReps}</span>
-                            <span className="text-[9px] font-bold text-white/50 uppercase tracking-wide mt-0.5">reps</span>
-                          </div>
+                          {/* Progress ring with gradient */}
+                          <defs>
+                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor={ringColor} stopOpacity="1" />
+                              <stop offset="100%" stopColor={ringColor} stopOpacity="0.7" />
+                            </linearGradient>
+                          </defs>
+                          <motion.circle
+                            cx="76"
+                            cy="76"
+                            r={radius}
+                            stroke="url(#scoreGradient)"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            style={{ strokeDashoffset: ringProgress }}
+                          />
+                        </svg>
+
+                        {/* Inner glow (LED effect) */}
+                        <motion.div
+                          className="absolute inset-6 rounded-full pointer-events-none"
+                          animate={{
+                            opacity: glowIntensity * 0.25,
+                          }}
+                          transition={{ duration: 0.8 }}
+                          style={{
+                            background: `radial-gradient(circle, ${glowColor}30 0%, transparent 65%)`,
+                            filter: 'blur(20px)',
+                          }}
+                        />
+
+                        {/* Score content */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.85 }}
+                            animate={showScore ? { opacity: 1, scale: 1 } : {}}
+                            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                            className="flex flex-col items-center"
+                          >
+                            {/* Large score number */}
+                            <div 
+                              className="text-8xl font-black text-white tracking-tighter leading-none"
+                              style={{
+                                fontFeatureSettings: '"tnum"',
+                                textShadow: `0 2px 12px ${glowColor}40`,
+                              }}
+                            >
+                              {displayedScore}
+                            </div>
+                            {/* Descriptor */}
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={showScore ? { opacity: 1 } : {}}
+                              transition={{ delay: 0.2, duration: 0.4 }}
+                              className="mt-3"
+                            >
+                              <span 
+                                className="text-base font-medium tracking-wide"
+                                style={{ color: ringColor }}
+                              >
+                                {scoreLabel}
+                              </span>
+                            </motion.div>
+                          </motion.div>
                         </div>
-                      </motion.div>
+                      </div>
                     </div>
+
+                    {/* Reps - Integrated pill badge attached to circle */}
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={showScore ? { opacity: 1, y: 0 } : {}}
+                      transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="mt-6"
+                    >
+                      <div 
+                        className="px-6 py-2.5 rounded-full border backdrop-blur-xl"
+                        style={{
+                          background: `linear-gradient(135deg, ${ringColor}15 0%, ${ringColor}08 100%)`,
+                          borderColor: `${ringColor}40`,
+                          boxShadow: `0 4px 16px ${ringColor}20, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                        }}
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold text-white tracking-tight">{reps}</span>
+                          <span className="text-xs font-semibold text-white/60 uppercase tracking-wider">reps</span>
+                        </div>
+                      </div>
+                    </motion.div>
                   </div>
 
-                  {hasNoReps ? (
-                    // Score 0 - Show error message with tips
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={showFeedback ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                        className="flex flex-col items-center gap-3"
-                      >
-                        <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center">
-                          <AlertCircle className="w-8 h-8 text-red-400/80" />
-                        </div>
-                        <div className="text-center">
-                          <h3 className="text-lg font-bold text-white mb-1">No valid reps detected</h3>
-                          <p className="text-sm text-white/50">Try these tips for better results:</p>
-                        </div>
-                      </motion.div>
-
-                      <div className="space-y-2">
-                        {[
-                          'Keep full body in frame',
-                          'Try better lighting',
-                          'Use a side angle',
-                        ].map((tip, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={showFeedback ? { opacity: 1, x: 0 } : {}}
-                            transition={{ 
-                              duration: 0.35, 
-                              delay: 0.2 + idx * 0.1, 
-                              ease: [0.4, 0, 0.2, 1] 
-                            }}
-                            className="flex items-start gap-3 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10"
-                          >
-                            <AlertCircle className="w-4 h-4 text-red-400/60 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm text-white/85 leading-relaxed">{tip}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    // Score > 0 - Show normal feedback
-                    <>
-                      {/* C) SUMMARY LINE */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={showFeedback ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                        className="text-center px-2"
-                      >
-                        <p className="text-sm font-medium text-white/80 leading-relaxed">
-                          {reactiveFeedback}
-                        </p>
-                      </motion.div>
-
-                      {/* D) FEEDBACK SECTIONS */}
-                      <div className="space-y-4">
-                        {/* What you did well */}
-                        {strengths.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={showFeedback ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.4, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
-                            className="space-y-2"
-                          >
-                            <div className="flex items-center gap-2 px-1">
-                              <CheckCircle2 className="w-4 h-4 text-green-400/70" />
-                              <h4 className="text-sm font-bold text-white/90">What you did well</h4>
-                            </div>
-                            <div className="space-y-2">
-                              {strengths.slice(0, 2).map((strength, idx) => (
-                                <motion.div
-                                  key={idx}
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={showFeedback ? { opacity: 1, x: 0 } : {}}
-                                  transition={{ 
-                                    duration: 0.35, 
-                                    delay: 0.25 + idx * 0.1, 
-                                    ease: [0.4, 0, 0.2, 1] 
-                                  }}
-                                  whileTap={{ scale: 0.98 }}
-                                  className="flex items-start gap-3 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-colors cursor-default"
-                                >
-                                  <Check className="w-4 h-4 text-green-400/70 mt-0.5 flex-shrink-0" />
-                                  <span className="text-sm text-white/85 leading-relaxed">{strength}</span>
-                                </motion.div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-
-                        {/* Watch Proper Form */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={showFeedback ? { opacity: 1, y: 0 } : {}}
-                          transition={{ 
-                            duration: 0.4, 
-                            delay: strengths.length > 0 ? 0.25 + strengths.slice(0, 2).length * 0.1 : 0.15,
-                            ease: [0.4, 0, 0.2, 1] 
-                          }}
-                          className="space-y-2"
-                        >
-                          <div className="flex items-center gap-2 px-1">
-                            <PlayCircle className="w-4 h-4 text-blue-400/70" />
-                            <h4 className="text-sm font-bold text-white/90">Watch Proper Form</h4>
-                          </div>
-                          <motion.button
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                              // TODO: Link to technique video for this exercise
-                              console.log('Opening technique video for:', exerciseName);
-                              setShowVideoModal(true);
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/15 transition-colors group"
-                          >
-                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                              <PlayCircle className="w-5 h-5 text-blue-400" />
-                            </div>
-                            <div className="flex-1 text-left">
-                              <div className="text-sm font-bold text-white/90">See how it's done</div>
-                              <div className="text-xs text-white/50">Learn the key cues for {exerciseName}</div>
-                            </div>
-                          </motion.button>
-                        </motion.div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* E) PRIMARY ACTION */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={showButton ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                className="px-6 pb-6"
-              >
-                <motion.div whileTap={{ scale: 0.97 }}>
-                  <Button
-                    onClick={() => {
-                      if (hasNoReps && onRetry) {
-                        // Score is 0 - let them try again
-                        onClose();
-                        onRetry();
-                      } else if (onSave) {
-                        onSave(displayScore);
-                        onClose();
-                      } else {
-                        onClose();
-                      }
-                    }}
-                    className="w-full h-12 bg-white hover:bg-white/90 text-black font-bold shadow-lg transition-all"
+                  {/* Feedback sections in cards */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={showContent ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    className="space-y-4"
                   >
-                    {hasNoReps ? 'Try Again' : 'Done'}
-                  </Button>
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    {/* What you did well */}
+                    {strengths && strengths.length > 0 && (
+                      <div 
+                        className="rounded-2xl p-5 border"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.03) 100%)',
+                          borderColor: 'rgba(34, 197, 94, 0.2)',
+                          boxShadow: '0 4px 16px rgba(34, 197, 94, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                        }}
+                      >
+                        <h3 className="text-xs font-bold text-green-400/90 uppercase tracking-wider mb-3">
+                          What you did well
+                        </h3>
+                        <div className="space-y-2.5">
+                          {strengths.slice(0, 3).map((strength, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={showContent ? { opacity: 1, x: 0 } : {}}
+                              transition={{
+                                duration: 0.4,
+                                delay: 0.2 + idx * 0.06,
+                                ease: [0.16, 1, 0.3, 1]
+                              }}
+                              className="flex items-start gap-3"
+                            >
+                              {/* LED-style indicator */}
+                              <div 
+                                className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                                style={{
+                                  backgroundColor: '#22c55e',
+                                  boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)',
+                                }}
+                              />
+                              <span className="text-[15px] text-white/80 leading-relaxed font-normal">
+                                {strength}
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-      {/* Form Video Modal - has its own AnimatePresence */}
-      {showVideoModal && (
-        <FormVideoModal
-          exerciseName={exerciseName}
-          onClose={() => setShowVideoModal(false)}
-          onTryAgain={() => {
-            setShowVideoModal(false);
-            onClose(); // Close the score modal
-            onRetry?.(); // Open camera for new recording
-          }}
-        />
-      )}
-    </>
+                    {/* Things to improve */}
+                    {improvements && improvements.length > 0 && (
+                      <div 
+                        className="rounded-2xl p-5 border"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(234, 179, 8, 0.03) 100%)',
+                          borderColor: 'rgba(234, 179, 8, 0.2)',
+                          boxShadow: '0 4px 16px rgba(234, 179, 8, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                        }}
+                      >
+                        <h3 className="text-xs font-bold text-yellow-400/90 uppercase tracking-wider mb-3">
+                          Things to improve
+                        </h3>
+                        <div className="space-y-2.5">
+                          {improvements.slice(0, 3).map((improvement, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={showContent ? { opacity: 1, x: 0 } : {}}
+                              transition={{
+                                duration: 0.4,
+                                delay: 0.35 + idx * 0.06,
+                                ease: [0.16, 1, 0.3, 1]
+                              }}
+                              className="flex items-start gap-3"
+                            >
+                              {/* LED-style indicator */}
+                              <div 
+                                className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                                style={{
+                                  backgroundColor: '#eab308',
+                                  boxShadow: '0 0 8px rgba(234, 179, 8, 0.6)',
+                                }}
+                              />
+                              <span className="text-[15px] text-white/80 leading-relaxed font-normal">
+                                {improvement}
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

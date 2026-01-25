@@ -536,16 +536,7 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
             </div>
           )}
           
-          <div className="flex justify-between items-center px-6 py-4">
-            <div className="flex-1">
-              <h1 className="font-bold text-xl text-white drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]">
-                {mode === 'exercise' ? 'Record Form' : 'Log Meal'}
-              </h1>
-              <p className="text-sm text-blue-300 font-medium drop-shadow-lg">
-                {mode === 'exercise' ? 'Position yourself in frame' : 'Capture your meal'}
-              </p>
-            </div>
-            
+          <div className="flex justify-end items-center px-6 py-4">
             <button
               onClick={handleFlipCamera}
               className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600/40 to-purple-600/40 backdrop-blur-xl border-2 border-blue-400/50 flex items-center justify-center transition-all active:scale-95 shadow-[0_0_30px_rgba(96,165,250,0.4)] hover:shadow-[0_0_40px_rgba(96,165,250,0.6)] hover:border-blue-300/70"
@@ -575,78 +566,49 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
             </button>
           </div>
         ) : (
-          // Camera controls - colorful version with mode toggle above
-          <div className="flex flex-col items-center gap-6 px-6 py-6">
-            {/* Mode Toggle - Exercise vs Meal - smaller and above camera */}
-            <div className="flex gap-2 bg-[#1a1d23]/70 backdrop-blur-xl rounded-xl p-1 border border-blue-500/20">
-              <button
-                onClick={() => setMode('exercise')}
-                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-bold text-xs transition-all ${
-                  mode === 'exercise'
-                    ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]'
-                    : 'text-blue-400/60 hover:text-blue-300 hover:bg-blue-500/10'
-                }`}
-              >
-                <Video className={`w-3.5 h-3.5 ${mode === 'exercise' ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]' : ''}`} />
-                <span>Exercise</span>
-              </button>
-              <button
-                onClick={() => setMode('meal')}
-                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-bold text-xs transition-all ${
-                  mode === 'meal'
-                    ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)]'
-                    : 'text-green-400/60 hover:text-green-300 hover:bg-green-500/10'
-                }`}
-              >
-                <Utensils className={`w-3.5 h-3.5 ${mode === 'meal' ? 'drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]' : ''}`} />
-                <span>Meal</span>
-              </button>
-            </div>
-            
-            {/* Camera buttons row */}
-            <div className="flex justify-center items-center gap-8">
-              {/* Upload button */}
-              <button
-                onClick={handleUploadClick}
-                className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600/40 to-pink-600/40 backdrop-blur-xl border-2 border-purple-400/50 flex items-center justify-center transition-all active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] hover:scale-105"
-              >
-                <Upload className="w-6 h-6 text-purple-200 drop-shadow-lg" />
-              </button>
+          // Camera controls - colorful version
+          <div className="flex justify-center items-center gap-8 px-6 py-6">
+            {/* Upload button */}
+            <button
+              onClick={handleUploadClick}
+              className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600/40 to-pink-600/40 backdrop-blur-xl border-2 border-purple-400/50 flex items-center justify-center transition-all active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] hover:scale-105"
+            >
+              <Upload className="w-6 h-6 text-purple-200 drop-shadow-lg" />
+            </button>
 
-              {/* Capture/Record button - large glowing circle */}
-              <button
-                onClick={isRecording ? () => handleStopRecording() : handleStartRecording}
-                disabled={!stream}
-                className="relative w-24 h-24 rounded-full transition-all active:scale-95 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed group"
-              >
-                {isRecording ? (
-                  // Recording state - red square button
-                  <>
-                    {/* Outer pulsing red ring */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-500 to-pink-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
-                    {/* Middle ring */}
-                    <div className="absolute inset-0 rounded-full border-4 border-red-400/50 shadow-[0_0_40px_rgba(239,68,68,0.8)]" />
-                    {/* Inner red background */}
-                    <div className="absolute inset-3 rounded-full bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.8)] flex items-center justify-center" />
-                    {/* Center square */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 bg-white rounded-sm" />
-                  </>
-                ) : (
-                  // Not recording - clean white button
-                  <>
-                    {/* Outer glowing ring */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
-                    {/* Middle ring */}
-                    <div className="absolute inset-0 rounded-full border-4 border-white/30 shadow-[0_0_40px_rgba(96,165,250,0.8)]" />
-                    {/* Inner white button - no red dot */}
-                    <div className="absolute inset-3 rounded-full bg-white shadow-[0_0_30px_rgba(255,255,255,0.8)] group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-cyan-100 transition-all" />
-                  </>
-                )}
-              </button>
+            {/* Capture/Record button - large glowing circle */}
+            <button
+              onClick={isRecording ? () => handleStopRecording() : handleStartRecording}
+              disabled={!stream}
+              className="relative w-24 h-24 rounded-full transition-all active:scale-95 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {isRecording ? (
+                // Recording state - red square button
+                <>
+                  {/* Outer pulsing red ring */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-500 to-pink-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
+                  {/* Middle ring */}
+                  <div className="absolute inset-0 rounded-full border-4 border-red-400/50 shadow-[0_0_40px_rgba(239,68,68,0.8)]" />
+                  {/* Inner red background */}
+                  <div className="absolute inset-3 rounded-full bg-red-500 shadow-[0_0_30px_rgba(239,68,68,0.8)] flex items-center justify-center" />
+                  {/* Center square */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 bg-white rounded-sm" />
+                </>
+              ) : (
+                // Not recording - clean white button
+                <>
+                  {/* Outer glowing ring */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 blur-md opacity-75 group-hover:opacity-100 animate-pulse" />
+                  {/* Middle ring */}
+                  <div className="absolute inset-0 rounded-full border-4 border-white/30 shadow-[0_0_40px_rgba(96,165,250,0.8)]" />
+                  {/* Inner white button - no red dot */}
+                  <div className="absolute inset-3 rounded-full bg-white shadow-[0_0_30px_rgba(255,255,255,0.8)] group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-cyan-100 transition-all" />
+                </>
+              )}
+            </button>
 
-              {/* Placeholder for symmetry */}
-              <div className="w-14 h-14" />
-            </div>
+            {/* Placeholder for symmetry */}
+            <div className="w-14 h-14" />
           </div>
         )}
       </div>

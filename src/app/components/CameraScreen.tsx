@@ -263,39 +263,79 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
     setSelectedExerciseForRetry(exercise); // Remember the exercise for retry
     setIsAnalyzing(true);
     
-    // Simulate AI analysis with placeholder scores for non-pushup exercises
+    // Simulate AI analysis with randomized scores for ALL exercises (testing mode)
     setTimeout(() => {
-      // Check if this is a pushup exercise - for now, only "Push-up" uses real AI
-      const isPushup = exercise.name.toLowerCase().includes('push-up') || exercise.name.toLowerCase().includes('pushup');
+      // Generate random score (0-100) for ALL exercises
+      const randomScore = Math.floor(Math.random() * 101); // 0-100
       
-      let result;
-      if (isPushup) {
-        // For pushups, we would use real AI (but need video blob)
-        // For now, placeholder
-        result = {
-          score: 85,
-          sets: 10,
-          feedback: 'Good form! Keep practicing.',
-          strengths: ['Controlled movement', 'Good range of motion'],
-          improvements: ['Work on form consistency']
-        };
+      // Reps based on score - 0 score means 0 reps
+      const randomReps = randomScore === 0 ? 0 : Math.floor(Math.random() * 11) + 5; // 5-15 reps if score > 0
+      
+      // Generate feedback based on score ranges
+      let feedback, strengths, improvements;
+      
+      if (randomScore === 0) {
+        feedback = 'No valid reps detected.';
+        strengths = [];
+        improvements = [
+          'Check your form and positioning',
+          'Ensure full range of motion',
+          'Try again with proper technique'
+        ];
+      } else if (randomScore >= 90) {
+        feedback = 'Excellent form! Outstanding technique.';
+        strengths = [
+          'Perfect form consistency',
+          'Controlled movement',
+          'Excellent range of motion'
+        ];
+        improvements = [];
+      } else if (randomScore >= 75) {
+        feedback = 'Great form! Minor adjustments could help.';
+        strengths = [
+          'Good form consistency',
+          'Controlled movement',
+          'Strong technique'
+        ];
+        improvements = ['Keep up the good work'];
+      } else if (randomScore >= 60) {
+        feedback = 'Decent effort. Focus on improving form.';
+        strengths = [
+          'Good effort',
+          'Controlled movement'
+        ];
+        improvements = [
+          'Work on form consistency',
+          'Focus on full range of motion'
+        ];
+      } else if (randomScore >= 40) {
+        feedback = 'Needs improvement. Review proper technique.';
+        strengths = [
+          'Good attempt'
+        ];
+        improvements = [
+          'Work on form consistency',
+          'Slow down and focus on technique',
+          'Ensure full range of motion'
+        ];
       } else {
-        // For all other exercises, generate a high placeholder score (90-100)
-        const placeholderScore = Math.floor(Math.random() * 11) + 90; // 90-100
-        const placeholderReps = Math.floor(Math.random() * 6) + 10; // 10-15
-        
-        result = {
-          score: placeholderScore,
-          sets: placeholderReps,
-          feedback: placeholderScore >= 95 ? 'Excellent form! Outstanding technique.' : 'Great form! Minor adjustments could help.',
-          strengths: [
-            'Controlled movement',
-            'Good range of motion',
-            placeholderScore >= 95 ? 'Excellent form consistency' : 'Strong technique'
-          ],
-          improvements: placeholderScore >= 95 ? [] : ['Keep up the good work']
-        };
+        feedback = 'Form needs significant work.';
+        strengths = [];
+        improvements = [
+          'Review proper exercise form',
+          'Slow down your movement',
+          'Focus on controlled technique',
+          'Consider watching tutorial videos'
+        ];
       }
+      
+      const result = {
+        score: randomScore,
+        sets: randomReps,
+        feedback,
+        strengths,
+        improvements
+      };
       
       setAnalysisResult({ ...result, exerciseName: exercise.name });
       setIsAnalyzing(false);

@@ -27,8 +27,9 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<FormAnalysisResult & { exerciseName: string } | null>(null);
-  const [retryMode, setRetryMode] = useState(false); // Track if we're in retry mode
+  const [analysisNotice, setAnalysisNotice] = useState<string | null>(null);
   const [selectedExerciseForRetry, setSelectedExerciseForRetry] = useState<ExerciseData | null>(null);
+  const [recordedVideo, setRecordedVideo] = useState<Blob | null>(null);
   
   // Video recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -40,6 +41,8 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const supportedExercises = new Set(['Push-ups']);
 
   // Auto-start recording for retry flow
   useEffect(() => {
@@ -150,7 +153,7 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
       recorder.onstop = () => {
         // Combine chunks into a single blob
         const videoBlob = new Blob(chunks, { type: 'video/webm' });
-        const videoUrl = URL.createObjectURL(videoBlob);
+        setRecordedVideo(videoBlob);
         
         // For now, we'll capture a frame from the video for analysis
         // In a real app, you'd upload the video blob to a server
@@ -229,6 +232,7 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
 
   const handleRetake = () => {
     setCapturedPhoto(null);
+    setRecordedVideo(null);
   };
 
   const handleUsePhoto = () => {
@@ -249,6 +253,12 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.type.startsWith('video/')) {
+      setRecordedVideo(file);
+    } else {
+      setRecordedVideo(null);
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -261,85 +271,29 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
   const handleExerciseSelect = async (exercise: ExerciseData) => {
     setShowExercisePicker(false);
     setSelectedExerciseForRetry(exercise); // Remember the exercise for retry
+
+    if (!supportedExercises.has(exercise.name)) {
+      setAnalysisNotice(`AI analysis for ${exercise.name} is coming soon. You can still log it manually in the Daily tab.`);
+      setCapturedPhoto(null);
+      return;
+    }
+
+    if (!recordedVideo) {
+      setAnalysisNotice('Record or upload a push-up video to run AI analysis.');
+      setCapturedPhoto(null);
+      return;
+    }
+
     setIsAnalyzing(true);
-    
-    // Simulate AI analysis with randomized scores for ALL exercises (testing mode)
-    setTimeout(() => {
-      // Generate random score (0-100) for ALL exercises
-      const randomScore = Math.floor(Math.random() * 101); // 0-100
-      
-      // Reps based on score - 0 score means 0 reps
-      const randomReps = randomScore === 0 ? 0 : Math.floor(Math.random() * 11) + 5; // 5-15 reps if score > 0
-      
-      // Generate feedback based on score ranges
-      let feedback, strengths, improvements;
-      
-      if (randomScore === 0) {
-        feedback = 'No valid reps detected.';
-        strengths = [];
-        improvements = [
-          'Check your form and positioning',
-          'Ensure full range of motion',
-          'Try again with proper technique'
-        ];
-      } else if (randomScore >= 90) {
-        feedback = 'Excellent form! Outstanding technique.';
-        strengths = [
-          'Perfect form consistency',
-          'Controlled movement',
-          'Excellent range of motion'
-        ];
-        improvements = [];
-      } else if (randomScore >= 75) {
-        feedback = 'Great form! Minor adjustments could help.';
-        strengths = [
-          'Good form consistency',
-          'Controlled movement',
-          'Strong technique'
-        ];
-        improvements = ['Keep up the good work'];
-      } else if (randomScore >= 60) {
-        feedback = 'Decent effort. Focus on improving form.';
-        strengths = [
-          'Good effort',
-          'Controlled movement'
-        ];
-        improvements = [
-          'Work on form consistency',
-          'Focus on full range of motion'
-        ];
-      } else if (randomScore >= 40) {
-        feedback = 'Needs improvement. Review proper technique.';
-        strengths = [
-          'Good attempt'
-        ];
-        improvements = [
-          'Work on form consistency',
-          'Slow down and focus on technique',
-          'Ensure full range of motion'
-        ];
-      } else {
-        feedback = 'Form needs significant work.';
-        strengths = [];
-        improvements = [
-          'Review proper exercise form',
-          'Slow down your movement',
-          'Focus on controlled technique',
-          'Consider watching tutorial videos'
-        ];
-      }
-      
-      const result = {
-        score: randomScore,
-        sets: randomReps,
-        feedback,
-        strengths,
-        improvements
-      };
-      
+
+    try {
+      const result = await analyzeWorkoutForm(exercise.name, recordedVideo);
       setAnalysisResult({ ...result, exerciseName: exercise.name });
+    } catch (error: any) {
+      setAnalysisNotice(error?.message || 'AI analysis failed. Please try again.');
+    } finally {
       setIsAnalyzing(false);
-    }, 2500);
+    }
   };
 
   const handleSaveResult = (score: number) => {
@@ -689,6 +643,24 @@ const CameraScreenComponent = ({ exercises, setExercises, muscleStatus, setMuscl
             <div className="w-80 h-3 bg-gray-800/50 rounded-full overflow-hidden mt-8 mx-auto border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
               <div className="h-full bg-gradient-to-r from-blue-600 via-cyan-500 to-purple-600 rounded-full animate-[pulse_1.5s_ease-in-out_infinite] shadow-[0_0_20px_rgba(96,165,250,0.8)]" style={{ width: '70%' }} />
             </div>
+          </div>
+        </div>
+      )}
+
+      {analysisNotice && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="mx-6 w-full max-w-sm rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#252932] to-[#1a1d23] p-6 text-center shadow-2xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20">
+              <Sparkles className="h-6 w-6 text-blue-300" />
+            </div>
+            <h3 className="text-white font-bold text-lg mb-2">Analysis Unavailable</h3>
+            <p className="text-sm text-blue-200/80 mb-6">{analysisNotice}</p>
+            <button
+              onClick={() => setAnalysisNotice(null)}
+              className="w-full rounded-xl bg-blue-600/80 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}

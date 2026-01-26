@@ -5,10 +5,13 @@ import { DailyScreen } from './components/DailyScreen';
 import { FriendsScreen } from './components/FriendsScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { LoginScreen } from './components/LoginScreen';
 import { SplashScreen } from './components/SplashScreen';
+import { LoginSwoosh } from './components/LoginSwoosh';
 import { ScreenTransition } from './components/ScreenTransition';
 import { loadWorkoutFromStorage, saveWorkoutToStorage } from './utils/workoutStorage';
 import { loadSettings, updateSetting, type AppSettings } from './utils/settingsStore';
+import { loadAuthState, login, logout, type AuthState } from './utils/auth';
 
 type Tab = 'camera' | 'daily' | 'friends' | 'profile';
 type View = Tab | 'settings';
@@ -71,6 +74,11 @@ export default function App() {
     const splashShown = sessionStorage.getItem('kinetic_splash_shown');
     return splashShown !== 'true';
   });
+  const [showLoginSwoosh, setShowLoginSwoosh] = useState(false);
+  
+  // Authentication state
+  const [authState, setAuthState] = useState<AuthState>(() => loadAuthState());
+  
   const [activeTab, setActiveTab] = useState<Tab>('camera');
   const [currentView, setCurrentView] = useState<View>('camera');
   
@@ -139,9 +147,25 @@ export default function App() {
     setCurrentView('camera');
   }, []);
 
+  const handleLogin = useCallback((email: string) => {
+    const newAuthState = login(email);
+    setAuthState(newAuthState);
+    // Show login swoosh after login
+    setShowLoginSwoosh(true);
+  }, []);
+
   const handleSplashComplete = useCallback(() => {
     setShowInitialSplash(false);
     sessionStorage.setItem('kinetic_splash_shown', 'true');
+  }, []);
+
+  const handleLoginSwooshComplete = useCallback(() => {
+    setShowLoginSwoosh(false);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    setAuthState({ isAuthenticated: false });
   }, []);
 
   const renderScreen = () => {
@@ -164,7 +188,7 @@ export default function App() {
           onSettingChange={(key, value) => {
             setSettings(prev => updateSetting(key, value, prev));
           }}
-          onLogout={() => undefined}
+          onLogout={handleLogout}
         />;
       default:
         return <DailyScreen exercises={exercises} setExercises={setExercises} meals={meals} setMeals={setMeals} muscleStatus={muscleStatus} setMuscleStatus={setMuscleStatus} onRecordExercise={handleRecordExercise} onRetryExercise={handleRetryExercise} />;
@@ -185,6 +209,17 @@ export default function App() {
   useEffect(() => {
     saveWorkoutToStorage(exercises, meals, muscleStatus);
   }, [exercises, meals, muscleStatus]);
+
+  // Show login screen if not authenticated
+  if (!authState.isAuthenticated) {
+    return (
+      <>
+        <LoginScreen onLogin={handleLogin} />
+        {/* Show initial splash on first load */}
+        {showInitialSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      </>
+    );
+  }
 
   return (
     <div className={`h-screen w-full max-w-md mx-auto text-foreground flex flex-col overflow-hidden ${settings.darkMode ? 'dark' : ''}`}>
@@ -241,6 +276,8 @@ export default function App() {
           </nav>
         </div>
       )}
+      {/* Login Swoosh */}
+      {showLoginSwoosh && <LoginSwoosh onComplete={handleLoginSwooshComplete} />}
     </div>
   );
 }

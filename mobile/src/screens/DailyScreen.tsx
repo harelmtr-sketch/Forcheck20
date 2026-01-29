@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, TextInput, FlatList, Modal, ScrollView } from 'react-native';
+import { View, Text, Pressable, TextInput, FlatList, Modal, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -72,9 +72,6 @@ export function DailyScreen() {
   const [proteinGoal, setProteinGoal] = useState(180);
   const todayLabel = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }), []);
   const hasActivity = exercises.length > 0 || meals.length > 0;
-  const dailyScoreColor = getScoreColor(dailyScoreData.score);
-  const workoutScoreColor = getScoreColor(workoutScoreData.score);
-  const dietScoreColor = getScoreColor(dietScoreData.score);
 
   const hydrate = useCallback(async () => {
     const saved = await loadWorkoutSession();
@@ -124,17 +121,39 @@ export function DailyScreen() {
   const totalProtein = meals.reduce((sum, meal) => sum + meal.protein, 0);
   const hasWorkout = exercises.length > 0;
 
-  const workoutScoreData = useMemo(() => calculateWorkoutScore(exercises, muscleStatus), [exercises, muscleStatus]);
-  const dietScoreData = useMemo(() => calculateDietScore(totalCalories, totalProtein, calorieGoal, proteinGoal), [totalCalories, totalProtein, calorieGoal, proteinGoal]);
-  const dailyScoreData = useMemo(() => calculateDailyScore(
-    workoutScoreData.score,
-    dietScoreData.score,
-    totalCalories,
-    totalProtein,
-    calorieGoal,
-    proteinGoal,
-    hasWorkout
-  ), [workoutScoreData.score, dietScoreData.score, totalCalories, totalProtein, calorieGoal, proteinGoal, hasWorkout]);
+  const workoutScoreData = useMemo(() => {
+    try {
+      return calculateWorkoutScore(exercises, muscleStatus);
+    } catch {
+      return { score: 0, cCoefficient: 1, musclesHitCount: 0, readyMusclesCount: 0 };
+    }
+  }, [exercises, muscleStatus]);
+  const dietScoreData = useMemo(() => {
+    try {
+      return calculateDietScore(totalCalories, totalProtein, calorieGoal, proteinGoal);
+    } catch {
+      return { score: 0, feedback: { message: '' } };
+    }
+  }, [totalCalories, totalProtein, calorieGoal, proteinGoal]);
+  const dailyScoreData = useMemo(() => {
+    try {
+      return calculateDailyScore(
+        workoutScoreData?.score ?? 0,
+        dietScoreData?.score ?? 0,
+        totalCalories,
+        totalProtein,
+        calorieGoal,
+        proteinGoal,
+        hasWorkout
+      );
+    } catch {
+      return { score: 0, feedback: { message: '' } };
+    }
+  }, [workoutScoreData?.score, dietScoreData?.score, totalCalories, totalProtein, calorieGoal, proteinGoal, hasWorkout]);
+
+  const dailyScoreColor = getScoreColor(dailyScoreData?.score ?? 0);
+  const workoutScoreColor = getScoreColor(workoutScoreData?.score ?? 0);
+  const dietScoreColor = getScoreColor(dietScoreData?.score ?? 0);
 
   const filteredExercises = useMemo(() => {
     return exerciseDatabase.filter((exercise) => {
@@ -520,57 +539,62 @@ export function DailyScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#0f1117' }} contentContainerStyle={{ paddingBottom: 120 }}>
-      <View style={{ alignSelf: 'center', width: '100%', maxWidth: 448, paddingHorizontal: 20, paddingTop: 24 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+    <LinearGradient colors={['#0f1117', '#0b0f16']} style={styles.screen}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.centered}>
+        <View style={styles.headerRow}>
           <View>
             <Text style={{ color: '#f8fafc', fontSize: 22, fontWeight: '700' }}>Today's Progress</Text>
             <Text style={{ color: '#94a3b8', marginTop: 6 }}>{todayLabel}</Text>
           </View>
-          <View style={{ borderRadius: 16, borderWidth: 1, borderColor: 'rgba(248,113,113,0.5)', backgroundColor: 'rgba(248,113,113,0.15)', paddingHorizontal: 12, paddingVertical: 8 }}>
-            <Text style={{ color: '#f87171', fontWeight: '700' }}>🔥 7</Text>
-            <Text style={{ color: '#fca5a5', fontSize: 10, textAlign: 'center' }}>days</Text>
-          </View>
+          <LinearGradient
+            colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.12)']}
+            style={styles.streakBadge}
+          >
+            <Text style={{ color: '#fca5a5', fontWeight: '700' }}>🔥 7</Text>
+            <Text style={{ color: '#fecaca', fontSize: 10, textAlign: 'center' }}>days</Text>
+          </LinearGradient>
         </View>
-        <View style={{ height: 1, backgroundColor: 'rgba(59,130,246,0.2)', marginVertical: 16 }} />
+        <View style={styles.headerDivider} />
 
         {hasActivity && (
-          <View style={{ borderRadius: 20, padding: 20, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
-            <Text style={{ color: '#94a3b8', fontSize: 11, letterSpacing: 1, textAlign: 'center', marginBottom: 12 }}>DAILY SCORE</Text>
-            <Text style={{ color: dailyScoreColor, fontSize: 72, fontWeight: '800', textAlign: 'center' }}>{dailyScoreData.score}</Text>
+          <View style={styles.dailyScoreCard}>
+            <View style={[styles.scoreGlow, { backgroundColor: dailyScoreColor }]} />
+            <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
+            <Text style={[styles.dailyScoreValue, { color: dailyScoreColor }]}>{dailyScoreData.score}</Text>
           </View>
         )}
 
         {!hasWorkout ? (
           <>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={{ color: '#60a5fa', marginRight: 6 }}>🧩</Text>
-              <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>Start Workout</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>🧩</Text>
+              <Text style={styles.sectionTitle}>Start Workout</Text>
             </View>
             <Pressable
               onPress={() => setCurrentView('templates')}
-              style={{ borderRadius: 18, padding: 16, marginBottom: 12, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.3)' }}
+              style={styles.primaryCard}
             >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1, paddingRight: 12 }}>
+              <View style={styles.cardRow}>
+                <View style={styles.cardCopy}>
                   <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Templates</Text>
                   <Text style={{ color: '#94a3b8', marginTop: 6 }}>Browse and choose a recommended workout then film your sets and get feedback</Text>
                 </View>
-                <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+                <View style={styles.iconBadge}>
                   <Text style={{ color: '#93c5fd' }}>🏋️</Text>
                 </View>
               </View>
             </Pressable>
             <Pressable
               onPress={() => setCurrentView('exercise-picker')}
-              style={{ borderRadius: 18, padding: 16, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.3)' }}
+              style={styles.primaryCard}
             >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1, paddingRight: 12 }}>
+              <View style={styles.cardRow}>
+                <View style={styles.cardCopy}>
                   <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Custom</Text>
                   <Text style={{ color: '#94a3b8', marginTop: 6 }}>Create your own workout then film your sets and get feedback</Text>
                 </View>
-                <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+                <View style={styles.iconBadge}>
                   <Text style={{ color: '#93c5fd' }}>⚡</Text>
                 </View>
               </View>
@@ -578,25 +602,26 @@ export function DailyScreen() {
           </>
         ) : (
           <>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ color: '#60a5fa', marginRight: 6 }}>🏋️</Text>
-                <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>Workout</Text>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionIcon}>🏋️</Text>
+                <Text style={styles.sectionTitle}>Workout</Text>
               </View>
               {workoutScoreData.score > 0 && (
-                <Text style={{ color: workoutScoreColor, fontSize: 18, fontWeight: '700' }}>{workoutScoreData.score}</Text>
+                <Text style={[styles.sectionScore, { color: workoutScoreColor }]}>{workoutScoreData.score}</Text>
               )}
             </View>
             {exercises.map((exercise, index) => {
               const timeLabel = new Date(exercise.timestamp ?? Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
               const isRated = typeof exercise.score === 'number';
+              const exerciseScoreColor = getScoreColor(exercise.score ?? 0);
               return (
                 <Pressable
                   key={`${exercise.name}-${index}`}
                   onPress={() => (!isRated ? handleRateExercise(index) : undefined)}
-                  style={{ borderRadius: 18, padding: 16, marginBottom: 12, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.25)' }}
+                  style={styles.exerciseCard}
                 >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={styles.exerciseHeader}>
                     <View>
                       <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '700' }}>{exercise.name}</Text>
                       <Text style={{ color: '#94a3b8', marginTop: 6 }}>{exercise.sets} sets × {exercise.reps} reps</Text>
@@ -604,22 +629,22 @@ export function DailyScreen() {
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={{ color: '#64748b', fontSize: 12 }}>{timeLabel}</Text>
                       {isRated ? (
-                        <Text style={{ color: workoutScoreColor, fontWeight: '800', fontSize: 16, marginTop: 6 }}>{exercise.score}</Text>
+                        <Text style={{ color: exerciseScoreColor, fontWeight: '800', fontSize: 16, marginTop: 6 }}>{exercise.score}</Text>
                       ) : (
-                        <Text style={{ color: '#64748b', fontSize: 10, marginTop: 6 }}>Tap to rate form</Text>
+                        <Text style={{ color: '#60a5fa', fontSize: 10, marginTop: 6 }}>Tap to rate form</Text>
                       )}
                     </View>
                   </View>
-                  <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                  <View style={styles.actionRow}>
                     <Pressable
                       onPress={() => navigation.navigate('Camera' as never)}
-                      style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}
+                      style={styles.iconButton}
                     >
                       <Text style={{ color: '#93c5fd' }}>✎</Text>
                     </Pressable>
                     <Pressable
                       onPress={() => navigation.navigate('Camera' as never)}
-                      style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}
+                      style={styles.iconButton}
                     >
                       <Text style={{ color: '#93c5fd' }}>▶</Text>
                     </Pressable>
@@ -627,7 +652,7 @@ export function DailyScreen() {
                   <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
                     <LinearGradient
                       colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.15)']}
-                      style={{ borderRadius: 14, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)' }}
+                      style={styles.recordButton}
                     >
                       <Text style={{ color: '#fecaca', fontWeight: '700' }}>📷 Record Now</Text>
                     </LinearGradient>
@@ -638,29 +663,29 @@ export function DailyScreen() {
           </>
         )}
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 12 }}>
-          <Text style={{ color: '#f59e0b', marginRight: 6 }}>🍴</Text>
-          <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionIcon, { color: '#f59e0b' }]}>🍴</Text>
+          <Text style={styles.sectionTitle}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
         </View>
 
         {meals.length === 0 ? (
           <Pressable
             onPress={() => setCurrentView('meal-form')}
-            style={{ borderRadius: 18, padding: 16, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.25)' }}
+            style={styles.primaryCard}
           >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={styles.cardRow}>
               <View>
                 <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Add Meals</Text>
                 <Text style={{ color: '#94a3b8', marginTop: 6 }}>Track your nutrition</Text>
               </View>
-              <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+              <View style={styles.iconBadge}>
                 <Text style={{ color: '#93c5fd' }}>🍽️</Text>
               </View>
             </View>
           </Pressable>
         ) : (
-          <View style={{ borderRadius: 18, padding: 16, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.25)' }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={styles.primaryCard}>
+            <View style={styles.cardRow}>
               <Text style={{ color: '#f8fafc', fontWeight: '700' }}>Diet Score</Text>
               <Text style={{ color: dietScoreColor, fontSize: 22, fontWeight: '800' }}>{dietScoreData.score}</Text>
             </View>
@@ -677,7 +702,7 @@ export function DailyScreen() {
                 <View style={{ height: 8, borderRadius: 4, width: `${Math.min(100, (totalProtein / proteinGoal) * 100)}%`, backgroundColor: '#34d399' }} />
               </View>
             </View>
-            <Pressable onPress={() => setCurrentView('meal-form')} style={{ marginTop: 14, alignSelf: 'flex-start', backgroundColor: '#2563eb', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }}>
+            <Pressable onPress={() => setCurrentView('meal-form')} style={styles.secondaryButton}>
               <Text style={{ color: '#f8fafc', fontWeight: '700' }}>Add Meal</Text>
             </Pressable>
           </View>
@@ -685,14 +710,14 @@ export function DailyScreen() {
 
         <Pressable
           onPress={() => setShowTemplateSave(true)}
-          style={{ alignSelf: 'flex-start', backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }}
+          style={styles.ghostButton}
         >
           <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Save as Template</Text>
         </Pressable>
 
         <Pressable
           onPress={handleArchiveDay}
-          style={{ marginTop: 12, alignSelf: 'flex-start', backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 }}
+          style={[styles.ghostButton, { marginTop: 12 }]}
         >
           <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Archive Day</Text>
         </Pressable>
@@ -726,6 +751,173 @@ export function DailyScreen() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f1117'
+  },
+  scroll: {
+    flex: 1
+  },
+  scrollContent: {
+    paddingBottom: 120
+  },
+  centered: {
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 448,
+    paddingHorizontal: 20,
+    paddingTop: 24
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  headerDivider: {
+    height: 1,
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    marginVertical: 16
+  },
+  streakBadge: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(248,113,113,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center'
+  },
+  dailyScoreCard: {
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    backgroundColor: '#1f232c',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    overflow: 'hidden'
+  },
+  scoreGlow: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 140,
+    height: 140,
+    opacity: 0.2,
+    borderRadius: 70
+  },
+  dailyScoreLabel: {
+    color: '#94a3b8',
+    fontSize: 11,
+    letterSpacing: 1,
+    textAlign: 'center',
+    marginBottom: 12
+  },
+  dailyScoreValue: {
+    fontSize: 72,
+    fontWeight: '800',
+    textAlign: 'center'
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: 8
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12
+  },
+  sectionIcon: {
+    color: '#60a5fa',
+    marginRight: 6
+  },
+  sectionTitle: {
+    color: '#f8fafc',
+    fontSize: 18,
+    fontWeight: '700'
+  },
+  sectionScore: {
+    fontSize: 18,
+    fontWeight: '700'
+  },
+  primaryCard: {
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    backgroundColor: '#1f232c',
+    borderWidth: 1,
+    borderColor: 'rgba(59,130,246,0.3)'
+  },
+  cardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  cardCopy: {
+    flex: 1,
+    paddingRight: 12
+  },
+  iconBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  exerciseCard: {
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    backgroundColor: '#1f232c',
+    borderWidth: 1,
+    borderColor: 'rgba(59,130,246,0.25)'
+  },
+  exerciseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  actionRow: {
+    flexDirection: 'row',
+    marginTop: 12
+  },
+  iconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8
+  },
+  recordButton: {
+    borderRadius: 14,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.4)'
+  },
+  secondaryButton: {
+    marginTop: 14,
+    alignSelf: 'flex-start',
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  ghostButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#1f2937',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  }
+});

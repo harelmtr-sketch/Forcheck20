@@ -8,4 +8,14 @@
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
+
+  ## Expo mobile app (WIP)
+
+  The Expo managed app scaffolding lives in the `mobile/` directory. Install mobile dependencies there and start Expo:
+
+  ```
+  cd mobile
+  npm install
+  npm run start
+  ```
   

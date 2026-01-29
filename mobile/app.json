@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Kinetic",
+    "slug": "kinetic",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "com.kinetic.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Kinetic to access your camera to record workout videos."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Kinetic to access your media library to save story exports.",
+          "savePhotosPermission": "Allow Kinetic to save story exports to your gallery."
+        }
+      ]
+    ],
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "Kinetic needs camera access to record workout videos.",
+        "NSPhotoLibraryUsageDescription": "Kinetic needs photo library access to select videos."
+      }
+    }
+  }
+}

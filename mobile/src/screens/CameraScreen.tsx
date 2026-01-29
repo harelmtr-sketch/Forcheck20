@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, Modal, TextInput, ScrollView } from 'react-native';
-import { Camera, CameraType } from 'expo-camera';
+import { Camera, CameraView } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -12,7 +12,7 @@ import { exerciseDatabase } from '../data/exerciseDatabase';
 const SUPPORTED_EXERCISE = 'Push-ups';
 
 export function CameraScreen() {
-  const cameraRef = useRef<Camera | null>(null);
+  const cameraRef = useRef<CameraView | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [videoUri, setVideoUri] = useState<string | null>(null);
@@ -45,7 +45,10 @@ export function CameraScreen() {
 
     try {
       setIsRecording(true);
-      const recording = await cameraRef.current.recordAsync({ maxDuration: 10, quality: Camera.Constants.VideoQuality['1080p'] });
+      const recording = await cameraRef.current.recordAsync({ maxDuration: 10 });
+      if (!recording?.uri) {
+        throw new Error('Recording failed to produce a video.');
+      }
       setVideoUri(recording.uri);
     } catch (err: any) {
       setError(err?.message || 'Failed to record video.');
@@ -145,7 +148,7 @@ export function CameraScreen() {
         <View style={{ position: 'absolute', top: '35%', right: '20%', width: 200, height: 200, borderRadius: 100, backgroundColor: 'rgba(168,85,247,0.18)' }} />
       </View>
 
-      <Camera ref={cameraRef} style={{ flex: 1 }} type={CameraType.front} ratio="16:9" />
+      <CameraView ref={cameraRef} style={{ flex: 1 }} facing="front" ratio="16:9" videoQuality="1080p" />
 
       {!videoUri && (
         <View style={{ position: 'absolute', top: '50%', left: '50%', marginLeft: -48, marginTop: -48, width: 96, height: 96, alignItems: 'center', justifyContent: 'center' }}>

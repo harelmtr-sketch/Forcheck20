@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, TextInput, FlatList, Modal, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { addArchive } from '../utils/archiveStorage';
 import { loadJson, saveJson } from '../utils/storage';
 import { exerciseDatabase, workoutTemplates, type ExerciseData, type WorkoutTemplate } from '../data/exerciseDatabase';
-import { calculateWorkoutScore, getWorkoutScoreFeedback } from '../utils/workoutScoring';
+import { calculateWorkoutScore } from '../utils/workoutScoring';
 import { calculateDietScore, calculateDailyScore } from '../utils/dailyScoring';
 import { defaultMuscleStatus, loadWorkoutSession, saveWorkoutSession, todayKey, type ExerciseEntry, type MealEntry, type MuscleStatus } from '../utils/workoutStorage';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -38,6 +39,15 @@ const SAVED_MEALS_KEY = 'kinetic-saved-meals';
 const CUSTOM_TEMPLATES_KEY = 'kinetic-custom-templates';
 const SETTINGS_KEY = 'kinetic_settings';
 
+const getScoreColor = (score: number) => {
+  if (score >= 90) return '#22c55e';
+  if (score >= 80) return '#4ade80';
+  if (score >= 70) return '#facc15';
+  if (score >= 60) return '#fb923c';
+  if (score >= 50) return '#f97316';
+  return '#f87171';
+};
+
 export function DailyScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [currentView, setCurrentView] = useState<ViewMode>('main');
@@ -60,6 +70,11 @@ export function DailyScreen() {
   const [templateName, setTemplateName] = useState('');
   const [calorieGoal, setCalorieGoal] = useState(2400);
   const [proteinGoal, setProteinGoal] = useState(180);
+  const todayLabel = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }), []);
+  const hasActivity = exercises.length > 0 || meals.length > 0;
+  const dailyScoreColor = getScoreColor(dailyScoreData.score);
+  const workoutScoreColor = getScoreColor(workoutScoreData.score);
+  const dietScoreColor = getScoreColor(dietScoreData.score);
 
   const hydrate = useCallback(async () => {
     const saved = await loadWorkoutSession();
@@ -110,12 +125,6 @@ export function DailyScreen() {
   const hasWorkout = exercises.length > 0;
 
   const workoutScoreData = useMemo(() => calculateWorkoutScore(exercises, muscleStatus), [exercises, muscleStatus]);
-  const workoutFeedback = useMemo(() => getWorkoutScoreFeedback(
-    workoutScoreData.score,
-    workoutScoreData.cCoefficient,
-    workoutScoreData.musclesHitCount,
-    workoutScoreData.readyMusclesCount
-  ), [workoutScoreData]);
   const dietScoreData = useMemo(() => calculateDietScore(totalCalories, totalProtein, calorieGoal, proteinGoal), [totalCalories, totalProtein, calorieGoal, proteinGoal]);
   const dailyScoreData = useMemo(() => calculateDailyScore(
     workoutScoreData.score,
@@ -375,28 +384,45 @@ export function DailyScreen() {
   if (currentView === 'templates') {
     const templates = [...workoutTemplates, ...customTemplates];
     return (
-      <View style={{ flex: 1, backgroundColor: '#0f1117', padding: 20 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <Pressable onPress={() => setCurrentView('main')}>
-            <Text style={{ color: '#94a3b8' }}>Back</Text>
+      <ScrollView style={{ flex: 1, backgroundColor: '#0f1117' }} contentContainerStyle={{ paddingBottom: 32 }}>
+        <View style={{ alignSelf: 'center', width: '100%', maxWidth: 448, paddingHorizontal: 20, paddingTop: 24 }}>
+          <Pressable onPress={() => setCurrentView('main')} style={{ marginBottom: 12 }}>
+            <Text style={{ color: '#94a3b8' }}>← Back</Text>
           </Pressable>
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>Templates</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        <FlatList
-          data={templates}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
+          <Text style={{ color: '#f8fafc', fontSize: 22, fontWeight: '700' }}>Workout Templates</Text>
+          <Text style={{ color: '#64748b', marginTop: 4 }}>{templates.length} programs • {customTemplates.length} custom</Text>
+          <View style={{ height: 1, backgroundColor: 'rgba(59,130,246,0.2)', marginVertical: 16 }} />
+          {templates.map((item, index) => (
             <Pressable
+              key={`${item.id}-${index}`}
               onPress={() => handleTemplateStart(item)}
-              style={{ backgroundColor: '#252932', borderRadius: 16, padding: 16, marginBottom: 12 }}
+              style={{
+                borderRadius: 18,
+                padding: 16,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(59,130,246,0.2)',
+                backgroundColor: 'rgba(35,42,55,0.95)'
+              }}
             >
-              <Text style={{ color: '#f8fafc', fontWeight: '700' }}>{item.name}</Text>
-              <Text style={{ color: '#94a3b8', marginTop: 4 }}>{item.exercises.length} exercises</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                    <Text style={{ color: '#93c5fd' }}>⚡</Text>
+                  </View>
+                  <View>
+                    <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>{item.name}</Text>
+                    <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 2 }}>
+                      {item.exercises.length} exercises • 35 min
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ color: '#64748b', fontSize: 18 }}>›</Text>
+              </View>
             </Pressable>
-          )}
-        />
-      </View>
+          ))}
+        </View>
+      </ScrollView>
     );
   }
 
@@ -494,104 +520,183 @@ export function DailyScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#1a1d23' }} contentContainerStyle={{ padding: 20 }}>
-      <View style={{ backgroundColor: '#252932', borderRadius: 20, padding: 20, marginBottom: 16 }}>
-        <Text style={{ color: '#94a3b8', fontSize: 12 }}>Today</Text>
-        <Text style={{ color: '#f8fafc', fontSize: 26, fontWeight: '700', marginTop: 6 }}>Daily Score {dailyScoreData.score}</Text>
-        <Text style={{ color: '#94a3b8', marginTop: 6 }}>{dailyScoreData.feedback.message}</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: '#0f1117' }} contentContainerStyle={{ paddingBottom: 120 }}>
+      <View style={{ alignSelf: 'center', width: '100%', maxWidth: 448, paddingHorizontal: 20, paddingTop: 24 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View>
+            <Text style={{ color: '#f8fafc', fontSize: 22, fontWeight: '700' }}>Today's Progress</Text>
+            <Text style={{ color: '#94a3b8', marginTop: 6 }}>{todayLabel}</Text>
+          </View>
+          <View style={{ borderRadius: 16, borderWidth: 1, borderColor: 'rgba(248,113,113,0.5)', backgroundColor: 'rgba(248,113,113,0.15)', paddingHorizontal: 12, paddingVertical: 8 }}>
+            <Text style={{ color: '#f87171', fontWeight: '700' }}>🔥 7</Text>
+            <Text style={{ color: '#fca5a5', fontSize: 10, textAlign: 'center' }}>days</Text>
+          </View>
+        </View>
+        <View style={{ height: 1, backgroundColor: 'rgba(59,130,246,0.2)', marginVertical: 16 }} />
+
+        {hasActivity && (
+          <View style={{ borderRadius: 20, padding: 20, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
+            <Text style={{ color: '#94a3b8', fontSize: 11, letterSpacing: 1, textAlign: 'center', marginBottom: 12 }}>DAILY SCORE</Text>
+            <Text style={{ color: dailyScoreColor, fontSize: 72, fontWeight: '800', textAlign: 'center' }}>{dailyScoreData.score}</Text>
+          </View>
+        )}
+
+        {!hasWorkout ? (
+          <>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={{ color: '#60a5fa', marginRight: 6 }}>🧩</Text>
+              <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>Start Workout</Text>
+            </View>
+            <Pressable
+              onPress={() => setCurrentView('templates')}
+              style={{ borderRadius: 18, padding: 16, marginBottom: 12, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.3)' }}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Templates</Text>
+                  <Text style={{ color: '#94a3b8', marginTop: 6 }}>Browse and choose a recommended workout then film your sets and get feedback</Text>
+                </View>
+                <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#93c5fd' }}>🏋️</Text>
+                </View>
+              </View>
+            </Pressable>
+            <Pressable
+              onPress={() => setCurrentView('exercise-picker')}
+              style={{ borderRadius: 18, padding: 16, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.3)' }}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Custom</Text>
+                  <Text style={{ color: '#94a3b8', marginTop: 6 }}>Create your own workout then film your sets and get feedback</Text>
+                </View>
+                <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#93c5fd' }}>⚡</Text>
+                </View>
+              </View>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ color: '#60a5fa', marginRight: 6 }}>🏋️</Text>
+                <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>Workout</Text>
+              </View>
+              {workoutScoreData.score > 0 && (
+                <Text style={{ color: workoutScoreColor, fontSize: 18, fontWeight: '700' }}>{workoutScoreData.score}</Text>
+              )}
+            </View>
+            {exercises.map((exercise, index) => {
+              const timeLabel = new Date(exercise.timestamp ?? Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              const isRated = typeof exercise.score === 'number';
+              return (
+                <Pressable
+                  key={`${exercise.name}-${index}`}
+                  onPress={() => (!isRated ? handleRateExercise(index) : undefined)}
+                  style={{ borderRadius: 18, padding: 16, marginBottom: 12, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.25)' }}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View>
+                      <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '700' }}>{exercise.name}</Text>
+                      <Text style={{ color: '#94a3b8', marginTop: 6 }}>{exercise.sets} sets × {exercise.reps} reps</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ color: '#64748b', fontSize: 12 }}>{timeLabel}</Text>
+                      {isRated ? (
+                        <Text style={{ color: workoutScoreColor, fontWeight: '800', fontSize: 16, marginTop: 6 }}>{exercise.score}</Text>
+                      ) : (
+                        <Text style={{ color: '#64748b', fontSize: 10, marginTop: 6 }}>Tap to rate form</Text>
+                      )}
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                    <Pressable
+                      onPress={() => navigation.navigate('Camera' as never)}
+                      style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}
+                    >
+                      <Text style={{ color: '#93c5fd' }}>✎</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => navigation.navigate('Camera' as never)}
+                      style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Text style={{ color: '#93c5fd' }}>▶</Text>
+                    </Pressable>
+                  </View>
+                  <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
+                    <LinearGradient
+                      colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.15)']}
+                      style={{ borderRadius: 14, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)' }}
+                    >
+                      <Text style={{ color: '#fecaca', fontWeight: '700' }}>📷 Record Now</Text>
+                    </LinearGradient>
+                  </Pressable>
+                </Pressable>
+              );
+            })}
+          </>
+        )}
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 12 }}>
+          <Text style={{ color: '#f59e0b', marginRight: 6 }}>🍴</Text>
+          <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
+        </View>
+
+        {meals.length === 0 ? (
+          <Pressable
+            onPress={() => setCurrentView('meal-form')}
+            style={{ borderRadius: 18, padding: 16, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.25)' }}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View>
+                <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Add Meals</Text>
+                <Text style={{ color: '#94a3b8', marginTop: 6 }}>Track your nutrition</Text>
+              </View>
+              <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: '#93c5fd' }}>🍽️</Text>
+              </View>
+            </View>
+          </Pressable>
+        ) : (
+          <View style={{ borderRadius: 18, padding: 16, marginBottom: 24, backgroundColor: '#1f232c', borderWidth: 1, borderColor: 'rgba(59,130,246,0.25)' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ color: '#f8fafc', fontWeight: '700' }}>Diet Score</Text>
+              <Text style={{ color: dietScoreColor, fontSize: 22, fontWeight: '800' }}>{dietScoreData.score}</Text>
+            </View>
+            <Text style={{ color: '#94a3b8', marginTop: 8 }}>{dietScoreData.feedback.message}</Text>
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ color: '#94a3b8', fontSize: 12, marginBottom: 6 }}>Calories {totalCalories} / {calorieGoal}</Text>
+              <View style={{ height: 8, borderRadius: 4, backgroundColor: '#1a1f27', overflow: 'hidden' }}>
+                <View style={{ height: 8, borderRadius: 4, width: `${Math.min(100, (totalCalories / calorieGoal) * 100)}%`, backgroundColor: '#60a5fa' }} />
+              </View>
+            </View>
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ color: '#94a3b8', fontSize: 12, marginBottom: 6 }}>Protein {totalProtein}g / {proteinGoal}g</Text>
+              <View style={{ height: 8, borderRadius: 4, backgroundColor: '#1a1f27', overflow: 'hidden' }}>
+                <View style={{ height: 8, borderRadius: 4, width: `${Math.min(100, (totalProtein / proteinGoal) * 100)}%`, backgroundColor: '#34d399' }} />
+              </View>
+            </View>
+            <Pressable onPress={() => setCurrentView('meal-form')} style={{ marginTop: 14, alignSelf: 'flex-start', backgroundColor: '#2563eb', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }}>
+              <Text style={{ color: '#f8fafc', fontWeight: '700' }}>Add Meal</Text>
+            </Pressable>
+          </View>
+        )}
+
+        <Pressable
+          onPress={() => setShowTemplateSave(true)}
+          style={{ alignSelf: 'flex-start', backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }}
+        >
+          <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Save as Template</Text>
+        </Pressable>
+
         <Pressable
           onPress={handleArchiveDay}
-          style={{ marginTop: 16, alignSelf: 'flex-start', backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 }}
+          style={{ marginTop: 12, alignSelf: 'flex-start', backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 }}
         >
           <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Archive Day</Text>
         </Pressable>
       </View>
-
-      <View style={{ backgroundColor: '#252932', borderRadius: 20, padding: 16, marginBottom: 16 }}>
-        <Text style={{ color: '#f8fafc', fontWeight: '700' }}>Workout Score</Text>
-        <Text style={{ color: '#fbbf24', fontSize: 24, fontWeight: '800', marginTop: 4 }}>{workoutScoreData.score}</Text>
-        <Text style={{ color: '#94a3b8', marginTop: 6 }}>{workoutFeedback.detail}</Text>
-      </View>
-
-      <View style={{ backgroundColor: '#252932', borderRadius: 20, padding: 16, marginBottom: 16 }}>
-        <Text style={{ color: '#f8fafc', fontWeight: '700' }}>Diet Score</Text>
-        <Text style={{ color: '#22c55e', fontSize: 24, fontWeight: '800', marginTop: 4 }}>{dietScoreData.score}</Text>
-        <Text style={{ color: '#94a3b8', marginTop: 6 }}>{dietScoreData.feedback.message}</Text>
-        <Text style={{ color: '#94a3b8', marginTop: 4 }}>{totalCalories} / {calorieGoal} kcal • {totalProtein}g / {proteinGoal}g protein</Text>
-      </View>
-
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>Exercises</Text>
-        <View style={{ flexDirection: 'row' }}>
-          <Pressable
-            onPress={() => setCurrentView('templates')}
-            style={{ backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginRight: 8 }}
-          >
-            <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Templates</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setCurrentView('exercise-picker')}
-            style={{ backgroundColor: '#3b82f6', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 }}
-          >
-            <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Add</Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {exercises.length === 0 && (
-        <Text style={{ color: '#94a3b8', marginBottom: 12 }}>No exercises logged yet.</Text>
-      )}
-      {exercises.map((exercise, index) => (
-        <Pressable
-          key={`${exercise.name}-${index}`}
-          onPress={() => handleRateExercise(index)}
-          style={{ backgroundColor: '#252932', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View>
-              <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '600' }}>{exercise.name}</Text>
-              <Text style={{ color: '#94a3b8', marginTop: 4 }}>{exercise.sets} sets • {exercise.reps} reps</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ color: '#fbbf24', fontWeight: '800', fontSize: 16 }}>{exercise.score ?? '—'}</Text>
-              <Text style={{ color: '#64748b', fontSize: 10 }}>Tap to score</Text>
-            </View>
-          </View>
-          <Pressable
-            onPress={() => navigation.navigate('Camera' as never)}
-            style={{ marginTop: 10, alignSelf: 'flex-start', backgroundColor: 'rgba(59,130,246,0.2)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}
-          >
-            <Text style={{ color: '#93c5fd', fontWeight: '600' }}>Record</Text>
-          </Pressable>
-        </Pressable>
-      ))}
-
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, marginBottom: 12 }}>
-        <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>Meals</Text>
-        <Pressable
-          onPress={() => setCurrentView('meal-form')}
-          style={{ backgroundColor: '#22c55e', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 }}
-        >
-          <Text style={{ color: '#0f1117', fontWeight: '700' }}>Add</Text>
-        </Pressable>
-      </View>
-
-      {meals.length === 0 && (
-        <Text style={{ color: '#94a3b8' }}>No meals logged yet.</Text>
-      )}
-      {meals.map((meal, index) => (
-        <View key={`${meal.name}-${index}`} style={{ backgroundColor: '#252932', borderRadius: 16, padding: 16, marginBottom: 12 }}>
-          <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '600' }}>{meal.name}</Text>
-          <Text style={{ color: '#94a3b8', marginTop: 4 }}>{meal.calories} kcal • {meal.protein}g protein</Text>
-        </View>
-      ))}
-
-      <Pressable
-        onPress={() => setShowTemplateSave(true)}
-        style={{ marginTop: 8, alignSelf: 'flex-start', backgroundColor: '#1f2937', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 }}
-      >
-        <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Save as Template</Text>
-      </Pressable>
 
       <Modal visible={showTemplateSave} transparent animationType="fade">
         <View style={{ flex: 1, backgroundColor: 'rgba(10,13,18,0.9)', justifyContent: 'center', padding: 24 }}>

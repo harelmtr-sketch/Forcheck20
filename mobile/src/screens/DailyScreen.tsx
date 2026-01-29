@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, TextInput, FlatList, Modal, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { addArchive } from '../utils/archiveStorage';
@@ -48,6 +50,15 @@ const getScoreColor = (score: number) => {
   return '#f87171';
 };
 
+const getScoreLabel = (score: number) => {
+  if (score >= 90) return 'Elite';
+  if (score >= 80) return 'Excellent';
+  if (score >= 70) return 'Great';
+  if (score >= 60) return 'Good';
+  if (score >= 50) return 'Fair';
+  return 'Needs Work';
+};
+
 export function DailyScreen() {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [currentView, setCurrentView] = useState<ViewMode>('main');
@@ -71,6 +82,7 @@ export function DailyScreen() {
   const [calorieGoal, setCalorieGoal] = useState(2400);
   const [proteinGoal, setProteinGoal] = useState(180);
   const todayLabel = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }), []);
+  const scoreOptions = useMemo(() => Array.from({ length: 11 }, (_, index) => index * 10), []);
   const hasActivity = exercises.length > 0 || meals.length > 0;
 
   const hydrate = useCallback(async () => {
@@ -253,6 +265,18 @@ export function DailyScreen() {
     setCurrentView('main');
   };
 
+  const handleScorePick = (score: number) => {
+    if (selectedExerciseIndex === null) return;
+    setScoreInput(String(score));
+    setTimeout(() => {
+      setExercises((prev) => prev.map((exercise, i) => (
+        i === selectedExerciseIndex ? { ...exercise, score } : exercise
+      )));
+      setSelectedExerciseIndex(null);
+      setCurrentView('main');
+    }, 400);
+  };
+
   const handleAddMeal = () => {
     if (!mealName.trim()) return;
     const entry: MealEntry = {
@@ -290,6 +314,14 @@ export function DailyScreen() {
     setMeals([]);
     setCurrentView('main');
     navigation.navigate('Analyze');
+  };
+
+  const handleResetDay = () => {
+    if (!exercises.length && !meals.length) return;
+    setExercises([]);
+    setMeals([]);
+    setMuscleStatus(defaultMuscleStatus());
+    setCurrentView('main');
   };
 
   const handleSaveTemplate = () => {
@@ -427,7 +459,7 @@ export function DailyScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                    <Text style={{ color: '#93c5fd' }}>⚡</Text>
+                    <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
                   </View>
                   <View>
                     <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>{item.name}</Text>
@@ -446,32 +478,50 @@ export function DailyScreen() {
   }
 
   if (currentView === 'score-picker') {
+    const selectedExercise = exercises[selectedExerciseIndex ?? 0];
+    const selectedScore = Number(scoreInput);
     return (
-      <View style={{ flex: 1, backgroundColor: '#0f1117', padding: 24, justifyContent: 'center' }}>
-        <Text style={{ color: '#f8fafc', fontSize: 20, fontWeight: '700', marginBottom: 12 }}>Score Exercise</Text>
-        <TextInput
-          placeholder="Score (0-100)"
-          placeholderTextColor="#64748b"
-          value={scoreInput}
-          onChangeText={setScoreInput}
-          keyboardType="numeric"
-          style={{ backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12, marginBottom: 12 }}
-        />
-        <View style={{ flexDirection: 'row' }}>
-          <Pressable
-            onPress={() => setCurrentView('main')}
-            style={{ flex: 1, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 12, paddingVertical: 10, marginRight: 8 }}
-          >
-            <Text style={{ color: '#f8fafc', textAlign: 'center', fontWeight: '600' }}>Cancel</Text>
+      <Animated.View entering={SlideInUp.duration(300)} exiting={SlideOutDown.duration(300)} style={{ flex: 1, backgroundColor: '#0f1117' }}>
+        <View style={{ padding: 24 }}>
+          <Pressable onPress={() => setCurrentView('main')} style={{ marginBottom: 12, width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(59,130,246,0.2)' }}>
+            <MaterialCommunityIcons name="chevron-left" size={20} color="#93c5fd" />
           </Pressable>
-          <Pressable
-            onPress={handleScoreSelect}
-            style={{ flex: 1, backgroundColor: '#22c55e', borderRadius: 12, paddingVertical: 10 }}
-          >
-            <Text style={{ color: '#0f1117', textAlign: 'center', fontWeight: '700' }}>Save</Text>
-          </Pressable>
+          <View style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+              <MaterialCommunityIcons name="dumbbell" size={26} color="#93c5fd" />
+            </View>
+            <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>{selectedExercise?.name ?? 'Exercise'}</Text>
+            <Text style={{ color: '#94a3b8', marginTop: 4 }}>{selectedExercise?.sets ?? 0} sets × {selectedExercise?.reps ?? 0} reps</Text>
+          </View>
+          <Text style={{ color: '#f8fafc', fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 4 }}>Rate Your Form</Text>
+          <Text style={{ color: '#94a3b8', textAlign: 'center', marginBottom: 12 }}>Tap or drag to select</Text>
         </View>
-      </View>
+        <View style={{ flex: 1, paddingHorizontal: 24 }}>
+          <View style={{ borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(248,113,113,0.5)', backgroundColor: 'rgba(239,68,68,0.15)' }}>
+            <Text style={{ color: '#f87171', fontWeight: '700', textAlign: 'center', marginBottom: 4 }}>Needs Work</Text>
+            <Text style={{ color: '#f8fafc', opacity: 0.7, textAlign: 'center' }}>Focus on control and range of motion.</Text>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {scoreOptions.map((score) => {
+              const color = getScoreColor(score);
+              const isActive = score === selectedScore;
+              return (
+                <Pressable
+                  key={`score-${score}`}
+                  onPress={() => handleScorePick(score)}
+                  style={[
+                    styles.scoreRow,
+                    { borderColor: isActive ? color : 'rgba(255,255,255,0.08)', backgroundColor: isActive ? `${color}22` : '#1f232c' }
+                  ]}
+                >
+                  <Text style={[styles.scoreRowLabel, { color: isActive ? '#f8fafc' : '#94a3b8' }]}>{getScoreLabel(score)}</Text>
+                  <Text style={[styles.scoreRowValue, { color }]}>{score}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </Animated.View>
     );
   }
 
@@ -540,6 +590,10 @@ export function DailyScreen() {
 
   return (
     <LinearGradient colors={['#0f1117', '#0b0f16']} style={styles.screen}>
+      <View style={styles.backgroundOrbs}>
+        <View style={styles.blueOrbPrimary} />
+        <View style={styles.blueOrbSecondary} />
+      </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.centered}>
         <View style={styles.headerRow}>
@@ -547,28 +601,38 @@ export function DailyScreen() {
             <Text style={{ color: '#f8fafc', fontSize: 22, fontWeight: '700' }}>Today's Progress</Text>
             <Text style={{ color: '#94a3b8', marginTop: 6 }}>{todayLabel}</Text>
           </View>
-          <LinearGradient
-            colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.12)']}
-            style={styles.streakBadge}
-          >
-            <Text style={{ color: '#fca5a5', fontWeight: '700' }}>🔥 7</Text>
-            <Text style={{ color: '#fecaca', fontSize: 10, textAlign: 'center' }}>days</Text>
-          </LinearGradient>
+          <View style={styles.headerActions}>
+            <LinearGradient
+              colors={['rgba(127,29,29,0.6)', 'rgba(88,28,23,0.4)']}
+              style={styles.streakBadge}
+            >
+              <MaterialCommunityIcons name="fire" size={18} color="#f87171" />
+              <Text style={{ color: '#fca5a5', fontWeight: '700', marginTop: 4 }}>7</Text>
+              <Text style={{ color: '#fecaca', fontSize: 10, textAlign: 'center' }}>days</Text>
+            </LinearGradient>
+            {hasWorkout && (
+              <Pressable onPress={handleResetDay} style={styles.resetButton}>
+                <MaterialCommunityIcons name="rotate-ccw" size={18} color="#f87171" />
+              </Pressable>
+            )}
+          </View>
         </View>
         <View style={styles.headerDivider} />
 
         {hasActivity && (
-          <View style={styles.dailyScoreCard}>
-            <View style={[styles.scoreGlow, { backgroundColor: dailyScoreColor }]} />
+          <LinearGradient colors={['rgba(37,41,50,0.9)', 'rgba(31,35,44,0.85)', 'rgba(37,41,50,0.9)']} style={styles.dailyScoreCard}>
+            <View style={[styles.scoreAmbient, { backgroundColor: dailyScoreColor }]} />
             <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
-            <Text style={[styles.dailyScoreValue, { color: dailyScoreColor }]}>{dailyScoreData.score}</Text>
-          </View>
+            <Text style={[styles.dailyScoreValue, { color: dailyScoreColor, textShadowColor: dailyScoreColor }]}>{dailyScoreData.score}</Text>
+          </LinearGradient>
         )}
 
         {!hasWorkout ? (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>🧩</Text>
+              <View style={styles.sectionIconBadge}>
+                <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
+              </View>
               <Text style={styles.sectionTitle}>Start Workout</Text>
             </View>
             <Pressable
@@ -581,7 +645,7 @@ export function DailyScreen() {
                   <Text style={{ color: '#94a3b8', marginTop: 6 }}>Browse and choose a recommended workout then film your sets and get feedback</Text>
                 </View>
                 <View style={styles.iconBadge}>
-                  <Text style={{ color: '#93c5fd' }}>🏋️</Text>
+                  <MaterialCommunityIcons name="dumbbell" size={22} color="#93c5fd" />
                 </View>
               </View>
             </Pressable>
@@ -595,7 +659,7 @@ export function DailyScreen() {
                   <Text style={{ color: '#94a3b8', marginTop: 6 }}>Create your own workout then film your sets and get feedback</Text>
                 </View>
                 <View style={styles.iconBadge}>
-                  <Text style={{ color: '#93c5fd' }}>⚡</Text>
+                  <MaterialCommunityIcons name="flash" size={22} color="#93c5fd" />
                 </View>
               </View>
             </Pressable>
@@ -604,12 +668,19 @@ export function DailyScreen() {
           <>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionIcon}>🏋️</Text>
-                <Text style={styles.sectionTitle}>Workout</Text>
+                <View style={styles.sectionIconBadge}>
+                  <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
+                </View>
+                <Text style={styles.sectionTitleBlue}>Workout</Text>
               </View>
-              {workoutScoreData.score > 0 && (
-                <Text style={[styles.sectionScore, { color: workoutScoreColor }]}>{workoutScoreData.score}</Text>
-              )}
+              <View style={styles.sectionActions}>
+                <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.plusButton}>
+                  <MaterialCommunityIcons name="plus" size={18} color="#93c5fd" />
+                </Pressable>
+                {workoutScoreData.score > 0 && (
+                  <Text style={[styles.sectionScore, { color: workoutScoreColor }]}>{workoutScoreData.score}</Text>
+                )}
+              </View>
             </View>
             {exercises.map((exercise, index) => {
               const timeLabel = new Date(exercise.timestamp ?? Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -628,10 +699,8 @@ export function DailyScreen() {
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <Text style={{ color: '#64748b', fontSize: 12 }}>{timeLabel}</Text>
-                      {isRated ? (
+                      {isRated && (
                         <Text style={{ color: exerciseScoreColor, fontWeight: '800', fontSize: 16, marginTop: 6 }}>{exercise.score}</Text>
-                      ) : (
-                        <Text style={{ color: '#60a5fa', fontSize: 10, marginTop: 6 }}>Tap to rate form</Text>
                       )}
                     </View>
                   </View>
@@ -640,13 +709,13 @@ export function DailyScreen() {
                       onPress={() => navigation.navigate('Camera' as never)}
                       style={styles.iconButton}
                     >
-                      <Text style={{ color: '#93c5fd' }}>✎</Text>
+                      <MaterialCommunityIcons name="pencil-outline" size={18} color="#93c5fd" />
                     </Pressable>
                     <Pressable
                       onPress={() => navigation.navigate('Camera' as never)}
                       style={styles.iconButton}
                     >
-                      <Text style={{ color: '#93c5fd' }}>▶</Text>
+                      <MaterialCommunityIcons name="play" size={18} color="#93c5fd" />
                     </Pressable>
                   </View>
                   <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
@@ -654,9 +723,15 @@ export function DailyScreen() {
                       colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.15)']}
                       style={styles.recordButton}
                     >
-                      <Text style={{ color: '#fecaca', fontWeight: '700' }}>📷 Record Now</Text>
+                      <View style={styles.recordRow}>
+                        <MaterialCommunityIcons name="camera" size={16} color="#fca5a5" />
+                        <Text style={styles.recordText}>Record Now</Text>
+                      </View>
                     </LinearGradient>
                   </Pressable>
+                  {!isRated && (
+                    <Text style={styles.tapToRate}>Tap to rate form</Text>
+                  )}
                 </Pressable>
               );
             })}
@@ -664,7 +739,9 @@ export function DailyScreen() {
         )}
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionIcon, { color: '#f59e0b' }]}>🍴</Text>
+          <View style={[styles.sectionIconBadge, { backgroundColor: 'rgba(249,115,22,0.2)' }]}>
+            <MaterialCommunityIcons name="silverware-fork-knife" size={18} color="#f59e0b" />
+          </View>
           <Text style={styles.sectionTitle}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
         </View>
 
@@ -678,8 +755,8 @@ export function DailyScreen() {
                 <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Add Meals</Text>
                 <Text style={{ color: '#94a3b8', marginTop: 6 }}>Track your nutrition</Text>
               </View>
-              <View style={styles.iconBadge}>
-                <Text style={{ color: '#93c5fd' }}>🍽️</Text>
+              <View style={[styles.iconBadge, { backgroundColor: 'rgba(249,115,22,0.2)' }]}>
+                <MaterialCommunityIcons name="silverware-fork-knife" size={20} color="#f59e0b" />
               </View>
             </View>
           </Pressable>
@@ -761,6 +838,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f1117'
   },
+  backgroundOrbs: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0
+  },
+  blueOrbPrimary: {
+    position: 'absolute',
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    top: -80,
+    left: -60
+  },
+  blueOrbSecondary: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(30,64,175,0.25)',
+    bottom: 120,
+    right: -80
+  },
   scroll: {
     flex: 1
   },
@@ -779,6 +881,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
   headerDivider: {
     height: 1,
     backgroundColor: 'rgba(59,130,246,0.2)',
@@ -792,6 +898,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center'
   },
+  resetButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(248,113,113,0.4)',
+    backgroundColor: 'rgba(239,68,68,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10
+  },
   dailyScoreCard: {
     borderRadius: 20,
     padding: 20,
@@ -801,14 +918,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.06)',
     overflow: 'hidden'
   },
-  scoreGlow: {
+  scoreAmbient: {
     position: 'absolute',
-    top: -30,
-    right: -30,
-    width: 140,
-    height: 140,
+    top: 20,
+    left: '35%',
+    width: 120,
+    height: 120,
     opacity: 0.2,
-    borderRadius: 70
+    borderRadius: 60
   },
   dailyScoreLabel: {
     color: '#94a3b8',
@@ -820,7 +937,9 @@ const styles = StyleSheet.create({
   dailyScoreValue: {
     fontSize: 72,
     fontWeight: '800',
-    textAlign: 'center'
+    textAlign: 'center',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 22
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -834,18 +953,43 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12
   },
-  sectionIcon: {
-    color: '#60a5fa',
-    marginRight: 6
+  sectionActions: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  sectionIconBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8
   },
   sectionTitle: {
     color: '#f8fafc',
     fontSize: 18,
     fontWeight: '700'
   },
+  sectionTitleBlue: {
+    color: '#60a5fa',
+    fontSize: 18,
+    fontWeight: '700'
+  },
   sectionScore: {
     fontSize: 18,
     fontWeight: '700'
+  },
+  plusButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(59,130,246,0.4)',
+    backgroundColor: 'rgba(59,130,246,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8
   },
   primaryCard: {
     borderRadius: 18,
@@ -904,6 +1048,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(239,68,68,0.4)'
+  },
+  recordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  recordText: {
+    color: '#fecaca',
+    fontWeight: '700',
+    marginLeft: 6
+  },
+  tapToRate: {
+    color: '#60a5fa',
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 12,
+    fontWeight: '600'
+  },
+  scoreRow: {
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  scoreRowLabel: {
+    fontSize: 14,
+    fontWeight: '600'
+  },
+  scoreRowValue: {
+    fontSize: 22,
+    fontWeight: '800'
   },
   secondaryButton: {
     marginTop: 14,

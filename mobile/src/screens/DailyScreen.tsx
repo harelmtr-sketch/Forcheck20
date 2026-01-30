@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, TextInput, FlatList, Modal, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, TextInput, Modal, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Dumbbell, Utensils } from 'lucide-react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { GlowIconBadge } from '../components/GlowIconBadge';
 import { GlowScoreNumber } from '../components/GlowScoreNumber';
-import { StreakBadge } from '../components/StreakBadge';
+import { StreakIndicator } from '../components/StreakIndicator';
+import { ExercisePickerModal } from '../components/ExercisePickerModal';
+import { WorkoutHeader } from '../components/WorkoutHeader';
+import { AddMealsButton } from '../components/AddMealsButton';
+import { SaveTemplateButton } from '../components/SaveTemplateButton';
 import { addArchive } from '../utils/archiveStorage';
 import { loadJson, saveJson } from '../utils/storage';
 import { exerciseDatabase, workoutTemplates, type ExerciseData, type WorkoutTemplate } from '../data/exerciseDatabase';
@@ -344,93 +346,6 @@ export function DailyScreen() {
     setExercises((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const renderExercisePicker = () => (
-    <View style={styles.overlayContent}>
-      <View style={styles.overlayHeader}>
-        <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
-          <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
-        </Pressable>
-        <View>
-          <Text style={styles.overlayTitle}>Choose Exercise</Text>
-          <Text style={styles.overlaySubtitle}>{exerciseDatabase.length} exercises available</Text>
-        </View>
-      </View>
-      <View style={styles.searchRow}>
-        <MaterialCommunityIcons name="magnify" size={18} color={COLORS.textSubtle} />
-        <TextInput
-          placeholder="Search exercises..."
-          placeholderTextColor={COLORS.textSubtle}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={styles.searchInput}
-        />
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
-        {['all', 'push', 'pull', 'legs', 'core', 'full-body'].map((category) => (
-          <Pressable
-            key={category}
-            onPress={() => setSelectedCategory(category)}
-            style={[
-              styles.categoryPill,
-              selectedCategory === category && styles.categoryPillActive
-            ]}
-          >
-            <Text style={styles.categoryPillText}>{category.toUpperCase()}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-      <FlatList
-        data={filteredExercises}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        renderItem={({ item }) => (
-          <Pressable onPress={() => handleExerciseAdd(item)} style={styles.exercisePickerCard}>
-            <View>
-              <Text style={styles.exercisePickerTitle}>{item.name}</Text>
-              <Text style={styles.exercisePickerMeta}>{item.baseSets} sets × {item.baseReps} reps</Text>
-            </View>
-            <View style={styles.exercisePickerPlus}>
-              <MaterialCommunityIcons name="plus" size={18} color={COLORS.accentBlue} />
-            </View>
-          </Pressable>
-        )}
-      />
-      <Modal visible={!!pendingExercise} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Customize {pendingExercise?.name}</Text>
-            <View style={{ flexDirection: 'row' }}>
-              <TextInput
-                placeholder="Sets"
-                placeholderTextColor={COLORS.textSubtle}
-                value={customSets}
-                onChangeText={setCustomSets}
-                keyboardType="numeric"
-                style={[styles.modalInput, { marginRight: 8 }]}
-              />
-              <TextInput
-                placeholder="Reps"
-                placeholderTextColor={COLORS.textSubtle}
-                value={customReps}
-                onChangeText={setCustomReps}
-                keyboardType="numeric"
-                style={styles.modalInput}
-              />
-            </View>
-            <View style={{ flexDirection: 'row', marginTop: 16 }}>
-              <Pressable onPress={() => setPendingExercise(null)} style={[styles.modalButton, styles.modalGhost]}>
-                <Text style={styles.modalGhostText}>Cancel</Text>
-              </Pressable>
-              <Pressable onPress={handleConfirmExercise} style={[styles.modalButton, styles.modalPrimary]}>
-                <Text style={styles.modalPrimaryText}>Add</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
-
   const renderTemplates = () => {
     const templates = [...workoutTemplates, ...customTemplates];
     return (
@@ -543,7 +458,7 @@ export function DailyScreen() {
             <Text style={styles.headerSubtitle}>{todayLabel}</Text>
           </View>
           <View style={styles.headerActions}>
-            <StreakBadge days={7} />
+            <StreakIndicator days={7} />
             {hasWorkout && (
               <Pressable onPress={handleResetDay} style={styles.resetButton}>
                 <MaterialCommunityIcons name="rotate-right" size={18} color={COLORS.accentRed} />
@@ -617,26 +532,7 @@ export function DailyScreen() {
             </View>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionHeaderLeft}>
-                <GlowIconBadge
-                  shape="square"
-                  size={32}
-                  borderRadius={8}
-                  borderColor="rgba(59,130,246,0.5)"
-                  outerGlowColor="rgba(59,130,246,0.15)"
-                  gradientColors={['rgba(59,130,246,0.30)', 'rgba(37,99,235,0.20)']}
-                  rimColor="rgba(96,165,250,0.20)"
-                  outerGlowInset={3}
-                  outerShadowRadius={8}
-                  outerElevation={4}
-                  iconShadowRadius={4}
-                  iconElevation={2}
-                >
-                  <Dumbbell size={16} color="#60a5fa" strokeWidth={2} />
-                </GlowIconBadge>
-                <Text style={styles.sectionTitleBlue}>Workout</Text>
-                <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.plusButton}>
-                  <MaterialCommunityIcons name="plus" size={18} color="#93c5fd" />
-                </Pressable>
+                <WorkoutHeader onAddPress={() => setCurrentView('exercise-picker')} />
               </View>
               {workoutScoreData.score > 0 && (
                 <Text style={[styles.sectionScore, { color: workoutScoreColor }]}>{workoutScoreData.score}</Text>
@@ -699,39 +595,13 @@ export function DailyScreen() {
 
         <View style={styles.sectionHeader}>
           <View style={[styles.sectionIconBadge, { backgroundColor: 'rgba(249,115,22,0.2)' }]}>
-            <MaterialCommunityIcons name="silverware-fork-knife" size={18} color="#f59e0b" />
+            <MaterialCommunityIcons name="silverware-fork-knife" size={18} color="#60a5fa" />
           </View>
           <Text style={styles.sectionTitle}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
         </View>
 
         {meals.length === 0 ? (
-          <Pressable
-            onPress={() => setCurrentView('meal-form')}
-            style={styles.primaryCard}
-          >
-            <View style={styles.cardRow}>
-              <View>
-                <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Add Meals</Text>
-                <Text style={{ color: '#94a3b8', marginTop: 6 }}>Track your nutrition</Text>
-              </View>
-              <GlowIconBadge
-                shape="square"
-                size={30}
-                borderRadius={8}
-                borderColor="rgba(59,130,246,0.5)"
-                outerGlowColor="rgba(59,130,246,0.08)"
-                gradientColors={['rgba(59,130,246,0.22)', 'rgba(37,99,235,0.14)']}
-                rimColor="rgba(96,165,250,0.20)"
-                outerGlowInset={3}
-                outerShadowRadius={6}
-                outerElevation={3}
-                iconShadowRadius={3}
-                iconElevation={2}
-              >
-                <Utensils size={14} color="#60a5fa" strokeWidth={2} />
-              </GlowIconBadge>
-            </View>
-          </Pressable>
+          <AddMealsButton onPress={() => setCurrentView('meal-form')} />
         ) : (
           <View style={styles.primaryCard}>
             <View style={styles.cardRow}>
@@ -757,20 +627,57 @@ export function DailyScreen() {
           </View>
         )}
 
-        <Pressable
-          onPress={() => setShowTemplateSave(true)}
-          style={styles.ghostButton}
-        >
-          <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Save as Template</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleArchiveDay}
-          style={[styles.ghostButton, { marginTop: 12 }]}
-        >
-          <Text style={{ color: '#f8fafc', fontWeight: '600' }}>Archive Day</Text>
-        </Pressable>
+        <SaveTemplateButton
+          onSaveTemplate={() => setShowTemplateSave(true)}
+          onArchiveDay={handleArchiveDay}
+        />
       </View>
+
+      <ExercisePickerModal
+        visible={currentView === 'exercise-picker'}
+        exercises={filteredExercises}
+        totalCount={exerciseDatabase.length}
+        selectedCategory={selectedCategory}
+        searchQuery={searchQuery}
+        onChangeSearch={setSearchQuery}
+        onSelectCategory={setSelectedCategory}
+        onSelectExercise={handleExerciseAdd}
+        onClose={() => setCurrentView('main')}
+      />
+
+      <Modal visible={!!pendingExercise} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Customize {pendingExercise?.name}</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <TextInput
+                placeholder="Sets"
+                placeholderTextColor={COLORS.textSubtle}
+                value={customSets}
+                onChangeText={setCustomSets}
+                keyboardType="numeric"
+                style={[styles.modalInput, { marginRight: 8 }]}
+              />
+              <TextInput
+                placeholder="Reps"
+                placeholderTextColor={COLORS.textSubtle}
+                value={customReps}
+                onChangeText={setCustomReps}
+                keyboardType="numeric"
+                style={styles.modalInput}
+              />
+            </View>
+            <View style={{ flexDirection: 'row', marginTop: 16 }}>
+              <Pressable onPress={() => setPendingExercise(null)} style={[styles.modalButton, styles.modalGhost]}>
+                <Text style={styles.modalGhostText}>Cancel</Text>
+              </Pressable>
+              <Pressable onPress={handleConfirmExercise} style={[styles.modalButton, styles.modalPrimary]}>
+                <Text style={styles.modalPrimaryText}>Add</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={showTemplateSave} transparent animationType="fade">
         <View style={{ flex: 1, backgroundColor: 'rgba(10,13,18,0.9)', justifyContent: 'center', padding: 24 }}>
@@ -801,9 +708,8 @@ export function DailyScreen() {
         </View>
       </Modal>
       </ScrollView>
-      {currentView !== 'main' && (
+      {(currentView === 'templates' || currentView === 'meal-form') && (
         <Animated.View key={currentView} entering={SlideInUp.duration(280)} exiting={SlideOutDown.duration(260)} style={styles.overlay}>
-          {currentView === 'exercise-picker' && renderExercisePicker()}
           {currentView === 'templates' && renderTemplates()}
           {currentView === 'meal-form' && renderMealForm()}
         </Animated.View>
@@ -943,33 +849,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700'
   },
-  sectionTitleBlue: {
-    color: COLORS.accentBlue,
-    fontSize: 20,
-    fontWeight: '700',
-    textShadowColor: 'rgba(96,165,250,0.6)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8
-  },
   sectionScore: {
     fontSize: 20,
     fontWeight: '800',
     marginLeft: 4
-  },
-  plusButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.4)',
-    backgroundColor: COLORS.accentBlueMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
-    shadowColor: 'rgba(96,165,250,0.5)',
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 }
   },
   primaryCard: {
     borderRadius: 18,
@@ -1076,13 +959,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8
   },
-  ghostButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#1f2937',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(7,10,16,0.98)',
@@ -1130,56 +1006,6 @@ const styles = StyleSheet.create({
     flex: 1,
     color: COLORS.text,
     marginLeft: 8
-  },
-  pillRow: {
-    marginBottom: 16
-  },
-  categoryPill: {
-    backgroundColor: '#1f2937',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'transparent'
-  },
-  categoryPillActive: {
-    backgroundColor: 'rgba(37,99,235,0.2)',
-    borderColor: 'rgba(59,130,246,0.4)'
-  },
-  categoryPillText: {
-    color: COLORS.text,
-    fontWeight: '600',
-    fontSize: 12
-  },
-  exercisePickerCard: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: '#1f232c',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  exercisePickerTitle: {
-    color: COLORS.text,
-    fontWeight: '700',
-    fontSize: 15
-  },
-  exercisePickerMeta: {
-    color: COLORS.textMuted,
-    marginTop: 4,
-    fontSize: 12
-  },
-  exercisePickerPlus: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.accentBlueMuted
   },
   modalOverlay: {
     flex: 1,

@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DailyStack } from './DailyStack';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { CameraScreen } from '../screens/CameraScreen';
@@ -15,6 +16,8 @@ export type MainTabParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabs() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -22,7 +25,9 @@ export function MainTabs() {
         tabBarStyle: {
           backgroundColor: '#1a1d23',
           borderTopColor: 'rgba(255,255,255,0.08)',
-          height: 70
+          height: 64 + insets.bottom,
+          paddingBottom: Math.max(insets.bottom, 6),
+          paddingTop: 6
         },
         tabBarActiveTintColor: '#f8fafc',
         tabBarInactiveTintColor: '#94a3b8',
@@ -30,7 +35,6 @@ export function MainTabs() {
         tabBarItemStyle: {
           borderRadius: 18,
           marginHorizontal: 6,
-          marginVertical: 8,
           paddingVertical: 6
         },
         tabBarLabelStyle: {

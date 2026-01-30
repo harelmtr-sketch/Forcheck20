@@ -206,7 +206,7 @@ export function DailyScreen() {
 
   const handleTemplateStart = (template: WorkoutTemplate | CustomTemplate) => {
     const newExercises = template.exercises.map((exercise: any) => {
-      if ('name' in exercise) {
+      if (exercise && typeof exercise === 'object' && 'name' in exercise) {
         return exercise as ExerciseEntry;
       }
       const exerciseData = exerciseDatabase.find((ex) => ex.id === exercise);
@@ -636,7 +636,7 @@ export function DailyScreen() {
             </LinearGradient>
             {hasWorkout && (
               <Pressable onPress={handleResetDay} style={styles.resetButton}>
-                <MaterialCommunityIcons name="rotate-ccw" size={18} color={COLORS.accentRed} />
+                <MaterialCommunityIcons name="rotate-right" size={18} color={COLORS.accentRed} />
               </Pressable>
             )}
           </View>
@@ -646,7 +646,6 @@ export function DailyScreen() {
         {hasActivity && (
           <LinearGradient colors={[COLORS.card, COLORS.cardSecondary, COLORS.card]} style={styles.dailyScoreCard}>
             <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
-            <Text style={[styles.dailyScoreGlow, { color: dailyScoreColor }]}>{dailyScoreData.score}</Text>
             <Text style={[styles.dailyScoreValue, { color: dailyScoreColor, textShadowColor: dailyScoreColor }]}>{dailyScoreData.score}</Text>
           </LinearGradient>
         )}
@@ -958,7 +957,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    shadowColor: 'rgba(0,0,0,0.6)',
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 }
   },
   dailyScoreLabel: {
     color: COLORS.textMuted,
@@ -967,21 +970,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 12
   },
-  dailyScoreGlow: {
-    position: 'absolute',
-    alignSelf: 'center',
-    fontSize: 54,
-    fontWeight: '900',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 18,
-    opacity: 0.5
-  },
   dailyScoreValue: {
-    fontSize: 54,
+    fontSize: 52,
     fontWeight: '900',
     textAlign: 'center',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 18
+    textShadowRadius: 20
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1016,7 +1010,10 @@ const styles = StyleSheet.create({
   sectionTitleBlue: {
     color: COLORS.accentBlue,
     fontSize: 20,
-    fontWeight: '700'
+    fontWeight: '700',
+    textShadowColor: 'rgba(96,165,250,0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8
   },
   sectionScore: {
     fontSize: 20,
@@ -1064,7 +1061,8 @@ const styles = StyleSheet.create({
   },
   exerciseCard: {
     borderRadius: 18,
-    padding: 18,
+    padding: 20,
+    minHeight: 220,
     marginBottom: 12,
     backgroundColor: '#1f232c',
     borderWidth: 1,
@@ -1093,10 +1091,14 @@ const styles = StyleSheet.create({
   },
   recordButton: {
     borderRadius: 14,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(239,68,68,0.4)'
+    borderColor: 'rgba(239,68,68,0.45)',
+    shadowColor: 'rgba(239,68,68,0.5)',
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 }
   },
   recordRow: {
     flexDirection: 'row',
@@ -1111,7 +1113,7 @@ const styles = StyleSheet.create({
   tapToRate: {
     color: COLORS.accentBlue,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 14,
     fontSize: 12,
     fontWeight: '600'
   },

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DailyBreakdownStory } from '../components/DailyBreakdownStory';
 
 type Story = {
@@ -35,18 +36,18 @@ type LeaderboardEntry = {
 };
 
 const storiesData: Story[] = [
-  { id: 's1', userName: 'Alex Chen', userAvatar: '😊', score: 92, exercise: 'Push-ups', timestamp: '2h ago' },
-  { id: 's2', userName: 'Sarah Kim', userAvatar: '😎', score: 88, exercise: 'Pull-ups', timestamp: '4h ago' },
-  { id: 's3', userName: 'Mike Ross', userAvatar: '🔥', score: 85, exercise: 'Squats', timestamp: '6h ago' },
-  { id: 's4', userName: 'Emma Stone', userAvatar: '💪', score: 78, exercise: 'Dips', timestamp: '8h ago' },
-  { id: 's5', userName: 'James Lee', userAvatar: '⚡', score: 95, exercise: 'Muscle-ups', timestamp: '10h ago' }
+  { id: 's1', userName: 'Alex Chen', userAvatar: 'account', score: 92, exercise: 'Push-ups', timestamp: '2h ago' },
+  { id: 's2', userName: 'Sarah Kim', userAvatar: 'account-star', score: 88, exercise: 'Pull-ups', timestamp: '4h ago' },
+  { id: 's3', userName: 'Mike Ross', userAvatar: 'account-fire', score: 85, exercise: 'Squats', timestamp: '6h ago' },
+  { id: 's4', userName: 'Emma Stone', userAvatar: 'account-heart', score: 78, exercise: 'Dips', timestamp: '8h ago' },
+  { id: 's5', userName: 'James Lee', userAvatar: 'account-lightning-bolt', score: 95, exercise: 'Muscle-ups', timestamp: '10h ago' }
 ];
 
 const initialFeed: FeedPost[] = [
   {
     id: 'p1',
     userName: 'Alex Chen',
-    userAvatar: '😊',
+    userAvatar: 'account',
     streakDays: 7,
     exercise: 'Diamond Push-ups',
     score: 92,
@@ -60,7 +61,7 @@ const initialFeed: FeedPost[] = [
   {
     id: 'p2',
     userName: 'Sarah Kim',
-    userAvatar: '😎',
+    userAvatar: 'account-star',
     streakDays: 12,
     exercise: 'Archer Pull-ups',
     score: 88,
@@ -74,7 +75,7 @@ const initialFeed: FeedPost[] = [
   {
     id: 'p3',
     userName: 'James Lee',
-    userAvatar: '⚡',
+    userAvatar: 'account-lightning-bolt',
     streakDays: 21,
     exercise: 'Muscle-up',
     score: 95,
@@ -88,7 +89,7 @@ const initialFeed: FeedPost[] = [
   {
     id: 'p4',
     userName: 'Mike Ross',
-    userAvatar: '🔥',
+    userAvatar: 'account-fire',
     streakDays: 5,
     exercise: 'Pistol Squats',
     score: 85,
@@ -102,11 +103,11 @@ const initialFeed: FeedPost[] = [
 ];
 
 const leaderboardData: LeaderboardEntry[] = [
-  { rank: 1, userName: 'James Lee', userAvatar: '⚡', weeklyScore: 95, streak: 21 },
-  { rank: 2, userName: 'Alex Chen', userAvatar: '😊', weeklyScore: 92, streak: 7 },
-  { rank: 3, userName: 'Sarah Kim', userAvatar: '😎', weeklyScore: 88, streak: 12 },
-  { rank: 4, userName: 'Mike Ross', userAvatar: '🔥', weeklyScore: 85, streak: 5 },
-  { rank: 5, userName: 'Emma Stone', userAvatar: '💪', weeklyScore: 78, streak: 3 }
+  { rank: 1, userName: 'James Lee', userAvatar: 'account-lightning-bolt', weeklyScore: 95, streak: 21 },
+  { rank: 2, userName: 'Alex Chen', userAvatar: 'account', weeklyScore: 92, streak: 7 },
+  { rank: 3, userName: 'Sarah Kim', userAvatar: 'account-star', weeklyScore: 88, streak: 12 },
+  { rank: 4, userName: 'Mike Ross', userAvatar: 'account-fire', weeklyScore: 85, streak: 5 },
+  { rank: 5, userName: 'Emma Stone', userAvatar: 'account-heart', weeklyScore: 78, streak: 3 }
 ];
 
 export function FriendsScreen() {
@@ -140,7 +141,7 @@ export function FriendsScreen() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#2563eb', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-              <Text style={{ color: '#fff', fontSize: 18 }}>👥</Text>
+              <MaterialCommunityIcons name="account-group-outline" size={20} color="#fff" />
             </View>
             <View>
               <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>Friends</Text>
@@ -148,7 +149,7 @@ export function FriendsScreen() {
             </View>
           </View>
           <Pressable style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(59,130,246,0.2)', borderWidth: 1, borderColor: 'rgba(96,165,250,0.3)', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: '#60a5fa', fontSize: 18 }}>💬</Text>
+            <MaterialCommunityIcons name="message-outline" size={20} color="#60a5fa" />
           </Pressable>
         </View>
 
@@ -184,7 +185,10 @@ export function FriendsScreen() {
         {activeSection === 'feed' ? (
           <View>
             <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)' }}>
-              <Text style={{ color: '#fff', fontWeight: '700', marginBottom: 8 }}>⚡ Recent Stories</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <MaterialCommunityIcons name="lightning-bolt" size={16} color="#60a5fa" />
+                <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 6 }}>Recent Stories</Text>
+              </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {storiesData.map((story) => (
                   <Pressable
@@ -196,7 +200,7 @@ export function FriendsScreen() {
                     style={{ marginRight: 16, alignItems: 'center' }}
                   >
                     <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#1d4ed8', justifyContent: 'center', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 24 }}>{story.userAvatar}</Text>
+                      <MaterialCommunityIcons name={story.userAvatar} size={28} color="#fff" />
                     </View>
                     <Text style={{ color: '#fff', fontSize: 12, marginTop: 8 }}>{story.userName.split(' ')[0]}</Text>
                     <Text style={{ color: '#94a3b8', fontSize: 10 }}>{story.score} • {story.exercise}</Text>
@@ -210,7 +214,7 @@ export function FriendsScreen() {
                 <View key={post.id} style={{ backgroundColor: '#252932', borderRadius: 20, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                     <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#1f2937', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                      <Text style={{ fontSize: 20 }}>{post.userAvatar}</Text>
+                      <MaterialCommunityIcons name={post.userAvatar} size={22} color="#e2e8f0" />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: '#fff', fontWeight: '700' }}>{post.userName}</Text>
@@ -226,13 +230,18 @@ export function FriendsScreen() {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 14 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Pressable onPress={() => handleLike(post.id)} style={{ marginRight: 16 }}>
-                        <Text style={{ color: post.isLiked ? '#ef4444' : '#94a3b8' }}>{post.isLiked ? '❤️' : '🤍'} {post.likes}</Text>
+                      <Pressable onPress={() => handleLike(post.id)} style={{ marginRight: 16, flexDirection: 'row', alignItems: 'center' }}>
+                        <MaterialCommunityIcons name={post.isLiked ? 'heart' : 'heart-outline'} size={16} color={post.isLiked ? '#ef4444' : '#94a3b8'} />
+                        <Text style={{ color: post.isLiked ? '#ef4444' : '#94a3b8', marginLeft: 6 }}>{post.likes}</Text>
                       </Pressable>
-                      <Text style={{ color: '#94a3b8' }}>💬 {post.comments}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <MaterialCommunityIcons name="message-outline" size={16} color="#94a3b8" />
+                        <Text style={{ color: '#94a3b8', marginLeft: 6 }}>{post.comments}</Text>
+                      </View>
                     </View>
-                    <Pressable onPress={() => handleSave(post.id)}>
-                      <Text style={{ color: post.isSaved ? '#60a5fa' : '#94a3b8' }}>{post.isSaved ? '🔖 Saved' : '🔖 Save'}</Text>
+                    <Pressable onPress={() => handleSave(post.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <MaterialCommunityIcons name={post.isSaved ? 'bookmark' : 'bookmark-outline'} size={16} color={post.isSaved ? '#60a5fa' : '#94a3b8'} />
+                      <Text style={{ color: post.isSaved ? '#60a5fa' : '#94a3b8', marginLeft: 6 }}>{post.isSaved ? 'Saved' : 'Save'}</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -244,7 +253,7 @@ export function FriendsScreen() {
             {leaderboardData.map((entry) => (
               <View key={entry.userName} style={{ backgroundColor: '#252932', borderRadius: 18, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111827', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                  <Text style={{ fontSize: 18 }}>{entry.userAvatar}</Text>
+                  <MaterialCommunityIcons name={entry.userAvatar} size={20} color="#e2e8f0" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: '#fff', fontWeight: '700' }}>{entry.rank}. {entry.userName}</Text>

@@ -19,11 +19,25 @@ export function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: '#1d2128', borderTopColor: 'rgba(255,255,255,0.08)', height: 64 },
+        tabBarStyle: {
+          backgroundColor: '#1a1d23',
+          borderTopColor: 'rgba(255,255,255,0.08)',
+          height: 70
+        },
         tabBarActiveTintColor: '#f8fafc',
-        tabBarInactiveTintColor: '#6b7280',
-        tabBarActiveBackgroundColor: 'rgba(59,130,246,0.2)',
-        tabBarItemStyle: { borderRadius: 16, margin: 6, paddingVertical: 6 }
+        tabBarInactiveTintColor: '#94a3b8',
+        tabBarActiveBackgroundColor: 'rgba(59,130,246,0.25)',
+        tabBarItemStyle: {
+          borderRadius: 18,
+          marginHorizontal: 6,
+          marginVertical: 8,
+          paddingVertical: 6
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: 2
+        }
       }}
     >
       <Tab.Screen

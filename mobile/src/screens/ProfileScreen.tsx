@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { loadWorkoutSession, type MuscleStatus } from '../utils/workoutStorage';
@@ -17,11 +18,11 @@ const mockHistory = [
 ];
 
 const mockFriends = [
-  { id: '1', name: 'Alex Chen', avatar: '😊', todayScore: 92, weeklyAverage: 88 },
-  { id: '2', name: 'Sarah Kim', avatar: '⭐', todayScore: 88, weeklyAverage: 85 },
-  { id: '3', name: 'You', avatar: '🔥', todayScore: 87, weeklyAverage: 83 },
-  { id: '4', name: 'Mike Ross', avatar: '🏋️', todayScore: 85, weeklyAverage: 82 },
-  { id: '5', name: 'Emma Stone', avatar: '🏆', todayScore: 82, weeklyAverage: 80 }
+  { id: '1', name: 'Alex Chen', avatar: 'account', todayScore: 92, weeklyAverage: 88 },
+  { id: '2', name: 'Sarah Kim', avatar: 'account-star', todayScore: 88, weeklyAverage: 85 },
+  { id: '3', name: 'You', avatar: 'account-fire', todayScore: 87, weeklyAverage: 83 },
+  { id: '4', name: 'Mike Ross', avatar: 'account', todayScore: 85, weeklyAverage: 82 },
+  { id: '5', name: 'Emma Stone', avatar: 'account-trophy', todayScore: 82, weeklyAverage: 80 }
 ];
 
 const statusColors: Record<MuscleStatus['status'], string> = {
@@ -78,7 +79,7 @@ export function ProfileScreen() {
             onPress={() => navigation.navigate('Settings')}
             style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(59,130,246,0.2)', borderWidth: 1, borderColor: 'rgba(96,165,250,0.3)', justifyContent: 'center', alignItems: 'center' }}
           >
-            <Text style={{ color: '#60a5fa', fontSize: 18 }}>⚙️</Text>
+            <MaterialCommunityIcons name="cog-outline" size={20} color="#60a5fa" />
           </Pressable>
         </View>
 
@@ -127,7 +128,8 @@ export function ProfileScreen() {
               <Text style={{ color: '#fff', fontWeight: '700', marginBottom: 12 }}>Achievements</Text>
               {['Consistency Streak', 'Perfect Form', 'Power Builder'].map((label) => (
                 <View key={label} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ marginRight: 8 }}>🏅</Text>
+                  <MaterialCommunityIcons name="medal-outline" size={18} color="#fbbf24" />
+                  <View style={{ width: 8 }} />
                   <Text style={{ color: '#e2e8f0' }}>{label}</Text>
                 </View>
               ))}
@@ -161,7 +163,7 @@ export function ProfileScreen() {
             {mockFriends.map((friend) => (
               <View key={friend.id} style={{ backgroundColor: '#252932', borderRadius: 18, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#111827', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                  <Text style={{ fontSize: 20 }}>{friend.avatar}</Text>
+                  <MaterialCommunityIcons name={friend.avatar} size={20} color="#e2e8f0" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: '#fff', fontWeight: '700' }}>{friend.name}</Text>

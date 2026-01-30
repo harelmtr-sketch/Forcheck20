@@ -41,6 +41,35 @@ const SAVED_MEALS_KEY = 'kinetic-saved-meals';
 const CUSTOM_TEMPLATES_KEY = 'kinetic-custom-templates';
 const SETTINGS_KEY = 'kinetic_settings';
 
+const COLORS = {
+  backgroundTop: '#070A10',
+  backgroundMid: '#0B1020',
+  backgroundBottom: '#070A10',
+  card: 'rgba(37,41,50,0.9)',
+  cardSecondary: 'rgba(31,35,44,0.85)',
+  border: 'rgba(255,255,255,0.1)',
+  text: '#f8fafc',
+  textMuted: '#94a3b8',
+  textSubtle: '#64748b',
+  accentBlue: '#60a5fa',
+  accentBlueMuted: 'rgba(59,130,246,0.2)',
+  accentRed: '#f87171',
+  accentRedMuted: 'rgba(239,68,68,0.2)'
+};
+
+const SPACING = {
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 24
+};
+
+const RADIUS = {
+  sm: 12,
+  md: 16,
+  lg: 20
+};
+
 const getScoreColor = (score: number) => {
   if (score >= 90) return '#22c55e';
   if (score >= 80) return '#4ade80';
@@ -337,282 +366,277 @@ export function DailyScreen() {
     setShowTemplateSave(false);
   };
 
-  if (currentView === 'exercise-picker') {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#0f1117', padding: 20 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <Pressable onPress={() => setCurrentView('main')}>
-            <Text style={{ color: '#94a3b8' }}>Back</Text>
-          </Pressable>
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>Add Exercise</Text>
-          <View style={{ width: 40 }} />
+  const handleRemoveExercise = (index: number) => {
+    setExercises((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFeedback = (score: number) => {
+    if (score >= 90) return { title: 'Elite', message: 'Explosive power and control. Keep it up.' };
+    if (score >= 80) return { title: 'Excellent', message: 'Strong form and tempo. Stay consistent.' };
+    if (score >= 70) return { title: 'Great', message: 'Solid mechanics. Aim for smoother reps.' };
+    if (score >= 60) return { title: 'Good', message: 'Decent control. Focus on depth and range.' };
+    if (score >= 50) return { title: 'Fair', message: 'Work on stability and pacing.' };
+    return { title: 'Needs Work', message: 'Focus on control and range of motion.' };
+  };
+
+  const renderExercisePicker = () => (
+    <View style={styles.overlayContent}>
+      <View style={styles.overlayHeader}>
+        <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
+          <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
+        </Pressable>
+        <View>
+          <Text style={styles.overlayTitle}>Choose Exercise</Text>
+          <Text style={styles.overlaySubtitle}>{exerciseDatabase.length} exercises available</Text>
         </View>
+      </View>
+      <View style={styles.searchRow}>
+        <MaterialCommunityIcons name="magnify" size={18} color={COLORS.textSubtle} />
         <TextInput
-          placeholder="Search exercises"
-          placeholderTextColor="#64748b"
+          placeholder="Search exercises..."
+          placeholderTextColor={COLORS.textSubtle}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          style={{ backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12, marginBottom: 12 }}
+          style={styles.searchInput}
         />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-          {['all', 'push', 'pull', 'legs', 'core', 'full-body'].map((category) => (
-            <Pressable
-              key={category}
-              onPress={() => setSelectedCategory(category)}
-              style={{
-                backgroundColor: selectedCategory === category ? '#2563eb' : '#1f2937',
-                borderRadius: 14,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                marginRight: 8
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 12 }}>{category.toUpperCase()}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-        <FlatList
-          data={filteredExercises}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => handleExerciseAdd(item)}
-              style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' }}
-            >
-              <Text style={{ color: '#f8fafc', fontWeight: '600' }}>{item.name}</Text>
-              <Text style={{ color: '#94a3b8', fontSize: 12 }}>
-                {item.category} • {item.difficulty} • {item.baseSets}x{item.baseReps}
-              </Text>
-            </Pressable>
-          )}
-        />
-
-        <Modal visible={!!pendingExercise} transparent animationType="fade">
-          <View style={{ flex: 1, backgroundColor: 'rgba(10,13,18,0.9)', justifyContent: 'center', padding: 24 }}>
-            <View style={{ backgroundColor: '#1a1d23', borderRadius: 20, padding: 20 }}>
-              <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700', marginBottom: 12 }}>
-                Customize {pendingExercise?.name}
-              </Text>
-              <View style={{ flexDirection: 'row' }}>
-                <TextInput
-                  placeholder="Sets"
-                  placeholderTextColor="#64748b"
-                  value={customSets}
-                  onChangeText={setCustomSets}
-                  keyboardType="numeric"
-                  style={{ flex: 1, backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12, marginRight: 8 }}
-                />
-                <TextInput
-                  placeholder="Reps"
-                  placeholderTextColor="#64748b"
-                  value={customReps}
-                  onChangeText={setCustomReps}
-                  keyboardType="numeric"
-                  style={{ flex: 1, backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12 }}
-                />
-              </View>
-              <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                <Pressable
-                  onPress={() => setPendingExercise(null)}
-                  style={{ flex: 1, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 12, paddingVertical: 10, marginRight: 8 }}
-                >
-                  <Text style={{ color: '#f8fafc', textAlign: 'center', fontWeight: '600' }}>Cancel</Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleConfirmExercise}
-                  style={{ flex: 1, backgroundColor: '#3b82f6', borderRadius: 12, paddingVertical: 10 }}
-                >
-                  <Text style={{ color: '#f8fafc', textAlign: 'center', fontWeight: '600' }}>Add</Text>
-                </Pressable>
-              </View>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
+        {['all', 'push', 'pull', 'legs', 'core', 'full-body'].map((category) => (
+          <Pressable
+            key={category}
+            onPress={() => setSelectedCategory(category)}
+            style={[
+              styles.categoryPill,
+              selectedCategory === category && styles.categoryPillActive
+            ]}
+          >
+            <Text style={styles.categoryPillText}>{category.toUpperCase()}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <FlatList
+        data={filteredExercises}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 24 }}
+        renderItem={({ item }) => (
+          <Pressable onPress={() => handleExerciseAdd(item)} style={styles.exercisePickerCard}>
+            <View>
+              <Text style={styles.exercisePickerTitle}>{item.name}</Text>
+              <Text style={styles.exercisePickerMeta}>{item.baseSets} sets × {item.baseReps} reps</Text>
+            </View>
+            <View style={styles.exercisePickerPlus}>
+              <MaterialCommunityIcons name="plus" size={18} color={COLORS.accentBlue} />
+            </View>
+          </Pressable>
+        )}
+      />
+      <Modal visible={!!pendingExercise} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Customize {pendingExercise?.name}</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <TextInput
+                placeholder="Sets"
+                placeholderTextColor={COLORS.textSubtle}
+                value={customSets}
+                onChangeText={setCustomSets}
+                keyboardType="numeric"
+                style={[styles.modalInput, { marginRight: 8 }]}
+              />
+              <TextInput
+                placeholder="Reps"
+                placeholderTextColor={COLORS.textSubtle}
+                value={customReps}
+                onChangeText={setCustomReps}
+                keyboardType="numeric"
+                style={styles.modalInput}
+              />
+            </View>
+            <View style={{ flexDirection: 'row', marginTop: 16 }}>
+              <Pressable onPress={() => setPendingExercise(null)} style={[styles.modalButton, styles.modalGhost]}>
+                <Text style={styles.modalGhostText}>Cancel</Text>
+              </Pressable>
+              <Pressable onPress={handleConfirmExercise} style={[styles.modalButton, styles.modalPrimary]}>
+                <Text style={styles.modalPrimaryText}>Add</Text>
+              </Pressable>
             </View>
           </View>
-        </Modal>
-      </View>
-    );
-  }
+        </View>
+      </Modal>
+    </View>
+  );
 
-  if (currentView === 'templates') {
+  const renderTemplates = () => {
     const templates = [...workoutTemplates, ...customTemplates];
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: '#0f1117' }} contentContainerStyle={{ paddingBottom: 32 }}>
-        <View style={{ alignSelf: 'center', width: '100%', maxWidth: 448, paddingHorizontal: 20, paddingTop: 24 }}>
-          <Pressable onPress={() => setCurrentView('main')} style={{ marginBottom: 12 }}>
-            <Text style={{ color: '#94a3b8' }}>← Back</Text>
+      <ScrollView style={styles.overlayContent} contentContainerStyle={{ paddingBottom: 24 }}>
+        <View style={styles.overlayHeader}>
+          <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
+            <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
           </Pressable>
-          <Text style={{ color: '#f8fafc', fontSize: 22, fontWeight: '700' }}>Workout Templates</Text>
-          <Text style={{ color: '#64748b', marginTop: 4 }}>{templates.length} programs • {customTemplates.length} custom</Text>
-          <View style={{ height: 1, backgroundColor: 'rgba(59,130,246,0.2)', marginVertical: 16 }} />
-          {templates.map((item, index) => (
-            <Pressable
-              key={`${item.id}-${index}`}
-              onPress={() => handleTemplateStart(item)}
-              style={{
-                borderRadius: 18,
-                padding: 16,
-                marginBottom: 12,
-                borderWidth: 1,
-                borderColor: 'rgba(59,130,246,0.2)',
-                backgroundColor: 'rgba(35,42,55,0.95)'
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                    <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
-                  </View>
-                  <View>
-                    <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>{item.name}</Text>
-                    <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 2 }}>
-                      {item.exercises.length} exercises • 35 min
-                    </Text>
-                  </View>
-                </View>
-                <Text style={{ color: '#64748b', fontSize: 18 }}>›</Text>
-              </View>
-            </Pressable>
-          ))}
+          <View>
+            <Text style={styles.overlayTitle}>Workout Templates</Text>
+            <Text style={styles.overlaySubtitle}>{templates.length} programs • {customTemplates.length} custom</Text>
+          </View>
         </View>
+        <View style={styles.headerDivider} />
+        {templates.map((item, index) => (
+          <Pressable key={`${item.id}-${index}`} onPress={() => handleTemplateStart(item)} style={styles.templateCard}>
+            <View style={styles.templateRow}>
+              <View style={styles.templateIcon}>
+                <MaterialCommunityIcons name="dumbbell" size={18} color={COLORS.accentBlue} />
+              </View>
+              <View>
+                <Text style={styles.templateTitle}>{item.name}</Text>
+                <Text style={styles.templateMeta}>{item.exercises.length} exercises • 35 min</Text>
+              </View>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.textSubtle} />
+          </Pressable>
+        ))}
       </ScrollView>
     );
-  }
+  };
 
-  if (currentView === 'score-picker') {
+  const renderScorePicker = () => {
     const selectedExercise = exercises[selectedExerciseIndex ?? 0];
     const selectedScore = Number(scoreInput);
+    const feedback = getFeedback(selectedScore);
+    const feedbackColor = getScoreColor(selectedScore);
     return (
-      <Animated.View entering={SlideInUp.duration(300)} exiting={SlideOutDown.duration(300)} style={{ flex: 1, backgroundColor: '#0f1117' }}>
-        <View style={{ padding: 24 }}>
-          <Pressable onPress={() => setCurrentView('main')} style={{ marginBottom: 12, width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(59,130,246,0.2)' }}>
-            <MaterialCommunityIcons name="chevron-left" size={20} color="#93c5fd" />
+      <View style={styles.overlayContent}>
+        <View style={styles.overlayHeader}>
+          <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
+            <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
           </Pressable>
-          <View style={{ alignItems: 'center', marginBottom: 16 }}>
-            <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(59,130,246,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-              <MaterialCommunityIcons name="dumbbell" size={26} color="#93c5fd" />
-            </View>
-            <Text style={{ color: '#f8fafc', fontSize: 18, fontWeight: '700' }}>{selectedExercise?.name ?? 'Exercise'}</Text>
-            <Text style={{ color: '#94a3b8', marginTop: 4 }}>{selectedExercise?.sets ?? 0} sets × {selectedExercise?.reps ?? 0} reps</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.overlayTitle}>Rate Your Form</Text>
+            <Text style={styles.overlaySubtitle}>{selectedExercise?.name ?? 'Exercise'} • {selectedExercise?.sets ?? 0} sets × {selectedExercise?.reps ?? 0} reps</Text>
           </View>
-          <Text style={{ color: '#f8fafc', fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 4 }}>Rate Your Form</Text>
-          <Text style={{ color: '#94a3b8', textAlign: 'center', marginBottom: 12 }}>Tap or drag to select</Text>
         </View>
-        <View style={{ flex: 1, paddingHorizontal: 24 }}>
-          <View style={{ borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(248,113,113,0.5)', backgroundColor: 'rgba(239,68,68,0.15)' }}>
-            <Text style={{ color: '#f87171', fontWeight: '700', textAlign: 'center', marginBottom: 4 }}>Needs Work</Text>
-            <Text style={{ color: '#f8fafc', opacity: 0.7, textAlign: 'center' }}>Focus on control and range of motion.</Text>
+        <View style={styles.scorePickerHeader}>
+          <View style={styles.scorePickerIcon}>
+            <MaterialCommunityIcons name="dumbbell" size={26} color={COLORS.accentBlue} />
           </View>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {scoreOptions.map((score) => {
-              const color = getScoreColor(score);
-              const isActive = score === selectedScore;
-              return (
-                <Pressable
-                  key={`score-${score}`}
-                  onPress={() => handleScorePick(score)}
-                  style={[
-                    styles.scoreRow,
-                    { borderColor: isActive ? color : 'rgba(255,255,255,0.08)', backgroundColor: isActive ? `${color}22` : '#1f232c' }
-                  ]}
-                >
-                  <Text style={[styles.scoreRowLabel, { color: isActive ? '#f8fafc' : '#94a3b8' }]}>{getScoreLabel(score)}</Text>
-                  <Text style={[styles.scoreRowValue, { color }]}>{score}</Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+          <Text style={styles.scorePickerTitle}>{selectedExercise?.name ?? 'Exercise'}</Text>
+          <Text style={styles.scorePickerMeta}>{selectedExercise?.sets ?? 0} sets × {selectedExercise?.reps ?? 0} reps</Text>
         </View>
-      </Animated.View>
-    );
-  }
-
-  if (currentView === 'meal-form') {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#0f1117', padding: 24, justifyContent: 'center' }}>
-        <Text style={{ color: '#f8fafc', fontSize: 20, fontWeight: '700', marginBottom: 12 }}>Log Meal</Text>
-        <TextInput
-          placeholder="Meal name"
-          placeholderTextColor="#64748b"
-          value={mealName}
-          onChangeText={setMealName}
-          style={{ backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12, marginBottom: 10 }}
-        />
-        <View style={{ flexDirection: 'row' }}>
-          <TextInput
-            placeholder="Calories"
-            placeholderTextColor="#64748b"
-            value={mealCalories}
-            onChangeText={setMealCalories}
-            keyboardType="numeric"
-            style={{ flex: 1, backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12, marginRight: 8 }}
-          />
-          <TextInput
-            placeholder="Protein (g)"
-            placeholderTextColor="#64748b"
-            value={mealProtein}
-            onChangeText={setMealProtein}
-            keyboardType="numeric"
-            style={{ flex: 1, backgroundColor: '#252932', color: '#f8fafc', borderRadius: 12, padding: 12 }}
-          />
+        <View style={[styles.feedbackCard, { borderColor: feedbackColor, backgroundColor: `${feedbackColor}26` }]}>
+          <Text style={[styles.feedbackTitle, { color: feedbackColor }]}>{feedback.title}</Text>
+          <Text style={styles.feedbackMessage}>{feedback.message}</Text>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
-          {savedMeals.map((meal) => (
-            <Pressable
-              key={meal.id}
-              onPress={() => {
-                setMealName(meal.name);
-                setMealCalories(String(meal.calories));
-                setMealProtein(String(meal.protein));
-              }}
-              style={{ backgroundColor: '#1f2937', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8, marginRight: 8 }}
-            >
-              <Text style={{ color: '#f8fafc', fontWeight: '600' }}>{meal.name}</Text>
-              <Text style={{ color: '#94a3b8', fontSize: 10 }}>{meal.calories} kcal</Text>
-            </Pressable>
-          ))}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+          {scoreOptions.map((score) => {
+            const color = getScoreColor(score);
+            const isActive = score === selectedScore;
+            return (
+              <Pressable
+                key={`score-${score}`}
+                onPress={() => handleScorePick(score)}
+                style={[
+                  styles.scoreRow,
+                  { borderColor: isActive ? color : 'rgba(255,255,255,0.08)', backgroundColor: isActive ? `${color}22` : '#1f232c' }
+                ]}
+              >
+                <Text style={[styles.scoreRowLabel, { color: isActive ? COLORS.text : COLORS.textMuted }]}>{getScoreLabel(score)}</Text>
+                <Text style={[styles.scoreRowValue, { color }]}>{score}</Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
-        <View style={{ flexDirection: 'row', marginTop: 16 }}>
-          <Pressable
-            onPress={() => setCurrentView('main')}
-            style={{ flex: 1, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 12, paddingVertical: 10, marginRight: 8 }}
-          >
-            <Text style={{ color: '#f8fafc', textAlign: 'center', fontWeight: '600' }}>Cancel</Text>
-          </Pressable>
-          <Pressable
-            onPress={handleAddMeal}
-            style={{ flex: 1, backgroundColor: '#22c55e', borderRadius: 12, paddingVertical: 10 }}
-          >
-            <Text style={{ color: '#0f1117', textAlign: 'center', fontWeight: '700' }}>Save</Text>
-          </Pressable>
-        </View>
       </View>
     );
-  }
+  };
+
+  const renderMealForm = () => (
+    <View style={styles.overlayContent}>
+      <View style={styles.overlayHeader}>
+        <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
+          <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
+        </Pressable>
+        <View>
+          <Text style={styles.overlayTitle}>Log Meal</Text>
+          <Text style={styles.overlaySubtitle}>Track your nutrition</Text>
+        </View>
+      </View>
+      <TextInput
+        placeholder="Meal name"
+        placeholderTextColor={COLORS.textSubtle}
+        value={mealName}
+        onChangeText={setMealName}
+        style={styles.formInput}
+      />
+      <View style={{ flexDirection: 'row' }}>
+        <TextInput
+          placeholder="Calories"
+          placeholderTextColor={COLORS.textSubtle}
+          value={mealCalories}
+          onChangeText={setMealCalories}
+          keyboardType="numeric"
+          style={[styles.formInput, { marginRight: 8 }]}
+        />
+        <TextInput
+          placeholder="Protein (g)"
+          placeholderTextColor={COLORS.textSubtle}
+          value={mealProtein}
+          onChangeText={setMealProtein}
+          keyboardType="numeric"
+          style={styles.formInput}
+        />
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }}>
+        {savedMeals.map((meal) => (
+          <Pressable
+            key={meal.id}
+            onPress={() => {
+              setMealName(meal.name);
+              setMealCalories(String(meal.calories));
+              setMealProtein(String(meal.protein));
+            }}
+            style={styles.savedMealPill}
+          >
+            <Text style={styles.savedMealName}>{meal.name}</Text>
+            <Text style={styles.savedMealMeta}>{meal.calories} kcal</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <View style={{ flexDirection: 'row', marginTop: 16 }}>
+        <Pressable onPress={() => setCurrentView('main')} style={[styles.modalButton, styles.modalGhost]}>
+          <Text style={styles.modalGhostText}>Cancel</Text>
+        </Pressable>
+        <Pressable onPress={handleAddMeal} style={[styles.modalButton, styles.modalPrimary]}>
+          <Text style={styles.modalPrimaryText}>Save</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 
   return (
-    <LinearGradient colors={['#0f1117', '#0b0f16']} style={styles.screen}>
-      <View style={styles.backgroundOrbs}>
-        <View style={styles.blueOrbPrimary} />
-        <View style={styles.blueOrbSecondary} />
-      </View>
+    <LinearGradient colors={[COLORS.backgroundTop, COLORS.backgroundMid, COLORS.backgroundBottom]} style={styles.screen}>
+      <LinearGradient
+        colors={['rgba(59,130,246,0.08)', 'rgba(59,130,246,0.02)', 'transparent']}
+        style={styles.subtleGlow}
+        pointerEvents="none"
+      />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.centered}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={{ color: '#f8fafc', fontSize: 22, fontWeight: '700' }}>Today's Progress</Text>
-            <Text style={{ color: '#94a3b8', marginTop: 6 }}>{todayLabel}</Text>
+            <Text style={styles.headerTitle}>Today's Progress</Text>
+            <Text style={styles.headerSubtitle}>{todayLabel}</Text>
           </View>
           <View style={styles.headerActions}>
             <LinearGradient
               colors={['rgba(127,29,29,0.6)', 'rgba(88,28,23,0.4)']}
               style={styles.streakBadge}
             >
-              <MaterialCommunityIcons name="fire" size={18} color="#f87171" />
-              <Text style={{ color: '#fca5a5', fontWeight: '700', marginTop: 4 }}>7</Text>
-              <Text style={{ color: '#fecaca', fontSize: 10, textAlign: 'center' }}>days</Text>
+              <MaterialCommunityIcons name="fire" size={18} color={COLORS.accentRed} />
+              <Text style={styles.streakNumber}>7</Text>
+              <Text style={styles.streakLabel}>days</Text>
             </LinearGradient>
             {hasWorkout && (
               <Pressable onPress={handleResetDay} style={styles.resetButton}>
-                <MaterialCommunityIcons name="rotate-ccw" size={18} color="#f87171" />
+                <MaterialCommunityIcons name="rotate-ccw" size={18} color={COLORS.accentRed} />
               </Pressable>
             )}
           </View>
@@ -620,9 +644,9 @@ export function DailyScreen() {
         <View style={styles.headerDivider} />
 
         {hasActivity && (
-          <LinearGradient colors={['rgba(37,41,50,0.9)', 'rgba(31,35,44,0.85)', 'rgba(37,41,50,0.9)']} style={styles.dailyScoreCard}>
-            <View style={[styles.scoreAmbient, { backgroundColor: dailyScoreColor }]} />
+          <LinearGradient colors={[COLORS.card, COLORS.cardSecondary, COLORS.card]} style={styles.dailyScoreCard}>
             <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
+            <Text style={[styles.dailyScoreGlow, { color: dailyScoreColor }]}>{dailyScoreData.score}</Text>
             <Text style={[styles.dailyScoreValue, { color: dailyScoreColor, textShadowColor: dailyScoreColor }]}>{dailyScoreData.score}</Text>
           </LinearGradient>
         )}
@@ -716,6 +740,12 @@ export function DailyScreen() {
                       style={styles.iconButton}
                     >
                       <MaterialCommunityIcons name="play" size={18} color="#93c5fd" />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleRemoveExercise(index)}
+                      style={[styles.iconButton, styles.trashButton]}
+                    >
+                      <MaterialCommunityIcons name="trash-can-outline" size={18} color="#fca5a5" />
                     </Pressable>
                   </View>
                   <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
@@ -829,6 +859,14 @@ export function DailyScreen() {
         </View>
       </Modal>
       </ScrollView>
+      {currentView !== 'main' && (
+        <Animated.View key={currentView} entering={SlideInUp.duration(280)} exiting={SlideOutDown.duration(260)} style={styles.overlay}>
+          {currentView === 'exercise-picker' && renderExercisePicker()}
+          {currentView === 'templates' && renderTemplates()}
+          {currentView === 'score-picker' && renderScorePicker()}
+          {currentView === 'meal-form' && renderMealForm()}
+        </Animated.View>
+      )}
     </LinearGradient>
   );
 }
@@ -836,32 +874,10 @@ export function DailyScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f1117'
+    backgroundColor: COLORS.backgroundTop
   },
-  backgroundOrbs: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0
-  },
-  blueOrbPrimary: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(59,130,246,0.2)',
-    top: -80,
-    left: -60
-  },
-  blueOrbSecondary: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(30,64,175,0.25)',
-    bottom: 120,
-    right: -80
+  subtleGlow: {
+    ...StyleSheet.absoluteFillObject
   },
   scroll: {
     flex: 1
@@ -873,7 +889,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     maxWidth: 448,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingTop: 24
   },
   headerRow: {
@@ -890,56 +906,82 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(59,130,246,0.2)',
     marginVertical: 16
   },
+  headerTitle: {
+    color: COLORS.text,
+    fontSize: 22,
+    fontWeight: '700'
+  },
+  headerSubtitle: {
+    color: COLORS.textMuted,
+    marginTop: 6
+  },
   streakBadge: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.5)',
+    borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    alignItems: 'center'
-  },
-  resetButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(248,113,113,0.4)',
-    backgroundColor: 'rgba(239,68,68,0.15)',
+    shadowColor: 'rgba(248,113,113,0.6)',
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }
+  },
+  streakNumber: {
+    color: '#fca5a5',
+    fontWeight: '700',
+    marginTop: 4
+  },
+  streakLabel: {
+    color: '#fecaca',
+    fontSize: 10,
+    textAlign: 'center'
+  },
+  resetButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: 'rgba(248,113,113,0.4)',
+    backgroundColor: 'rgba(127,29,29,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10
+    marginLeft: 10,
+    shadowColor: 'rgba(248,113,113,0.6)',
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }
   },
   dailyScoreCard: {
     borderRadius: 20,
-    padding: 20,
+    padding: 26,
     marginBottom: 24,
-    backgroundColor: '#1f232c',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden'
   },
-  scoreAmbient: {
-    position: 'absolute',
-    top: 20,
-    left: '35%',
-    width: 120,
-    height: 120,
-    opacity: 0.2,
-    borderRadius: 60
-  },
   dailyScoreLabel: {
-    color: '#94a3b8',
+    color: COLORS.textMuted,
     fontSize: 11,
     letterSpacing: 1,
     textAlign: 'center',
     marginBottom: 12
   },
+  dailyScoreGlow: {
+    position: 'absolute',
+    alignSelf: 'center',
+    fontSize: 54,
+    fontWeight: '900',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 18,
+    opacity: 0.5
+  },
   dailyScoreValue: {
-    fontSize: 72,
-    fontWeight: '800',
+    fontSize: 54,
+    fontWeight: '900',
     textAlign: 'center',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 22
+    textShadowRadius: 18
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -961,24 +1003,24 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: 'rgba(59,130,246,0.2)',
+    backgroundColor: COLORS.accentBlueMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8
   },
   sectionTitle: {
-    color: '#f8fafc',
+    color: COLORS.text,
     fontSize: 18,
     fontWeight: '700'
   },
   sectionTitleBlue: {
-    color: '#60a5fa',
-    fontSize: 18,
+    color: COLORS.accentBlue,
+    fontSize: 20,
     fontWeight: '700'
   },
   sectionScore: {
-    fontSize: 18,
-    fontWeight: '700'
+    fontSize: 20,
+    fontWeight: '800'
   },
   plusButton: {
     width: 32,
@@ -986,10 +1028,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(59,130,246,0.4)',
-    backgroundColor: 'rgba(59,130,246,0.2)',
+    backgroundColor: COLORS.accentBlueMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8
+    marginRight: 8,
+    shadowColor: 'rgba(96,165,250,0.5)',
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }
   },
   primaryCard: {
     borderRadius: 18,
@@ -1012,13 +1058,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: 'rgba(59,130,246,0.2)',
+    backgroundColor: COLORS.accentBlueMuted,
     alignItems: 'center',
     justifyContent: 'center'
   },
   exerciseCard: {
     borderRadius: 18,
-    padding: 16,
+    padding: 18,
     marginBottom: 12,
     backgroundColor: '#1f232c',
     borderWidth: 1,
@@ -1037,10 +1083,13 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(59,130,246,0.2)',
+    backgroundColor: COLORS.accentBlueMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8
+  },
+  trashButton: {
+    backgroundColor: 'rgba(239,68,68,0.15)'
   },
   recordButton: {
     borderRadius: 14,
@@ -1060,9 +1109,9 @@ const styles = StyleSheet.create({
     marginLeft: 6
   },
   tapToRate: {
-    color: '#60a5fa',
+    color: COLORS.accentBlue,
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 12,
     fontWeight: '600'
   },
@@ -1098,5 +1147,241 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(7,10,16,0.98)'
+  },
+  overlayContent: {
+    flex: 1,
+    paddingHorizontal: 22,
+    paddingTop: 28
+  },
+  overlayHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.accentBlueMuted,
+    marginRight: 12
+  },
+  overlayTitle: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontWeight: '700'
+  },
+  overlaySubtitle: {
+    color: COLORS.textMuted,
+    marginTop: 4
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#252932',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12
+  },
+  searchInput: {
+    flex: 1,
+    color: COLORS.text,
+    marginLeft: 8
+  },
+  pillRow: {
+    marginBottom: 16
+  },
+  categoryPill: {
+    backgroundColor: '#1f2937',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'transparent'
+  },
+  categoryPillActive: {
+    backgroundColor: 'rgba(37,99,235,0.2)',
+    borderColor: 'rgba(59,130,246,0.4)'
+  },
+  categoryPillText: {
+    color: COLORS.text,
+    fontWeight: '600',
+    fontSize: 12
+  },
+  exercisePickerCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#1f232c',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  exercisePickerTitle: {
+    color: COLORS.text,
+    fontWeight: '700',
+    fontSize: 15
+  },
+  exercisePickerMeta: {
+    color: COLORS.textMuted,
+    marginTop: 4,
+    fontSize: 12
+  },
+  exercisePickerPlus: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.accentBlueMuted
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(10,13,18,0.9)',
+    justifyContent: 'center',
+    padding: 24
+  },
+  modalCard: {
+    backgroundColor: '#1a1d23',
+    borderRadius: 20,
+    padding: 20
+  },
+  modalTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12
+  },
+  modalInput: {
+    flex: 1,
+    backgroundColor: '#252932',
+    color: COLORS.text,
+    borderRadius: 12,
+    padding: 12
+  },
+  modalButton: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center'
+  },
+  modalGhost: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    marginRight: 8
+  },
+  modalPrimary: {
+    backgroundColor: '#3b82f6'
+  },
+  modalGhostText: {
+    color: COLORS.text,
+    fontWeight: '600'
+  },
+  modalPrimaryText: {
+    color: COLORS.text,
+    fontWeight: '600'
+  },
+  templateCard: {
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(59,130,246,0.2)',
+    backgroundColor: 'rgba(35,42,55,0.95)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  templateRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  templateIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: COLORS.accentBlueMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
+  },
+  templateTitle: {
+    color: COLORS.text,
+    fontWeight: '700',
+    fontSize: 16
+  },
+  templateMeta: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    marginTop: 2
+  },
+  scorePickerHeader: {
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  scorePickerIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: COLORS.accentBlueMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
+  scorePickerTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '700'
+  },
+  scorePickerMeta: {
+    color: COLORS.textMuted,
+    marginTop: 4
+  },
+  feedbackCard: {
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1
+  },
+  feedbackTitle: {
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 4
+  },
+  feedbackMessage: {
+    color: COLORS.text,
+    opacity: 0.7,
+    textAlign: 'center'
+  },
+  formInput: {
+    backgroundColor: '#252932',
+    color: COLORS.text,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10
+  },
+  savedMealPill: {
+    backgroundColor: '#1f2937',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8
+  },
+  savedMealName: {
+    color: COLORS.text,
+    fontWeight: '600'
+  },
+  savedMealMeta: {
+    color: COLORS.textMuted,
+    fontSize: 10
   }
 });

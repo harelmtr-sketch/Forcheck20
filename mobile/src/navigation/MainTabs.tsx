@@ -1,4 +1,3 @@
-import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DailyScreen } from '../screens/DailyScreen';
@@ -27,7 +26,7 @@ export function MainTabs() {
         },
         tabBarActiveTintColor: '#f8fafc',
         tabBarInactiveTintColor: '#94a3b8',
-        tabBarActiveBackgroundColor: 'transparent',
+        tabBarActiveBackgroundColor: 'rgba(59,130,246,0.25)',
         tabBarItemStyle: {
           borderRadius: 18,
           marginHorizontal: 6,
@@ -45,80 +44,28 @@ export function MainTabs() {
         name="Daily"
         component={DailyScreen}
         options={{
-          tabBarIcon: ({ focused, size }) => (
-            <View
-              style={{
-                width: 46,
-                height: 34,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: focused ? 'rgba(59,130,246,0.25)' : 'transparent'
-              }}
-            >
-              <MaterialCommunityIcons name="chart-bar" size={size ?? 22} color={focused ? '#f8fafc' : '#94a3b8'} />
-            </View>
-          )
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-bar" size={size ?? 22} color={color} />
         }}
       />
       <Tab.Screen
         name="Friends"
         component={FriendsScreen}
         options={{
-          tabBarIcon: ({ focused, size }) => (
-            <View
-              style={{
-                width: 46,
-                height: 34,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: focused ? 'rgba(59,130,246,0.25)' : 'transparent'
-              }}
-            >
-              <MaterialCommunityIcons name="account-group-outline" size={size ?? 22} color={focused ? '#f8fafc' : '#94a3b8'} />
-            </View>
-          )
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-group-outline" size={size ?? 22} color={color} />
         }}
       />
       <Tab.Screen
         name="Camera"
         component={CameraScreen}
         options={{
-          tabBarIcon: ({ focused, size }) => (
-            <View
-              style={{
-                width: 46,
-                height: 34,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: focused ? 'rgba(59,130,246,0.25)' : 'transparent'
-              }}
-            >
-              <MaterialCommunityIcons name="camera-outline" size={size ?? 22} color={focused ? '#f8fafc' : '#94a3b8'} />
-            </View>
-          )
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="camera-outline" size={size ?? 22} color={color} />
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ focused, size }) => (
-            <View
-              style={{
-                width: 46,
-                height: 34,
-                borderRadius: 14,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: focused ? 'rgba(59,130,246,0.25)' : 'transparent'
-              }}
-            >
-              <MaterialCommunityIcons name="account-outline" size={size ?? 22} color={focused ? '#f8fafc' : '#94a3b8'} />
-            </View>
-          )
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-outline" size={size ?? 22} color={color} />
         }}
       />
     </Tab.Navigator>

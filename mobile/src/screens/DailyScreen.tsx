@@ -70,6 +70,20 @@ const RADIUS = {
   lg: 20
 };
 
+type GlowTextProps = {
+  text: string | number;
+  color: string;
+};
+
+const GlowingScoreText = ({ text, color }: GlowTextProps) => (
+  <View style={styles.glowTextWrap}>
+    <Text style={[styles.glowTextLayer, { color, opacity: 0.25, fontSize: 56 }]}>{text}</Text>
+    <Text style={[styles.glowTextLayer, { color, opacity: 0.15, fontSize: 58 }]}>{text}</Text>
+    <Text style={[styles.glowTextLayer, { color, opacity: 0.1, fontSize: 60 }]}>{text}</Text>
+    <Text style={[styles.dailyScoreValue, { color, textShadowColor: color }]}>{text}</Text>
+  </View>
+);
+
 const getScoreColor = (score: number) => {
   if (score >= 90) return '#22c55e';
   if (score >= 80) return '#4ade80';
@@ -644,10 +658,12 @@ export function DailyScreen() {
         <View style={styles.headerDivider} />
 
         {hasActivity && (
-          <LinearGradient colors={[COLORS.card, COLORS.cardSecondary, COLORS.card]} style={styles.dailyScoreCard}>
-            <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
-            <Text style={[styles.dailyScoreValue, { color: dailyScoreColor, textShadowColor: dailyScoreColor }]}>{dailyScoreData.score}</Text>
-          </LinearGradient>
+          <View style={styles.dailyScoreShell}>
+            <LinearGradient colors={['#20252e', '#1c2129', '#20252e']} style={styles.dailyScoreCard}>
+              <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
+              <GlowingScoreText text={dailyScoreData.score} color={dailyScoreColor} />
+            </LinearGradient>
+          </View>
         )}
 
         {!hasWorkout ? (
@@ -689,6 +705,13 @@ export function DailyScreen() {
           </>
         ) : (
           <>
+            <View style={styles.workoutGlowWrap}>
+              <LinearGradient
+                colors={['rgba(59,130,246,0.16)', 'rgba(59,130,246,0.04)', 'transparent']}
+                style={styles.workoutGlow}
+                pointerEvents="none"
+              />
+            </View>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionIconBadge}>
@@ -728,22 +751,13 @@ export function DailyScreen() {
                     </View>
                   </View>
                   <View style={styles.actionRow}>
-                    <Pressable
-                      onPress={() => navigation.navigate('Camera' as never)}
-                      style={styles.iconButton}
-                    >
+                    <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
                       <MaterialCommunityIcons name="pencil-outline" size={18} color="#93c5fd" />
                     </Pressable>
-                    <Pressable
-                      onPress={() => navigation.navigate('Camera' as never)}
-                      style={styles.iconButton}
-                    >
+                    <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
                       <MaterialCommunityIcons name="play" size={18} color="#93c5fd" />
                     </Pressable>
-                    <Pressable
-                      onPress={() => handleRemoveExercise(index)}
-                      style={[styles.iconButton, styles.trashButton]}
-                    >
+                    <Pressable onPress={() => handleRemoveExercise(index)} style={styles.iconButton}>
                       <MaterialCommunityIcons name="trash-can-outline" size={18} color="#fca5a5" />
                     </Pressable>
                   </View>
@@ -900,6 +914,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
+  dailyScoreShell: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+    marginBottom: 24
+  },
   headerDivider: {
     height: 1,
     backgroundColor: 'rgba(59,130,246,0.2)',
@@ -954,9 +975,6 @@ const styles = StyleSheet.create({
   dailyScoreCard: {
     borderRadius: 20,
     padding: 26,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
     shadowColor: 'rgba(0,0,0,0.6)',
     shadowOpacity: 0.5,
@@ -977,6 +995,17 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20
   },
+  glowTextWrap: {
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  glowTextLayer: {
+    position: 'absolute',
+    fontWeight: '900',
+    textAlign: 'center',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 24
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -992,6 +1021,18 @@ const styles = StyleSheet.create({
   sectionActions: {
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  workoutGlowWrap: {
+    position: 'relative'
+  },
+  workoutGlow: {
+    position: 'absolute',
+    top: -12,
+    left: -18,
+    right: -18,
+    height: 140,
+    borderRadius: 24,
+    opacity: 0.8
   },
   sectionIconBadge: {
     width: 28,
@@ -1017,7 +1058,8 @@ const styles = StyleSheet.create({
   },
   sectionScore: {
     fontSize: 20,
-    fontWeight: '800'
+    fontWeight: '800',
+    marginLeft: 4
   },
   plusButton: {
     width: 32,
@@ -1061,8 +1103,8 @@ const styles = StyleSheet.create({
   },
   exerciseCard: {
     borderRadius: 18,
-    padding: 20,
-    minHeight: 220,
+    padding: 22,
+    minHeight: 236,
     marginBottom: 12,
     backgroundColor: '#1f232c',
     borderWidth: 1,
@@ -1078,16 +1120,13 @@ const styles = StyleSheet.create({
     marginTop: 12
   },
   iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: COLORS.accentBlueMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8
-  },
-  trashButton: {
-    backgroundColor: 'rgba(239,68,68,0.15)'
   },
   recordButton: {
     borderRadius: 14,

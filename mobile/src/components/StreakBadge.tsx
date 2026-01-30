@@ -41,18 +41,18 @@ const styles = StyleSheet.create({
     right: -4,
     bottom: -4,
     left: -4,
-    borderRadius: 16,
+    borderRadius: 14,
     backgroundColor: 'rgba(239,68,68,0.20)',
     shadowColor: '#ef4444',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8
+    shadowRadius: 8,
+    elevation: 4
   },
   badge: {
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     borderWidth: 1,
     borderColor: 'rgba(239,68,68,0.40)',
     overflow: 'hidden'
@@ -65,24 +65,24 @@ const styles = StyleSheet.create({
     shadowColor: 'rgba(248,113,113,1)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.7,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowRadius: 6,
+    elevation: 4,
     marginRight: 6
   },
   textStack: {
     alignItems: 'center'
   },
   number: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '900',
     color: '#f87171',
     textShadowColor: 'rgba(248,113,113,0.45)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8
+    textShadowRadius: 5
   },
   label: {
     marginTop: -4,
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '500',
     color: 'rgba(252,165,165,0.80)'
   }

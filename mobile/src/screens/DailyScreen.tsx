@@ -619,14 +619,19 @@ export function DailyScreen() {
               <View style={styles.sectionHeaderLeft}>
                 <GlowIconBadge
                   shape="square"
-                  size={40}
-                  borderRadius={10}
+                  size={32}
+                  borderRadius={8}
                   borderColor="rgba(59,130,246,0.5)"
                   outerGlowColor="rgba(59,130,246,0.15)"
                   gradientColors={['rgba(59,130,246,0.30)', 'rgba(37,99,235,0.20)']}
                   rimColor="rgba(96,165,250,0.20)"
+                  outerGlowInset={3}
+                  outerShadowRadius={8}
+                  outerElevation={4}
+                  iconShadowRadius={4}
+                  iconElevation={2}
                 >
-                  <Dumbbell size={20} color="#60a5fa" strokeWidth={2} />
+                  <Dumbbell size={16} color="#60a5fa" strokeWidth={2} />
                 </GlowIconBadge>
                 <Text style={styles.sectionTitleBlue}>Workout</Text>
                 <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.plusButton}>
@@ -711,14 +716,19 @@ export function DailyScreen() {
               </View>
               <GlowIconBadge
                 shape="square"
-                size={44}
-                borderRadius={12}
+                size={30}
+                borderRadius={8}
                 borderColor="rgba(59,130,246,0.5)"
-                outerGlowColor="rgba(59,130,246,0.15)"
-                gradientColors={['rgba(59,130,246,0.30)', 'rgba(37,99,235,0.20)']}
+                outerGlowColor="rgba(59,130,246,0.08)"
+                gradientColors={['rgba(59,130,246,0.22)', 'rgba(37,99,235,0.14)']}
                 rimColor="rgba(96,165,250,0.20)"
+                outerGlowInset={3}
+                outerShadowRadius={6}
+                outerElevation={3}
+                iconShadowRadius={3}
+                iconElevation={2}
               >
-                <Utensils size={20} color="#60a5fa" strokeWidth={2} />
+                <Utensils size={14} color="#60a5fa" strokeWidth={2} />
               </GlowIconBadge>
             </View>
           </Pressable>

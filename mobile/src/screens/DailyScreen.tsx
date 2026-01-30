@@ -662,6 +662,13 @@ export function DailyScreen() {
         {hasActivity && (
           <View style={styles.dailyScoreShell}>
             <LinearGradient colors={['#252932', '#20252e', '#252932']} style={styles.dailyScoreCard}>
+              <LinearGradient
+                colors={['rgba(255,255,255,0.05)', 'transparent']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.cardShine}
+                pointerEvents="none"
+              />
               <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
               <GlowingScoreText text={dailyScoreData.score} color={dailyScoreColor} />
             </LinearGradient>
@@ -715,20 +722,18 @@ export function DailyScreen() {
               />
             </View>
             <View style={styles.sectionHeaderRow}>
-              <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderLeft}>
                 <View style={styles.sectionIconBadge}>
                   <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
                 </View>
                 <Text style={styles.sectionTitleBlue}>Workout</Text>
-              </View>
-              <View style={styles.sectionActions}>
                 <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.plusButton}>
                   <MaterialCommunityIcons name="plus" size={18} color="#93c5fd" />
                 </Pressable>
-                {workoutScoreData.score > 0 && (
-                  <Text style={[styles.sectionScore, { color: workoutScoreColor }]}>{workoutScoreData.score}</Text>
-                )}
               </View>
+              {workoutScoreData.score > 0 && (
+                <Text style={[styles.sectionScore, { color: workoutScoreColor }]}>{workoutScoreData.score}</Text>
+              )}
             </View>
             {exercises.map((exercise, index) => {
               const timeLabel = new Date(exercise.timestamp ?? Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -738,45 +743,47 @@ export function DailyScreen() {
                 <Pressable
                   key={`${exercise.name}-${index}`}
                   onPress={() => (!isRated ? handleRateExercise(index) : undefined)}
-                  style={styles.exerciseCard}
+                  style={{ marginBottom: 12 }}
                 >
-                  <View style={styles.exerciseHeader}>
-                    <View>
-                      <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '700' }}>{exercise.name}</Text>
-                      <Text style={{ color: '#94a3b8', marginTop: 6 }}>{exercise.sets} sets × {exercise.reps} reps</Text>
-                    </View>
-                    <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={{ color: '#64748b', fontSize: 12 }}>{timeLabel}</Text>
-                      {isRated && (
-                        <Text style={{ color: exerciseScoreColor, fontWeight: '800', fontSize: 16, marginTop: 6 }}>{exercise.score}</Text>
-                      )}
-                    </View>
-                  </View>
-                  <View style={styles.actionRow}>
-                    <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
-                      <MaterialCommunityIcons name="pencil-outline" size={18} color="#93c5fd" />
-                    </Pressable>
-                    <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
-                      <MaterialCommunityIcons name="play" size={18} color="#93c5fd" />
-                    </Pressable>
-                    <Pressable onPress={() => handleRemoveExercise(index)} style={styles.iconButton}>
-                      <MaterialCommunityIcons name="trash-can-outline" size={18} color="#fca5a5" />
-                    </Pressable>
-                  </View>
-                  <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
-                    <LinearGradient
-                      colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.15)']}
-                      style={styles.recordButton}
-                    >
-                      <View style={styles.recordRow}>
-                        <MaterialCommunityIcons name="camera" size={16} color="#fca5a5" />
-                        <Text style={styles.recordText}>Record Now</Text>
+                  <LinearGradient colors={['#20252e', '#1c2129', '#20252e']} style={styles.exerciseCard}>
+                    <View style={styles.exerciseHeader}>
+                      <View>
+                        <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '700' }}>{exercise.name}</Text>
+                        <Text style={{ color: '#94a3b8', marginTop: 6 }}>{exercise.sets} sets × {exercise.reps} reps</Text>
                       </View>
-                    </LinearGradient>
-                  </Pressable>
-                  {!isRated && (
-                    <Text style={styles.tapToRate}>Tap to rate form</Text>
-                  )}
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={{ color: '#64748b', fontSize: 12 }}>{timeLabel}</Text>
+                        {isRated && (
+                          <Text style={{ color: exerciseScoreColor, fontWeight: '800', fontSize: 16, marginTop: 6 }}>{exercise.score}</Text>
+                        )}
+                      </View>
+                    </View>
+                    <View style={styles.actionRow}>
+                      <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
+                        <MaterialCommunityIcons name="pencil-outline" size={18} color="#93c5fd" />
+                      </Pressable>
+                      <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
+                        <MaterialCommunityIcons name="play" size={18} color="#93c5fd" />
+                      </Pressable>
+                      <Pressable onPress={() => handleRemoveExercise(index)} style={styles.iconButton}>
+                        <MaterialCommunityIcons name="trash-can-outline" size={18} color="#fca5a5" />
+                      </Pressable>
+                    </View>
+                    <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
+                      <LinearGradient
+                        colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.15)']}
+                        style={styles.recordButton}
+                      >
+                        <View style={styles.recordRow}>
+                          <MaterialCommunityIcons name="camera" size={16} color="#fca5a5" />
+                          <Text style={styles.recordText}>Record Now</Text>
+                        </View>
+                      </LinearGradient>
+                    </Pressable>
+                    {!isRated && (
+                      <Text style={styles.tapToRate}>Tap to rate form</Text>
+                    )}
+                  </LinearGradient>
                 </Pressable>
               );
             })}
@@ -898,7 +905,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   scrollContent: {
-    paddingBottom: 120
+    paddingBottom: 150
   },
   centered: {
     alignSelf: 'center',
@@ -983,6 +990,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 }
   },
+  cardShine: {
+    ...StyleSheet.absoluteFillObject
+  },
   dailyScoreLabel: {
     color: COLORS.textMuted,
     fontSize: 11,
@@ -1019,6 +1029,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12
+  },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   sectionActions: {
     flexDirection: 'row',
@@ -1072,7 +1086,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.accentBlueMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginLeft: 10,
     shadowColor: 'rgba(96,165,250,0.5)',
     shadowOpacity: 0.4,
     shadowRadius: 6,
@@ -1107,7 +1121,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 22,
     minHeight: 236,
-    marginBottom: 12,
     backgroundColor: '#1f232c',
     borderWidth: 1,
     borderColor: 'rgba(59,130,246,0.25)'
@@ -1193,12 +1206,14 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(7,10,16,0.98)'
+    backgroundColor: 'rgba(7,10,16,0.98)',
+    bottom: 70
   },
   overlayContent: {
     flex: 1,
     paddingHorizontal: 22,
-    paddingTop: 28
+    paddingTop: 28,
+    paddingBottom: 60
   },
   overlayHeader: {
     flexDirection: 'row',

@@ -42,9 +42,9 @@ const CUSTOM_TEMPLATES_KEY = 'kinetic-custom-templates';
 const SETTINGS_KEY = 'kinetic_settings';
 
 const COLORS = {
-  backgroundTop: '#070A10',
-  backgroundMid: '#0B1020',
-  backgroundBottom: '#070A10',
+  backgroundTop: '#000000',
+  backgroundMid: '#0a0a0a',
+  backgroundBottom: '#000000',
   card: 'rgba(37,41,50,0.9)',
   cardSecondary: 'rgba(31,35,44,0.85)',
   border: 'rgba(255,255,255,0.1)',
@@ -52,7 +52,7 @@ const COLORS = {
   textMuted: '#94a3b8',
   textSubtle: '#64748b',
   accentBlue: '#60a5fa',
-  accentBlueMuted: 'rgba(59,130,246,0.2)',
+  accentBlueMuted: 'rgba(59,130,246,0.18)',
   accentRed: '#f87171',
   accentRedMuted: 'rgba(239,68,68,0.2)'
 };
@@ -75,11 +75,11 @@ type GlowTextProps = {
   color: string;
 };
 
-const GlowingScoreText = ({ text, color }: GlowTextProps) => (
+  const GlowingScoreText = ({ text, color }: GlowTextProps) => (
   <View style={styles.glowTextWrap}>
-    <Text style={[styles.glowTextLayer, { color, opacity: 0.25, fontSize: 56 }]}>{text}</Text>
-    <Text style={[styles.glowTextLayer, { color, opacity: 0.15, fontSize: 58 }]}>{text}</Text>
-    <Text style={[styles.glowTextLayer, { color, opacity: 0.1, fontSize: 60 }]}>{text}</Text>
+    <Text style={[styles.glowTextLayer, { color, opacity: 0.3, fontSize: 56 }]}>{text}</Text>
+    <Text style={[styles.glowTextLayer, { color, opacity: 0.18, fontSize: 58 }]}>{text}</Text>
+    <Text style={[styles.glowTextLayer, { color, opacity: 0.12, fontSize: 60 }]}>{text}</Text>
     <Text style={[styles.dailyScoreValue, { color, textShadowColor: color }]}>{text}</Text>
   </View>
 );
@@ -628,7 +628,9 @@ export function DailyScreen() {
   return (
     <LinearGradient colors={[COLORS.backgroundTop, COLORS.backgroundMid, COLORS.backgroundBottom]} style={styles.screen}>
       <LinearGradient
-        colors={['rgba(59,130,246,0.08)', 'rgba(59,130,246,0.02)', 'transparent']}
+        colors={['rgba(23,37,84,0.1)', 'rgba(0,0,0,0)', 'rgba(23,37,84,0.05)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.subtleGlow}
         pointerEvents="none"
       />
@@ -659,7 +661,7 @@ export function DailyScreen() {
 
         {hasActivity && (
           <View style={styles.dailyScoreShell}>
-            <LinearGradient colors={['#20252e', '#1c2129', '#20252e']} style={styles.dailyScoreCard}>
+            <LinearGradient colors={['#252932', '#20252e', '#252932']} style={styles.dailyScoreCard}>
               <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
               <GlowingScoreText text={dailyScoreData.score} color={dailyScoreColor} />
             </LinearGradient>
@@ -707,7 +709,7 @@ export function DailyScreen() {
           <>
             <View style={styles.workoutGlowWrap}>
               <LinearGradient
-                colors={['rgba(59,130,246,0.16)', 'rgba(59,130,246,0.04)', 'transparent']}
+                colors={['rgba(23,37,84,0.08)', 'rgba(0,0,0,0.0)', 'transparent']}
                 style={styles.workoutGlow}
                 pointerEvents="none"
               />
@@ -993,7 +995,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     textAlign: 'center',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20
+    textShadowRadius: 24
   },
   glowTextWrap: {
     alignItems: 'center',
@@ -1004,7 +1006,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     textAlign: 'center',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 24
+    textShadowRadius: 28
   },
   sectionHeader: {
     flexDirection: 'row',

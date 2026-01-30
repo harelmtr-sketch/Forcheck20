@@ -11,9 +11,9 @@ import { exerciseDatabase, workoutTemplates, type ExerciseData, type WorkoutTemp
 import { calculateWorkoutScore } from '../utils/workoutScoring';
 import { calculateDietScore, calculateDailyScore } from '../utils/dailyScoring';
 import { defaultMuscleStatus, loadWorkoutSession, saveWorkoutSession, todayKey, type ExerciseEntry, type MealEntry, type MuscleStatus } from '../utils/workoutStorage';
-import type { RootStackParamList } from '../navigation/RootNavigator';
+import type { DailyStackParamList } from '../navigation/DailyStack';
 
-type ViewMode = 'main' | 'exercise-picker' | 'templates' | 'score-picker' | 'meal-form';
+type ViewMode = 'main' | 'exercise-picker' | 'templates' | 'meal-form';
 
 type SavedMeal = {
   id: string;
@@ -93,28 +93,17 @@ const getScoreColor = (score: number) => {
   return '#f87171';
 };
 
-const getScoreLabel = (score: number) => {
-  if (score >= 90) return 'Elite';
-  if (score >= 80) return 'Excellent';
-  if (score >= 70) return 'Great';
-  if (score >= 60) return 'Good';
-  if (score >= 50) return 'Fair';
-  return 'Needs Work';
-};
-
 export function DailyScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<DailyStackParamList>>();
   const [currentView, setCurrentView] = useState<ViewMode>('main');
   const [exercises, setExercises] = useState<ExerciseEntry[]>([]);
   const [meals, setMeals] = useState<MealEntry[]>([]);
   const [muscleStatus, setMuscleStatus] = useState<MuscleStatus[]>(defaultMuscleStatus());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedExerciseIndex, setSelectedExerciseIndex] = useState<number | null>(null);
   const [pendingExercise, setPendingExercise] = useState<ExerciseData | null>(null);
   const [customSets, setCustomSets] = useState('3');
   const [customReps, setCustomReps] = useState('12');
-  const [scoreInput, setScoreInput] = useState('');
   const [mealName, setMealName] = useState('');
   const [mealCalories, setMealCalories] = useState('');
   const [mealProtein, setMealProtein] = useState('');
@@ -125,7 +114,6 @@ export function DailyScreen() {
   const [calorieGoal, setCalorieGoal] = useState(2400);
   const [proteinGoal, setProteinGoal] = useState(180);
   const todayLabel = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }), []);
-  const scoreOptions = useMemo(() => Array.from({ length: 11 }, (_, index) => index * 10), []);
   const hasActivity = exercises.length > 0 || meals.length > 0;
 
   const hydrate = useCallback(async () => {
@@ -292,32 +280,15 @@ export function DailyScreen() {
   };
 
   const handleRateExercise = (index: number) => {
-    setSelectedExerciseIndex(index);
-    setScoreInput(exercises[index]?.score?.toString() ?? '');
-    setCurrentView('score-picker');
-  };
-
-  const handleScoreSelect = () => {
-    if (selectedExerciseIndex === null) return;
-    const score = Number(scoreInput);
-    if (!Number.isFinite(score)) return;
-    setExercises((prev) => prev.map((exercise, i) => (
-      i === selectedExerciseIndex ? { ...exercise, score } : exercise
-    )));
-    setSelectedExerciseIndex(null);
-    setCurrentView('main');
-  };
-
-  const handleScorePick = (score: number) => {
-    if (selectedExerciseIndex === null) return;
-    setScoreInput(String(score));
-    setTimeout(() => {
-      setExercises((prev) => prev.map((exercise, i) => (
-        i === selectedExerciseIndex ? { ...exercise, score } : exercise
-      )));
-      setSelectedExerciseIndex(null);
-      setCurrentView('main');
-    }, 400);
+    const target = exercises[index];
+    if (!target) return;
+    navigation.navigate('RateForm', {
+      index,
+      name: target.name,
+      sets: target.sets,
+      reps: target.reps,
+      score: typeof target.score === 'number' ? target.score : null
+    });
   };
 
   const handleAddMeal = () => {
@@ -382,15 +353,6 @@ export function DailyScreen() {
 
   const handleRemoveExercise = (index: number) => {
     setExercises((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const getFeedback = (score: number) => {
-    if (score >= 90) return { title: 'Elite', message: 'Explosive power and control. Keep it up.' };
-    if (score >= 80) return { title: 'Excellent', message: 'Strong form and tempo. Stay consistent.' };
-    if (score >= 70) return { title: 'Great', message: 'Solid mechanics. Aim for smoother reps.' };
-    if (score >= 60) return { title: 'Good', message: 'Decent control. Focus on depth and range.' };
-    if (score >= 50) return { title: 'Fair', message: 'Work on stability and pacing.' };
-    return { title: 'Needs Work', message: 'Focus on control and range of motion.' };
   };
 
   const renderExercisePicker = () => (
@@ -509,56 +471,6 @@ export function DailyScreen() {
           </Pressable>
         ))}
       </ScrollView>
-    );
-  };
-
-  const renderScorePicker = () => {
-    const selectedExercise = exercises[selectedExerciseIndex ?? 0];
-    const selectedScore = Number(scoreInput);
-    const feedback = getFeedback(selectedScore);
-    const feedbackColor = getScoreColor(selectedScore);
-    return (
-      <View style={styles.overlayContent}>
-        <View style={styles.overlayHeader}>
-          <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
-            <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
-          </Pressable>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.overlayTitle}>Rate Your Form</Text>
-            <Text style={styles.overlaySubtitle}>{selectedExercise?.name ?? 'Exercise'} • {selectedExercise?.sets ?? 0} sets × {selectedExercise?.reps ?? 0} reps</Text>
-          </View>
-        </View>
-        <View style={styles.scorePickerHeader}>
-          <View style={styles.scorePickerIcon}>
-            <MaterialCommunityIcons name="dumbbell" size={26} color={COLORS.accentBlue} />
-          </View>
-          <Text style={styles.scorePickerTitle}>{selectedExercise?.name ?? 'Exercise'}</Text>
-          <Text style={styles.scorePickerMeta}>{selectedExercise?.sets ?? 0} sets × {selectedExercise?.reps ?? 0} reps</Text>
-        </View>
-        <View style={[styles.feedbackCard, { borderColor: feedbackColor, backgroundColor: `${feedbackColor}26` }]}>
-          <Text style={[styles.feedbackTitle, { color: feedbackColor }]}>{feedback.title}</Text>
-          <Text style={styles.feedbackMessage}>{feedback.message}</Text>
-        </View>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
-          {scoreOptions.map((score) => {
-            const color = getScoreColor(score);
-            const isActive = score === selectedScore;
-            return (
-              <Pressable
-                key={`score-${score}`}
-                onPress={() => handleScorePick(score)}
-                style={[
-                  styles.scoreRow,
-                  { borderColor: isActive ? color : 'rgba(255,255,255,0.08)', backgroundColor: isActive ? `${color}22` : '#1f232c' }
-                ]}
-              >
-                <Text style={[styles.scoreRowLabel, { color: isActive ? COLORS.text : COLORS.textMuted }]}>{getScoreLabel(score)}</Text>
-                <Text style={[styles.scoreRowValue, { color }]}>{score}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
     );
   };
 
@@ -885,7 +797,6 @@ export function DailyScreen() {
         <Animated.View key={currentView} entering={SlideInUp.duration(280)} exiting={SlideOutDown.duration(260)} style={styles.overlay}>
           {currentView === 'exercise-picker' && renderExercisePicker()}
           {currentView === 'templates' && renderTemplates()}
-          {currentView === 'score-picker' && renderScorePicker()}
           {currentView === 'meal-form' && renderMealForm()}
         </Animated.View>
       )}

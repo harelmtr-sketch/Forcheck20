@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { DailyScreen } from '../screens/DailyScreen';
+import { DailyStack } from './DailyStack';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { CameraScreen } from '../screens/CameraScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
@@ -42,7 +42,7 @@ export function MainTabs() {
     >
       <Tab.Screen
         name="Daily"
-        component={DailyScreen}
+        component={DailyStack}
         options={{
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-bar" size={size ?? 22} color={color} />
         }}

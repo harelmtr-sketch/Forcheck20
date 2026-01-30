@@ -3,8 +3,12 @@ import { View, Text, Pressable, TextInput, FlatList, Modal, ScrollView, StyleShe
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Dumbbell, Utensils } from 'lucide-react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { GlowIconBadge } from '../components/GlowIconBadge';
+import { GlowScoreNumber } from '../components/GlowScoreNumber';
+import { StreakBadge } from '../components/StreakBadge';
 import { addArchive } from '../utils/archiveStorage';
 import { loadJson, saveJson } from '../utils/storage';
 import { exerciseDatabase, workoutTemplates, type ExerciseData, type WorkoutTemplate } from '../data/exerciseDatabase';
@@ -69,20 +73,6 @@ const RADIUS = {
   md: 16,
   lg: 20
 };
-
-type GlowTextProps = {
-  text: string | number;
-  color: string;
-};
-
-  const GlowingScoreText = ({ text, color }: GlowTextProps) => (
-  <View style={styles.glowTextWrap}>
-    <Text style={[styles.glowTextLayer, { color, opacity: 0.3, fontSize: 56 }]}>{text}</Text>
-    <Text style={[styles.glowTextLayer, { color, opacity: 0.18, fontSize: 58 }]}>{text}</Text>
-    <Text style={[styles.glowTextLayer, { color, opacity: 0.12, fontSize: 60 }]}>{text}</Text>
-    <Text style={[styles.dailyScoreValue, { color, textShadowColor: color }]}>{text}</Text>
-  </View>
-);
 
 const getScoreColor = (score: number) => {
   if (score >= 90) return '#22c55e';
@@ -194,7 +184,6 @@ export function DailyScreen() {
     }
   }, [workoutScoreData?.score, dietScoreData?.score, totalCalories, totalProtein, calorieGoal, proteinGoal, hasWorkout]);
 
-  const dailyScoreColor = getScoreColor(dailyScoreData?.score ?? 0);
   const workoutScoreColor = getScoreColor(workoutScoreData?.score ?? 0);
   const dietScoreColor = getScoreColor(dietScoreData?.score ?? 0);
 
@@ -554,14 +543,7 @@ export function DailyScreen() {
             <Text style={styles.headerSubtitle}>{todayLabel}</Text>
           </View>
           <View style={styles.headerActions}>
-            <LinearGradient
-              colors={['rgba(127,29,29,0.6)', 'rgba(88,28,23,0.4)']}
-              style={styles.streakBadge}
-            >
-              <MaterialCommunityIcons name="fire" size={18} color={COLORS.accentRed} />
-              <Text style={styles.streakNumber}>7</Text>
-              <Text style={styles.streakLabel}>days</Text>
-            </LinearGradient>
+            <StreakBadge days={7} />
             {hasWorkout && (
               <Pressable onPress={handleResetDay} style={styles.resetButton}>
                 <MaterialCommunityIcons name="rotate-right" size={18} color={COLORS.accentRed} />
@@ -582,7 +564,7 @@ export function DailyScreen() {
                 pointerEvents="none"
               />
               <Text style={styles.dailyScoreLabel}>DAILY SCORE</Text>
-              <GlowingScoreText text={dailyScoreData.score} color={dailyScoreColor} />
+              <GlowScoreNumber value={dailyScoreData.score} />
             </LinearGradient>
           </View>
         )}
@@ -635,9 +617,17 @@ export function DailyScreen() {
             </View>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionHeaderLeft}>
-                <View style={styles.sectionIconBadge}>
-                  <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
-                </View>
+                <GlowIconBadge
+                  shape="square"
+                  size={40}
+                  borderRadius={10}
+                  borderColor="rgba(59,130,246,0.5)"
+                  outerGlowColor="rgba(59,130,246,0.15)"
+                  gradientColors={['rgba(59,130,246,0.30)', 'rgba(37,99,235,0.20)']}
+                  rimColor="rgba(96,165,250,0.20)"
+                >
+                  <Dumbbell size={20} color="#60a5fa" strokeWidth={2} />
+                </GlowIconBadge>
                 <Text style={styles.sectionTitleBlue}>Workout</Text>
                 <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.plusButton}>
                   <MaterialCommunityIcons name="plus" size={18} color="#93c5fd" />
@@ -719,9 +709,17 @@ export function DailyScreen() {
                 <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Add Meals</Text>
                 <Text style={{ color: '#94a3b8', marginTop: 6 }}>Track your nutrition</Text>
               </View>
-              <View style={[styles.iconBadge, { backgroundColor: 'rgba(249,115,22,0.2)' }]}>
-                <MaterialCommunityIcons name="silverware-fork-knife" size={20} color="#f59e0b" />
-              </View>
+              <GlowIconBadge
+                shape="square"
+                size={44}
+                borderRadius={12}
+                borderColor="rgba(59,130,246,0.5)"
+                outerGlowColor="rgba(59,130,246,0.15)"
+                gradientColors={['rgba(59,130,246,0.30)', 'rgba(37,99,235,0.20)']}
+                rimColor="rgba(96,165,250,0.20)"
+              >
+                <Utensils size={20} color="#60a5fa" strokeWidth={2} />
+              </GlowIconBadge>
             </View>
           </Pressable>
         ) : (
@@ -855,28 +853,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginTop: 6
   },
-  streakBadge: {
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(248,113,113,0.4)',
-    shadowColor: 'rgba(248,113,113,0.6)',
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 }
-  },
-  streakNumber: {
-    color: '#fca5a5',
-    fontWeight: '700',
-    marginTop: 4
-  },
-  streakLabel: {
-    color: '#fecaca',
-    fontSize: 10,
-    textAlign: 'center'
-  },
   resetButton: {
     width: 38,
     height: 38,
@@ -910,24 +886,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textAlign: 'center',
     marginBottom: 12
-  },
-  dailyScoreValue: {
-    fontSize: 52,
-    fontWeight: '900',
-    textAlign: 'center',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 24
-  },
-  glowTextWrap: {
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  glowTextLayer: {
-    position: 'absolute',
-    fontWeight: '900',
-    textAlign: 'center',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 28
   },
   sectionHeader: {
     flexDirection: 'row',

@@ -13,6 +13,9 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronRight, Search, X } from 'lucide-react-native';
 import type { ExerciseData } from '../data/exerciseDatabase';
+import { exerciseMenuColors as C } from '../theme/exerciseMenuColors';
+import { ScreenShell } from './ScreenShell';
+import { TemplateCard } from './TemplateCard';
 
 type ExercisePickerModalProps = {
   visible: boolean;
@@ -93,62 +96,57 @@ export function ExercisePickerModal({
 
   return (
     <ModalWrapper visible={visible}>
-      <SafeAreaView style={styles.safeArea}>
-        <LinearGradient
-          colors={['#0f1115', 'rgba(30,33,40,0.15)', 'rgba(20,22,28,0.08)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFillObject}
-        />
-
-        <View style={styles.header}>
-          <Animated.View style={{ transform: [{ scale: backScale }] }}>
-            <Pressable
-              onPress={onClose}
-              onPressIn={handleBackPressIn}
-              onPressOut={handleBackPressOut}
-              style={({ pressed }) => [
-                styles.backButton,
-                { backgroundColor: pressed ? 'rgba(42,46,56,0.7)' : 'rgba(42,46,56,0.5)' }
-              ]}
-            >
-              <ChevronRight size={20} color="#60a5fa" style={{ transform: [{ rotate: '180deg' }] }} />
-            </Pressable>
-          </Animated.View>
-          <View style={styles.headerText}>
-            <Text style={styles.title}>Choose Exercise</Text>
-            <Text style={styles.subtitle}>{totalCount} exercises available</Text>
+      <ScreenShell>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <Animated.View style={{ transform: [{ scale: backScale }] }}>
+              <Pressable
+                onPress={onClose}
+                onPressIn={handleBackPressIn}
+                onPressOut={handleBackPressOut}
+                style={({ pressed }) => [
+                  styles.backButton,
+                  { backgroundColor: pressed ? 'rgba(42,46,56,0.7)' : 'rgba(42,46,56,0.5)' }
+                ]}
+              >
+                <ChevronRight size={20} color={C.buttonBlue} style={{ transform: [{ rotate: '180deg' }] }} />
+              </Pressable>
+            </Animated.View>
+            <View style={styles.headerText}>
+              <Text style={styles.title}>Choose Exercise</Text>
+              <Text style={styles.subtitle}>{totalCount} exercises available</Text>
+            </View>
           </View>
-        </View>
 
-        <View style={[styles.searchRow, { borderColor: isFocused ? 'rgba(59,130,246,0.5)' : 'rgba(60,65,75,0.4)' }]}>
-          <Search size={18} color="#6b7280" />
-          <TextInput
-            placeholder="Search exercises..."
-            placeholderTextColor="#6b7280"
-            value={searchQuery}
-            onChangeText={onChangeSearch}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            style={styles.searchInput}
+          <View style={[styles.searchRow, { borderColor: isFocused ? C.searchBorderFocus : C.searchBorder }]}>
+            <Search size={18} color={C.gray500} />
+            <TextInput
+              placeholder="Search exercises..."
+              placeholderTextColor={C.gray500}
+              value={searchQuery}
+              onChangeText={onChangeSearch}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              style={styles.searchInput}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => onChangeSearch('')} style={styles.clearButton}>
+                <X size={16} color={C.gray400} />
+              </Pressable>
+            )}
+          </View>
+
+          <FlatList
+            data={listData}
+            keyExtractor={(item) => item.key}
+            renderItem={renderItem}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            contentContainerStyle={styles.listContent}
+            stickyHeaderIndices={[0]}
+            showsVerticalScrollIndicator={false}
           />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => onChangeSearch('')} style={styles.clearButton}>
-              <X size={16} color="#9ca3af" />
-            </Pressable>
-          )}
-        </View>
-
-        <FlatList
-          data={listData}
-          keyExtractor={(item) => item.key}
-          renderItem={renderItem}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          contentContainerStyle={styles.listContent}
-          stickyHeaderIndices={[0]}
-          showsVerticalScrollIndicator={false}
-        />
-      </SafeAreaView>
+        </SafeAreaView>
+      </ScreenShell>
     </ModalWrapper>
   );
 }
@@ -177,7 +175,7 @@ function CategoryPill({ label, isActive, onPress }: { label: string; isActive: b
     return (
       <Animated.View style={{ transform: [{ scale }] }}>
         <Pressable onPress={onPress} style={styles.activePill}>
-          <LinearGradient colors={['rgba(59,130,246,0.25)', 'rgba(37,99,235,0.15)']} style={StyleSheet.absoluteFillObject} />
+          <LinearGradient colors={C.tabActiveGradient} style={StyleSheet.absoluteFillObject} />
           <Text style={styles.activePillText}>{label}</Text>
         </Pressable>
       </Animated.View>
@@ -195,8 +193,6 @@ function CategoryPill({ label, isActive, onPress }: { label: string; isActive: b
 
 function ExerciseCard({ exercise, index, onPress }: { exercise: ExerciseData; index: number; onPress: () => void }) {
   const entry = useRef(new Animated.Value(0)).current;
-  const press = useRef(new Animated.Value(1)).current;
-  const borderAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(entry, {
@@ -207,48 +203,22 @@ function ExerciseCard({ exercise, index, onPress }: { exercise: ExerciseData; in
     }).start();
   }, [entry, index]);
 
-  const handlePressIn = () => {
-    Animated.spring(press, { toValue: 0.98, useNativeDriver: true }).start();
-    Animated.spring(borderAnim, { toValue: 1, useNativeDriver: false }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(press, { toValue: 1, useNativeDriver: true }).start();
-    Animated.spring(borderAnim, { toValue: 0, useNativeDriver: false }).start();
-  };
-
-  const borderColor = borderAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['rgba(60,65,75,0.3)', 'rgba(59,130,246,0.4)']
-  });
-
   const animatedStyle = {
     opacity: entry,
     transform: [
-      { translateY: entry.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) },
-      { scale: press }
+      { translateY: entry.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }
     ]
   };
 
   return (
     <Animated.View style={animatedStyle}>
-      <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-        <Animated.View style={[styles.exerciseCardWrap, { borderColor }]}>
-          <View style={styles.exerciseCard}>
-            <View style={styles.exerciseCopy}>
-              <Text style={styles.exerciseTitle}>{exercise.name}</Text>
-              <Text style={styles.exerciseSubtitle}>{exercise.baseSets} sets × {exercise.baseReps} reps</Text>
-              <View style={styles.tagRow}>
-                {exercise.primaryMuscles.map((muscle) => (
-                  <View key={muscle} style={styles.muscleTag}>
-                    <Text style={styles.muscleTagText}>{muscle}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
-        </Animated.View>
-      </Pressable>
+      <View style={styles.exerciseCardWrap}>
+        <TemplateCard
+          title={exercise.name}
+          subtitle={`${exercise.baseSets} sets × ${exercise.baseReps} reps`}
+          onPress={onPress}
+        />
+      </View>
     </Animated.View>
   );
 }
@@ -256,7 +226,7 @@ function ExerciseCard({ exercise, index, onPress }: { exercise: ExerciseData; in
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0f1115'
+    backgroundColor: C.screen
   },
   header: {
     flexDirection: 'row',
@@ -275,12 +245,12 @@ const styles = StyleSheet.create({
     marginLeft: 12
   },
   title: {
-    color: '#f8fafc',
+    color: C.white,
     fontSize: 18,
     fontWeight: '700'
   },
   subtitle: {
-    color: '#9ca3af',
+    color: C.gray400,
     marginTop: 2
   },
   searchRow: {
@@ -289,14 +259,14 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    backgroundColor: '#1e2128',
+    backgroundColor: C.searchBg,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12
   },
   searchInput: {
     flex: 1,
-    color: '#ffffff',
+    color: C.white,
     marginLeft: 8
   },
   clearButton: {
@@ -307,19 +277,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 8,
-    backgroundColor: '#0f1115'
+    backgroundColor: C.screen
   },
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(60,65,75,0.3)',
-    backgroundColor: '#1e2128',
+    borderColor: C.tabInactiveBorder,
+    backgroundColor: C.tabInactiveBg,
     marginRight: 8
   },
   pillText: {
-    color: '#9ca3af',
+    color: C.tabInactiveText,
     fontSize: 11,
     fontWeight: '600'
   },
@@ -328,17 +298,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.6)',
+    borderColor: C.tabActiveBorder,
     marginRight: 8,
     overflow: 'hidden',
-    shadowColor: '#3b82f6',
+    shadowColor: C.buttonBlue,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 3
   },
   activePillText: {
-    color: '#60a5fa',
+    color: C.tabActiveText,
     fontSize: 11,
     fontWeight: '600'
   },
@@ -348,45 +318,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100
   },
   exerciseCardWrap: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(60,65,75,0.3)'
-  },
-  exerciseCard: {
-    padding: 16,
-    backgroundColor: '#1a1d24'
-  },
-  exerciseCopy: {
-    flexShrink: 1
-  },
-  exerciseTitle: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700'
-  },
-  exerciseSubtitle: {
-    color: '#9ca3af',
-    fontSize: 13,
-    fontWeight: '500',
-    marginTop: 4
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8
-  },
-  muscleTag: {
-    backgroundColor: 'rgba(60,65,75,0.2)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginRight: 6,
-    marginBottom: 4
-  },
-  muscleTagText: {
-    color: '#9ca3af',
-    fontSize: 11,
-    fontWeight: '600'
+    borderRadius: 16,
+    overflow: 'hidden'
   }
 });

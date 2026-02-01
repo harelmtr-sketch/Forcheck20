@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, TextInput, Modal, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, TextInput, Modal, ScrollView, StyleSheet, FlatList } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { GlowScoreNumber } from '../components/GlowScoreNumber';
-import { StreakIndicator } from '../components/StreakIndicator';
+import { StreakBadge } from '../components/StreakBadge';
 import { ExercisePickerModal } from '../components/ExercisePickerModal';
 import { WorkoutHeader } from '../components/WorkoutHeader';
 import { AddMealsButton } from '../components/AddMealsButton';
 import { SaveTemplateButton } from '../components/SaveTemplateButton';
+import { ScreenShell } from '../components/ScreenShell';
+import { TemplateCard } from '../components/TemplateCard';
+import { exerciseMenuColors as C } from '../theme/exerciseMenuColors';
 import { addArchive } from '../utils/archiveStorage';
 import { loadJson, saveJson } from '../utils/storage';
 import { exerciseDatabase, workoutTemplates, type ExerciseData, type WorkoutTemplate } from '../data/exerciseDatabase';
@@ -349,32 +352,26 @@ export function DailyScreen() {
   const renderTemplates = () => {
     const templates = [...workoutTemplates, ...customTemplates];
     return (
-      <ScrollView style={styles.overlayContent} contentContainerStyle={{ paddingBottom: 24 }}>
-        <View style={styles.overlayHeader}>
-          <Pressable onPress={() => setCurrentView('main')} style={styles.backButton}>
-            <MaterialCommunityIcons name="chevron-left" size={22} color={COLORS.accentBlue} />
-          </Pressable>
-          <View>
-            <Text style={styles.overlayTitle}>Workout Templates</Text>
-            <Text style={styles.overlaySubtitle}>{templates.length} programs • {customTemplates.length} custom</Text>
-          </View>
+      <ScreenShell>
+        <View style={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 16 }}>
+          <Text style={{ fontSize: 28, fontWeight: '700', color: C.white }}>Workout Templates</Text>
+          <Text style={{ fontSize: 16, color: C.gray400, marginTop: 6 }}>
+            {templates.length} programs • {customTemplates.length} custom
+          </Text>
         </View>
-        <View style={styles.headerDivider} />
-        {templates.map((item, index) => (
-          <Pressable key={`${item.id}-${index}`} onPress={() => handleTemplateStart(item)} style={styles.templateCard}>
-            <View style={styles.templateRow}>
-              <View style={styles.templateIcon}>
-                <MaterialCommunityIcons name="dumbbell" size={18} color={COLORS.accentBlue} />
-              </View>
-              <View>
-                <Text style={styles.templateTitle}>{item.name}</Text>
-                <Text style={styles.templateMeta}>{item.exercises.length} exercises • 35 min</Text>
-              </View>
-            </View>
-            <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.textSubtle} />
-          </Pressable>
-        ))}
-      </ScrollView>
+        <FlatList
+          data={templates}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }}
+          renderItem={({ item }) => (
+            <TemplateCard
+              title={item.name}
+              subtitle={`${item.exercises.length} exercises • 35 min`}
+              onPress={() => handleTemplateStart(item)}
+            />
+          )}
+        />
+      </ScreenShell>
     );
   };
 
@@ -458,7 +455,7 @@ export function DailyScreen() {
             <Text style={styles.headerSubtitle}>{todayLabel}</Text>
           </View>
           <View style={styles.headerActions}>
-            <StreakIndicator days={7} />
+            <StreakBadge days={7} />
             {hasWorkout && (
               <Pressable onPress={handleResetDay} style={styles.resetButton}>
                 <MaterialCommunityIcons name="rotate-right" size={18} color={COLORS.accentRed} />
@@ -492,33 +489,41 @@ export function DailyScreen() {
               </View>
               <Text style={styles.sectionTitle}>Start Workout</Text>
             </View>
-            <Pressable
-              onPress={() => setCurrentView('templates')}
-              style={styles.primaryCard}
-            >
-              <View style={styles.cardRow}>
-                <View style={styles.cardCopy}>
-                  <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Templates</Text>
-                  <Text style={{ color: '#94a3b8', marginTop: 6 }}>Browse and choose a recommended workout then film your sets and get feedback</Text>
+            <Pressable onPress={() => setCurrentView('templates')} style={styles.startCard}>
+              <LinearGradient
+                colors={[C.cardBg, 'rgba(26, 29, 36, 0.7)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.startCardGradient}
+              >
+                <View style={styles.cardRow}>
+                  <View style={styles.cardCopy}>
+                    <Text style={{ color: C.white, fontWeight: '700', fontSize: 16 }}>Templates</Text>
+                    <Text style={{ color: C.gray400, marginTop: 6 }}>Browse and choose a recommended workout then film your sets and get feedback</Text>
+                  </View>
+                  <View style={styles.iconBadge}>
+                    <MaterialCommunityIcons name="dumbbell" size={22} color="#93c5fd" />
+                  </View>
                 </View>
-                <View style={styles.iconBadge}>
-                  <MaterialCommunityIcons name="dumbbell" size={22} color="#93c5fd" />
-                </View>
-              </View>
+              </LinearGradient>
             </Pressable>
-            <Pressable
-              onPress={() => setCurrentView('exercise-picker')}
-              style={styles.primaryCard}
-            >
-              <View style={styles.cardRow}>
-                <View style={styles.cardCopy}>
-                  <Text style={{ color: '#f8fafc', fontWeight: '700', fontSize: 16 }}>Custom</Text>
-                  <Text style={{ color: '#94a3b8', marginTop: 6 }}>Create your own workout then film your sets and get feedback</Text>
+            <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.startCard}>
+              <LinearGradient
+                colors={[C.cardBg, 'rgba(26, 29, 36, 0.7)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.startCardGradient}
+              >
+                <View style={styles.cardRow}>
+                  <View style={styles.cardCopy}>
+                    <Text style={{ color: C.white, fontWeight: '700', fontSize: 16 }}>Custom</Text>
+                    <Text style={{ color: C.gray400, marginTop: 6 }}>Create your own workout then film your sets and get feedback</Text>
+                  </View>
+                  <View style={styles.iconBadge}>
+                    <MaterialCommunityIcons name="flash" size={22} color="#93c5fd" />
+                  </View>
                 </View>
-                <View style={styles.iconBadge}>
-                  <MaterialCommunityIcons name="flash" size={22} color="#93c5fd" />
-                </View>
-              </View>
+              </LinearGradient>
             </Pressable>
           </>
         ) : (
@@ -709,7 +714,12 @@ export function DailyScreen() {
       </Modal>
       </ScrollView>
       {(currentView === 'templates' || currentView === 'meal-form') && (
-        <Animated.View key={currentView} entering={SlideInUp.duration(280)} exiting={SlideOutDown.duration(260)} style={styles.overlay}>
+        <Animated.View
+          key={currentView}
+          entering={SlideInUp.duration(280)}
+          exiting={SlideOutDown.duration(260)}
+          style={[styles.overlay, currentView === 'templates' && styles.overlayTransparent]}
+        >
           {currentView === 'templates' && renderTemplates()}
           {currentView === 'meal-form' && renderMealForm()}
         </Animated.View>
@@ -862,6 +872,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(59,130,246,0.3)'
   },
+  startCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    overflow: 'hidden',
+    marginBottom: 12
+  },
+  startCardGradient: {
+    padding: 16
+  },
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -964,6 +984,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(7,10,16,0.98)',
     bottom: 70
   },
+  overlayTransparent: {
+    backgroundColor: 'transparent'
+  },
   overlayContent: {
     flex: 1,
     paddingHorizontal: 22,
@@ -1052,40 +1075,6 @@ const styles = StyleSheet.create({
   modalPrimaryText: {
     color: COLORS.text,
     fontWeight: '600'
-  },
-  templateCard: {
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.2)',
-    backgroundColor: 'rgba(35,42,55,0.95)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  templateRow: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  templateIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: COLORS.accentBlueMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12
-  },
-  templateTitle: {
-    color: COLORS.text,
-    fontWeight: '700',
-    fontSize: 16
-  },
-  templateMeta: {
-    color: COLORS.textMuted,
-    fontSize: 12,
-    marginTop: 2
   },
   scorePickerHeader: {
     alignItems: 'center',

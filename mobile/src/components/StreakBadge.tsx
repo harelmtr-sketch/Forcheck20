@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Flame } from 'lucide-react-native';
 
@@ -8,82 +8,84 @@ type StreakBadgeProps = {
 
 export function StreakBadge({ days }: StreakBadgeProps) {
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.outerGlow} />
-      <LinearGradient
-        colors={['rgba(69,10,10,0.50)', 'rgba(69,26,3,0.30)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.badge}
+    <View style={{ position: 'relative' }}>
+      <View
+        style={{
+          position: 'absolute',
+          top: -6,
+          left: -6,
+          right: -6,
+          bottom: -6,
+          backgroundColor: 'rgba(239, 68, 68, 0.20)',
+          borderRadius: 18,
+          shadowColor: '#ef4444',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.35,
+          shadowRadius: 16,
+          elevation: 8
+        }}
+      />
+
+      <View
+        style={{
+          borderRadius: 12,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          borderWidth: 1,
+          borderColor: 'rgba(239, 68, 68, 0.40)',
+          overflow: 'hidden',
+          minWidth: 90
+        }}
       >
-        <View style={styles.content}>
-          <View style={styles.iconGlow}>
-            <Flame size={18} color="#f87171" strokeWidth={2} />
+        <LinearGradient
+          colors={['rgba(69, 10, 10, 0.60)', 'rgba(69, 26, 3, 0.40)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View
+            style={{
+              shadowColor: 'rgba(248, 113, 113, 1)',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.6,
+              shadowRadius: 10,
+              elevation: 6
+            }}
+          >
+            <Flame size={26} color="#f87171" fill="#f87171" strokeWidth={2} />
           </View>
-          <View style={styles.textStack}>
-            <Text style={styles.number}>{days}</Text>
-            <Text style={styles.label}>days</Text>
+
+          <View>
+            <Text
+              style={{
+                fontSize: 26,
+                fontWeight: '900',
+                color: '#f87171',
+                lineHeight: 26,
+                letterSpacing: -0.5,
+                textShadowColor: 'rgba(248, 113, 113, 0.45)',
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 8
+              }}
+            >
+              {days}
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '500',
+                color: 'rgba(252, 165, 165, 0.85)',
+                marginTop: -3,
+                lineHeight: 16
+              }}
+            >
+              days
+            </Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    position: 'relative',
-    borderRadius: 12
-  },
-  outerGlow: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    bottom: -4,
-    left: -4,
-    borderRadius: 14,
-    backgroundColor: 'rgba(239,68,68,0.20)',
-    shadowColor: '#ef4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 4
-  },
-  badge: {
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(239,68,68,0.40)',
-    overflow: 'hidden'
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  iconGlow: {
-    shadowColor: 'rgba(248,113,113,1)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 6,
-    elevation: 4,
-    marginRight: 6
-  },
-  textStack: {
-    alignItems: 'center'
-  },
-  number: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#f87171',
-    textShadowColor: 'rgba(248,113,113,0.45)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5
-  },
-  label: {
-    marginTop: -4,
-    fontSize: 10,
-    fontWeight: '500',
-    color: 'rgba(252,165,165,0.80)'
-  }
-});

@@ -11,7 +11,7 @@ import {
   View
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronRight, Dumbbell, Search, X } from 'lucide-react-native';
+import { ChevronRight, Search, X } from 'lucide-react-native';
 import type { ExerciseData } from '../data/exerciseDatabase';
 
 type ExercisePickerModalProps = {
@@ -94,9 +94,12 @@ export function ExercisePickerModal({
   return (
     <ModalWrapper visible={visible}>
       <SafeAreaView style={styles.safeArea}>
-        <LinearGradient colors={['#0a0f16', '#0b1118', '#0a0f16']} style={StyleSheet.absoluteFillObject} />
-        <LinearGradient colors={['rgba(59,130,246,0.12)', 'transparent']} style={styles.blueTint} />
-        <View style={styles.orb} />
+        <LinearGradient
+          colors={['#0f1115', 'rgba(30,33,40,0.15)', 'rgba(20,22,28,0.08)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
 
         <View style={styles.header}>
           <Animated.View style={{ transform: [{ scale: backScale }] }}>
@@ -118,11 +121,11 @@ export function ExercisePickerModal({
           </View>
         </View>
 
-        <View style={[styles.searchRow, { borderColor: isFocused ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.2)' }]}>
-          <Search size={18} color="#64748b" />
+        <View style={[styles.searchRow, { borderColor: isFocused ? 'rgba(59,130,246,0.5)' : 'rgba(60,65,75,0.4)' }]}>
+          <Search size={18} color="#6b7280" />
           <TextInput
             placeholder="Search exercises..."
-            placeholderTextColor="#64748b"
+            placeholderTextColor="#6b7280"
             value={searchQuery}
             onChangeText={onChangeSearch}
             onFocus={() => setIsFocused(true)}
@@ -131,7 +134,7 @@ export function ExercisePickerModal({
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => onChangeSearch('')} style={styles.clearButton}>
-              <X size={16} color="#94a3b8" />
+              <X size={16} color="#9ca3af" />
             </Pressable>
           )}
         </View>
@@ -174,7 +177,7 @@ function CategoryPill({ label, isActive, onPress }: { label: string; isActive: b
     return (
       <Animated.View style={{ transform: [{ scale }] }}>
         <Pressable onPress={onPress} style={styles.activePill}>
-          <LinearGradient colors={['rgba(59,130,246,0.35)', 'rgba(37,99,235,0.25)']} style={StyleSheet.absoluteFillObject} />
+          <LinearGradient colors={['rgba(59,130,246,0.25)', 'rgba(37,99,235,0.15)']} style={StyleSheet.absoluteFillObject} />
           <Text style={styles.activePillText}>{label}</Text>
         </Pressable>
       </Animated.View>
@@ -216,7 +219,7 @@ function ExerciseCard({ exercise, index, onPress }: { exercise: ExerciseData; in
 
   const borderColor = borderAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['rgba(59,130,246,0.2)', 'rgba(59,130,246,0.4)']
+    outputRange: ['rgba(60,65,75,0.3)', 'rgba(59,130,246,0.4)']
   });
 
   const animatedStyle = {
@@ -231,25 +234,19 @@ function ExerciseCard({ exercise, index, onPress }: { exercise: ExerciseData; in
     <Animated.View style={animatedStyle}>
       <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
         <Animated.View style={[styles.exerciseCardWrap, { borderColor }]}>
-          <LinearGradient colors={['#0f1419', 'rgba(37,41,50,0.5)']} style={styles.exerciseCard}>
-            <View style={styles.exerciseLeft}>
-              <View style={styles.exerciseIcon}>
-                <Dumbbell size={24} color="#60a5fa" strokeWidth={2} />
-              </View>
-              <View style={styles.exerciseCopy}>
-                <Text style={styles.exerciseTitle}>{exercise.name}</Text>
-                <Text style={styles.exerciseSubtitle}>{exercise.baseSets} sets × {exercise.baseReps} reps</Text>
-                <View style={styles.tagRow}>
-                  {exercise.primaryMuscles.map((muscle) => (
-                    <View key={muscle} style={styles.muscleTag}>
-                      <Text style={styles.muscleTagText}>{muscle}</Text>
-                    </View>
-                  ))}
-                </View>
+          <View style={styles.exerciseCard}>
+            <View style={styles.exerciseCopy}>
+              <Text style={styles.exerciseTitle}>{exercise.name}</Text>
+              <Text style={styles.exerciseSubtitle}>{exercise.baseSets} sets × {exercise.baseReps} reps</Text>
+              <View style={styles.tagRow}>
+                {exercise.primaryMuscles.map((muscle) => (
+                  <View key={muscle} style={styles.muscleTag}>
+                    <Text style={styles.muscleTagText}>{muscle}</Text>
+                  </View>
+                ))}
               </View>
             </View>
-            <ChevronRight size={20} color="#94a3b8" />
-          </LinearGradient>
+          </View>
         </Animated.View>
       </Pressable>
     </Animated.View>
@@ -259,19 +256,7 @@ function ExerciseCard({ exercise, index, onPress }: { exercise: ExerciseData; in
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1a1d23'
-  },
-  blueTint: {
-    ...StyleSheet.absoluteFillObject
-  },
-  orb: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(59,130,246,0.15)',
-    top: -60,
-    right: -40
+    backgroundColor: '#0f1115'
   },
   header: {
     flexDirection: 'row',
@@ -295,7 +280,7 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   subtitle: {
-    color: '#94a3b8',
+    color: '#9ca3af',
     marginTop: 2
   },
   searchRow: {
@@ -304,14 +289,14 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    backgroundColor: 'rgba(15,20,27,0.8)',
+    backgroundColor: '#1e2128',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12
   },
   searchInput: {
     flex: 1,
-    color: '#f8fafc',
+    color: '#ffffff',
     marginLeft: 8
   },
   clearButton: {
@@ -322,18 +307,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 8,
-    backgroundColor: '#1a1d23'
+    backgroundColor: '#0f1115'
   },
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(60,65,75,0.3)',
+    backgroundColor: '#1e2128',
     marginRight: 8
   },
   pillText: {
-    color: '#94a3b8',
+    color: '#9ca3af',
     fontSize: 11,
     fontWeight: '600'
   },
@@ -352,7 +338,7 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   activePillText: {
-    color: '#f8fafc',
+    color: '#60a5fa',
     fontSize: 11,
     fontWeight: '600'
   },
@@ -365,39 +351,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.2)'
+    borderColor: 'rgba(60,65,75,0.3)'
   },
   exerciseCard: {
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  exerciseLeft: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  exerciseIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
-    backgroundColor: 'rgba(59,130,246,0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12
+    backgroundColor: '#1a1d24'
   },
   exerciseCopy: {
     flexShrink: 1
   },
   exerciseTitle: {
-    color: '#f8fafc',
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '700'
   },
   exerciseSubtitle: {
-    color: '#64748b',
+    color: '#9ca3af',
     fontSize: 13,
     fontWeight: '500',
     marginTop: 4
@@ -408,7 +377,7 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   muscleTag: {
-    backgroundColor: 'rgba(59,130,246,0.15)',
+    backgroundColor: 'rgba(60,65,75,0.2)',
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -416,7 +385,7 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   muscleTagText: {
-    color: '#60a5fa',
+    color: '#9ca3af',
     fontSize: 11,
     fontWeight: '600'
   }

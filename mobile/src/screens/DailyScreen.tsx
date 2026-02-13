@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, TextInput, Modal, ScrollView, StyleSheet, FlatList } from 'react-native';
+import { View, Text, Pressable, TextInput, Modal, ScrollView, StyleSheet, FlatList, Platform, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -79,6 +79,11 @@ const RADIUS = {
   md: 16,
   lg: 20
 };
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const horizontalPadding = SCREEN_WIDTH < 375 ? 20 : 24;
+const headerTitleSize = SCREEN_WIDTH < 375 ? 26 : 28;
+const startCardTitleSize = SCREEN_WIDTH < 375 ? 18 : 19;
 
 const getScoreColor = (score: number) => {
   if (score >= 90) return '#22c55e';
@@ -447,17 +452,10 @@ export function DailyScreen() {
 
   return (
     <LinearGradient colors={[COLORS.backgroundTop, COLORS.backgroundMid, COLORS.backgroundBottom]} style={styles.screen}>
-      <LinearGradient
-        colors={['rgba(23,37,84,0.1)', 'rgba(0,0,0,0)', 'rgba(23,37,84,0.05)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.subtleGlow}
-        pointerEvents="none"
-      />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.centered}>
         <View style={styles.headerRow}>
-          <View>
+          <View style={styles.headerCopy}>
             <Text style={styles.headerTitle}>Today's Progress</Text>
             <Text style={styles.headerSubtitle}>{todayLabel}</Text>
           </View>
@@ -491,43 +489,59 @@ export function DailyScreen() {
         {!hasWorkout ? (
           <>
             <View style={styles.sectionHeader}>
-              <View style={styles.sectionIconBadge}>
-                <MaterialCommunityIcons name="dumbbell" size={18} color="#93c5fd" />
+              <View style={styles.sectionHeaderIconGlow}>
+                <MaterialCommunityIcons name="dumbbell" size={22} color="#60A5FA" />
               </View>
               <Text style={styles.sectionTitle}>Start Workout</Text>
             </View>
             <Pressable onPress={() => setCurrentView('templates')} style={styles.startCard}>
               <LinearGradient
-                colors={[C.cardBg, 'rgba(26, 29, 36, 0.7)']}
+                colors={['#1E232D', 'rgba(30, 35, 45, 0.95)', 'rgba(26, 29, 36, 0.9)', 'rgba(22, 24, 30, 0.85)', '#16181E']}
+                locations={[0, 0.25, 0.5, 0.75, 1]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.startCardGradient}
               >
                 <View style={styles.cardRow}>
                   <View style={styles.cardCopy}>
-                    <Text style={{ color: C.white, fontWeight: '700', fontSize: 16 }}>Templates</Text>
-                    <Text style={{ color: C.gray400, marginTop: 6 }}>Browse and choose a recommended workout then film your sets and get feedback</Text>
+                    <Text style={styles.startCardTitle}>Templates</Text>
+                    <Text style={styles.startCardDescription}>Browse and choose a recommended workout then film your sets and get feedback</Text>
                   </View>
-                  <View style={styles.iconBadge}>
-                    <MaterialCommunityIcons name="dumbbell" size={22} color="#93c5fd" />
+                  <View style={styles.iconBadgeGlow}>
+                    <View style={styles.iconBadge}>
+                      <LinearGradient colors={['rgba(59, 130, 246, 0.25)', 'rgba(37, 99, 235, 0.15)']} style={styles.iconBadgeGradient}>
+                        <View style={styles.iconBadgeRim} />
+                        <View style={styles.iconInnerGlow}>
+                          <MaterialCommunityIcons name="dumbbell" size={28} color="#60A5FA" />
+                        </View>
+                      </LinearGradient>
+                    </View>
                   </View>
                 </View>
               </LinearGradient>
             </Pressable>
             <Pressable onPress={() => setCurrentView('exercise-picker')} style={styles.startCard}>
               <LinearGradient
-                colors={[C.cardBg, 'rgba(26, 29, 36, 0.7)']}
+                colors={['#1E232D', 'rgba(30, 35, 45, 0.95)', 'rgba(26, 29, 36, 0.9)', 'rgba(22, 24, 30, 0.85)', '#16181E']}
+                locations={[0, 0.25, 0.5, 0.75, 1]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.startCardGradient}
               >
                 <View style={styles.cardRow}>
                   <View style={styles.cardCopy}>
-                    <Text style={{ color: C.white, fontWeight: '700', fontSize: 16 }}>Custom</Text>
-                    <Text style={{ color: C.gray400, marginTop: 6 }}>Create your own workout then film your sets and get feedback</Text>
+                    <Text style={styles.startCardTitle}>Custom</Text>
+                    <Text style={styles.startCardDescription}>Create your own workout then film your sets and get feedback</Text>
                   </View>
-                  <View style={styles.iconBadge}>
-                    <MaterialCommunityIcons name="flash" size={22} color="#93c5fd" />
+                  <View style={styles.iconBadgeGlow}>
+                    <View style={styles.iconBadge}>
+                      <LinearGradient colors={['rgba(59, 130, 246, 0.25)', 'rgba(37, 99, 235, 0.15)']} style={styles.iconBadgeGradient}>
+                        <View style={styles.iconBadgeRim} />
+                        <View style={styles.iconInnerGlow}>
+                          <MaterialCommunityIcons name="flash" size={28} color="#60A5FA" />
+                        </View>
+                      </LinearGradient>
+                    </View>
                   </View>
                 </View>
               </LinearGradient>
@@ -606,8 +620,8 @@ export function DailyScreen() {
         )}
 
         <View style={styles.sectionHeader}>
-          <View style={[styles.sectionIconBadge, { backgroundColor: 'rgba(249,115,22,0.2)' }]}>
-            <MaterialCommunityIcons name="silverware-fork-knife" size={18} color="#60a5fa" />
+          <View style={styles.sectionHeaderIconGlow}>
+            <MaterialCommunityIcons name="silverware-fork-knife" size={22} color="#60A5FA" />
           </View>
           <Text style={styles.sectionTitle}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
         </View>
@@ -740,26 +754,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundTop
   },
-  subtleGlow: {
-    ...StyleSheet.absoluteFillObject
-  },
   scroll: {
     flex: 1
   },
   scrollContent: {
-    paddingBottom: 150
+    paddingBottom: 100
   },
   centered: {
     alignSelf: 'center',
     width: '100%',
     maxWidth: 448,
-    paddingHorizontal: 22,
-    paddingTop: 24
+    paddingHorizontal: horizontalPadding,
+    paddingTop: Platform.OS === 'ios' ? 60 : 56
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'flex-start',
+    paddingBottom: 24
+  },
+  headerCopy: {
+    flex: 1,
+    marginRight: 16
   },
   headerActions: {
     flexDirection: 'row',
@@ -778,13 +794,18 @@ const styles = StyleSheet.create({
     marginVertical: 16
   },
   headerTitle: {
-    color: COLORS.text,
-    fontSize: 22,
-    fontWeight: '700'
+    color: '#FFFFFF',
+    fontSize: headerTitleSize,
+    fontWeight: '700',
+    lineHeight: 34,
+    letterSpacing: -0.5,
+    marginBottom: 4
   },
   headerSubtitle: {
-    color: COLORS.textMuted,
-    marginTop: 6
+    color: '#9CA3AF',
+    fontSize: 15,
+    fontWeight: '500',
+    lineHeight: 20
   },
   resetButton: {
     width: 38,
@@ -823,8 +844,8 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    marginTop: 8
+    marginBottom: 16,
+    marginTop: 28
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -852,19 +873,20 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     opacity: 0.8
   },
-  sectionIconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: COLORS.accentBlueMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8
+  sectionHeaderIconGlow: {
+    marginRight: 10,
+    shadowColor: 'rgba(96, 165, 250, 0.6)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 6
   },
   sectionTitle: {
-    color: COLORS.text,
+    color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '700'
+    fontWeight: '700',
+    lineHeight: 22,
+    letterSpacing: -0.3
   },
   sectionScore: {
     fontSize: 20,
@@ -880,14 +902,22 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(59,130,246,0.3)'
   },
   startCard: {
+    marginHorizontal: 0,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: C.cardBorder,
+    borderColor: 'rgba(59, 130, 246, 0.25)',
     overflow: 'hidden',
-    marginBottom: 12
+    marginBottom: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4
   },
   startCardGradient: {
-    padding: 16
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    minHeight: 104
   },
   cardRow: {
     flexDirection: 'row',
@@ -896,15 +926,68 @@ const styles = StyleSheet.create({
   },
   cardCopy: {
     flex: 1,
-    paddingRight: 12
+    paddingRight: 16
   },
-  iconBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: COLORS.accentBlueMuted,
+  startCardTitle: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: startCardTitleSize,
+    lineHeight: 24,
+    letterSpacing: -0.4,
+    marginBottom: 8
+  },
+  startCardDescription: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
+    letterSpacing: 0.1
+  },
+  iconBadgeGlow: {
+    width: 56,
+    height: 56,
+    borderRadius: 19,
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  iconBadgeGradient: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  iconBadgeRim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 1,
+    borderColor: 'rgba(96, 165, 250, 0.15)',
+    borderRadius: 13
+  },
+  iconInnerGlow: {
+    shadowColor: 'rgba(96, 165, 250, 1)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
+    elevation: 6
   },
   exerciseCard: {
     borderRadius: 18,

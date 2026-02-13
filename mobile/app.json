@@ -5,7 +5,9 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "com.kinetic.app",
       "versionCode": 1,
@@ -37,6 +39,11 @@
         "NSCameraUsageDescription": "Kinetic needs camera access to record workout videos.",
         "NSPhotoLibraryUsageDescription": "Kinetic needs photo library access to select videos."
       }
+    },
+    "updates": {
+      "enabled": false,
+      "checkAutomatically": "ON_ERROR_RECOVERY",
+      "fallbackToCacheTimeout": 0
     }
   }
 }

@@ -16,14 +16,17 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO"
+        "READ_MEDIA_VIDEO",
+        "RECORD_AUDIO"
       ]
     },
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Kinetic to access your camera to record workout videos."
+          "cameraPermission": "Allow Kinetic to access your camera to record workout videos.",
+          "microphonePermission": "Allow Kinetic to access your microphone while recording workout videos.",
+          "recordAudioAndroid": true
         }
       ],
       [
@@ -37,7 +40,8 @@
     "ios": {
       "infoPlist": {
         "NSCameraUsageDescription": "Kinetic needs camera access to record workout videos.",
-        "NSPhotoLibraryUsageDescription": "Kinetic needs photo library access to select videos."
+        "NSPhotoLibraryUsageDescription": "Kinetic needs photo library access to select videos.",
+        "NSMicrophoneUsageDescription": "Kinetic needs microphone access to record workout videos."
       }
     },
     "updates": {

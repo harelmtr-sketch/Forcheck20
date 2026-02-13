@@ -20,6 +20,7 @@ import { exerciseDatabase, workoutTemplates, type ExerciseData, type WorkoutTemp
 import { calculateWorkoutScore } from '../utils/workoutScoring';
 import { calculateDietScore, calculateDailyScore } from '../utils/dailyScoring';
 import { defaultMuscleStatus, loadWorkoutSession, saveWorkoutSession, todayKey, type ExerciseEntry, type MealEntry, type MuscleStatus } from '../utils/workoutStorage';
+import { saveSelectedExercise } from '../utils/cameraSelection';
 import type { DailyStackParamList } from '../navigation/DailyStack';
 
 type ViewMode = 'main' | 'exercise-picker' | 'templates' | 'meal-form';
@@ -271,6 +272,12 @@ export function DailyScreen() {
     }));
     setPendingExercise(null);
     setCurrentView('main');
+  };
+
+
+  const openCameraForExercise = async (exercise: ExerciseEntry) => {
+    await saveSelectedExercise({ name: exercise.name, sets: exercise.sets, reps: exercise.reps });
+    navigation.navigate('Camera' as never);
   };
 
   const handleRateExercise = (index: number) => {
@@ -567,17 +574,17 @@ export function DailyScreen() {
                       </View>
                     </View>
                     <View style={styles.actionRow}>
-                      <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
+                      <Pressable onPress={() => openCameraForExercise(exercise)} style={styles.iconButton}>
                         <MaterialCommunityIcons name="pencil-outline" size={18} color="#93c5fd" />
                       </Pressable>
-                      <Pressable onPress={() => navigation.navigate('Camera' as never)} style={styles.iconButton}>
+                      <Pressable onPress={() => openCameraForExercise(exercise)} style={styles.iconButton}>
                         <MaterialCommunityIcons name="play" size={18} color="#93c5fd" />
                       </Pressable>
                       <Pressable onPress={() => handleRemoveExercise(index)} style={styles.iconButton}>
                         <MaterialCommunityIcons name="trash-can-outline" size={18} color="#fca5a5" />
                       </Pressable>
                     </View>
-                    <Pressable onPress={() => navigation.navigate('Camera' as never)} style={{ marginTop: 16 }}>
+                    <Pressable onPress={() => openCameraForExercise(exercise)} style={{ marginTop: 16 }}>
                       <LinearGradient
                         colors={['rgba(239,68,68,0.35)', 'rgba(239,68,68,0.15)']}
                         style={styles.recordButton}

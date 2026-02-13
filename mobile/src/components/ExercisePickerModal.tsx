@@ -53,7 +53,7 @@ export function ExercisePickerModal({
     return [
       { type: 'tabs', key: 'tabs' },
       ...exercises.map((exercise, index) => ({
-        type: 'exercise',
+        type: 'exercise' as const,
         key: exercise.id,
         exercise,
         index

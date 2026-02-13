@@ -55,7 +55,7 @@ export function GlowIconBadge({
       />
       <View style={[styles.container, { width: size, height: size, borderRadius: resolvedRadius, borderColor }]}>
         <LinearGradient
-          colors={gradientColors}
+          colors={gradientColors as [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}

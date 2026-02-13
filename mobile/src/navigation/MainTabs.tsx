@@ -1,10 +1,14 @@
+import { useCallback, useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { DailyStack } from './DailyStack';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { CameraScreen } from '../screens/CameraScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { loadSelectedExercise, type SelectedExercise } from '../utils/cameraSelection';
 
 export type MainTabParamList = {
   Daily: undefined;
@@ -17,6 +21,22 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabs() {
   const insets = useSafeAreaInsets();
+  const [selectedExercise, setSelectedExercise] = useState<SelectedExercise | null>(null);
+
+  const refreshSelection = useCallback(async () => {
+    const selected = await loadSelectedExercise();
+    setSelectedExercise(selected);
+  }, []);
+
+  useEffect(() => {
+    refreshSelection();
+  }, [refreshSelection]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshSelection();
+    }, [refreshSelection])
+  );
 
   return (
     <Tab.Navigator
@@ -62,7 +82,22 @@ export function MainTabs() {
         name="Camera"
         component={CameraScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="camera-outline" size={size ?? 22} color={color} />
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="camera-outline" size={size ?? 22} color={color} />,
+          tabBarButton: ({ onPress, children, accessibilityState }) => (
+            <Pressable
+              onPress={() => {
+                if (!selectedExercise) {
+                  Alert.alert('Select Exercise', 'Go to Daily and choose an exercise first.');
+                  return;
+                }
+                onPress?.({} as never);
+              }}
+              accessibilityState={accessibilityState}
+              style={{ flex: 1 }}
+            >
+              {children}
+            </Pressable>
+          )
         }}
       />
       <Tab.Screen

@@ -11,7 +11,7 @@ export type AnalyzeResponse = {
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://tonyhqanguyen-push-up-analyzer.hf.space';
 
-export async function uploadAndAnalyze(videoUri: string, exercise: SelectedExercise): Promise<AnalyzeResponse> {
+export async function uploadAndAnalyze(videoUri: string, exercise?: SelectedExercise | null): Promise<AnalyzeResponse> {
   const info = await FileSystem.getInfoAsync(videoUri);
   if (!info.exists) {
     throw new Error('Video file not found on device.');
@@ -23,9 +23,9 @@ export async function uploadAndAnalyze(videoUri: string, exercise: SelectedExerc
     type: 'video/mp4',
     name: `workout-${Date.now()}.mp4`
   } as never);
-  form.append('exerciseName', exercise.name);
-  form.append('sets', String(exercise.sets));
-  form.append('reps', String(exercise.reps));
+  form.append('exerciseName', exercise?.name ?? '');
+  form.append('sets', String(exercise?.sets ?? 0));
+  form.append('reps', String(exercise?.reps ?? 0));
 
   const response = await fetch(`${API_BASE}/analyze`, {
     method: 'POST',
@@ -43,6 +43,6 @@ export async function uploadAndAnalyze(videoUri: string, exercise: SelectedExerc
     feedback: json.feedback ?? 'Analysis complete.',
     strengths: Array.isArray(json.strengths) ? json.strengths : [],
     improvements: Array.isArray(json.improvements) ? json.improvements : [],
-    sets: Number(json.sets ?? exercise.sets)
+    sets: Number(json.sets ?? exercise?.sets ?? 0)
   };
 }

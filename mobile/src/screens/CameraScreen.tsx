@@ -122,12 +122,12 @@ export function CameraScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!videoUri || !selectedExercise) return;
+    if (!videoUri) return;
     try {
       setIsProcessing(true);
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       const analysis = await uploadAndAnalyze(videoUri, selectedExercise);
-      setResult({ ...analysis, exerciseName: selectedExercise.name });
+      setResult({ ...analysis, exerciseName: selectedExercise?.name ?? 'Quick Record' });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e: any) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -137,24 +137,16 @@ export function CameraScreen() {
     }
   };
 
-  if (!selectedExercise) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#0f1117', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>Select an exercise first</Text>
-        <Text style={{ color: '#9ca3af', marginTop: 8, textAlign: 'center' }}>Go to Daily and choose an exercise before opening the Camera tab.</Text>
-        <Pressable onPress={closeCamera} style={{ marginTop: 16, backgroundColor: '#2563eb', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 }}>
-          <Text style={{ color: '#fff', fontWeight: '700' }}>Go to Daily</Text>
-        </Pressable>
-      </View>
-    );
-  }
+
+  const effectiveExercise = selectedExercise ?? { name: 'Quick Record', sets: 0, reps: 0 };
+
 
   return (
     <PermissionGate onClose={closeCamera}>
       {videoUri ? (
         <VideoPreview
           videoUri={videoUri}
-          selectedExercise={selectedExercise}
+          selectedExercise={effectiveExercise}
           isProcessing={isProcessing}
           onRetake={() => setVideoUri(null)}
           onSubmit={handleSubmit}
@@ -173,8 +165,8 @@ export function CameraScreen() {
                 <MaterialCommunityIcons name="close" size={22} color="#f8fafc" />
               </Pressable>
               <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: 'rgba(10,13,18,0.65)' }}>
-                <Text style={{ color: '#fff', fontWeight: '700' }}>{selectedExercise.name}</Text>
-                <Text style={{ color: '#9ca3af', fontSize: 12 }}>{selectedExercise.sets} sets × {selectedExercise.reps} reps</Text>
+                <Text style={{ color: '#fff', fontWeight: '700' }}>{effectiveExercise.name}</Text>
+                <Text style={{ color: '#9ca3af', fontSize: 12 }}>{effectiveExercise.sets} sets × {effectiveExercise.reps} reps</Text>
               </View>
               <Pressable disabled={isRecording} onPress={flipCamera} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(10,13,18,0.65)', alignItems: 'center', justifyContent: 'center', opacity: isRecording ? 0.5 : 1 }}>
                 <MaterialCommunityIcons name="camera-flip-outline" size={20} color="#f8fafc" />
@@ -219,8 +211,8 @@ export function CameraScreen() {
             const session = await loadWorkoutSession();
             const nextExercise = {
               name: result.exerciseName,
-              sets: selectedExercise.sets,
-              reps: selectedExercise.reps,
+              sets: selectedExercise?.sets ?? 0,
+              reps: selectedExercise?.reps ?? 0,
               score: result.score,
               timestamp: new Date().toISOString()
             };

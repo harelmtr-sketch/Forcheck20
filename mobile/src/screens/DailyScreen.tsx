@@ -490,7 +490,7 @@ export function DailyScreen() {
           <>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionHeaderIconGlow}>
-                <MaterialCommunityIcons name="dumbbell" size={22} color="#60A5FA" />
+                <MaterialCommunityIcons name="dumbbell" size={20} color="#60A5FA" />
               </View>
               <Text style={styles.sectionTitle}>Start Workout</Text>
             </View>
@@ -508,11 +508,14 @@ export function DailyScreen() {
                     <Text style={styles.startCardDescription}>Browse and choose a recommended workout then film your sets and get feedback</Text>
                   </View>
                   <View style={styles.iconBadgeGlow}>
+                    <View style={styles.iconGlowLayerOuter} />
+                    <View style={styles.iconGlowLayerMiddle} />
+                    <View style={styles.iconGlowLayerInner} />
                     <View style={styles.iconBadge}>
-                      <LinearGradient colors={['rgba(59, 130, 246, 0.25)', 'rgba(37, 99, 235, 0.15)']} style={styles.iconBadgeGradient}>
+                      <LinearGradient colors={['rgba(59, 130, 246, 0.30)', 'rgba(37, 99, 235, 0.20)']} style={styles.iconBadgeGradient}>
                         <View style={styles.iconBadgeRim} />
                         <View style={styles.iconInnerGlow}>
-                          <MaterialCommunityIcons name="dumbbell" size={28} color="#60A5FA" />
+                          <MaterialCommunityIcons name="dumbbell" size={24} color="#60A5FA" />
                         </View>
                       </LinearGradient>
                     </View>
@@ -534,11 +537,14 @@ export function DailyScreen() {
                     <Text style={styles.startCardDescription}>Create your own workout then film your sets and get feedback</Text>
                   </View>
                   <View style={styles.iconBadgeGlow}>
+                    <View style={styles.iconGlowLayerOuter} />
+                    <View style={styles.iconGlowLayerMiddle} />
+                    <View style={styles.iconGlowLayerInner} />
                     <View style={styles.iconBadge}>
-                      <LinearGradient colors={['rgba(59, 130, 246, 0.25)', 'rgba(37, 99, 235, 0.15)']} style={styles.iconBadgeGradient}>
+                      <LinearGradient colors={['rgba(59, 130, 246, 0.30)', 'rgba(37, 99, 235, 0.20)']} style={styles.iconBadgeGradient}>
                         <View style={styles.iconBadgeRim} />
                         <View style={styles.iconInnerGlow}>
-                          <MaterialCommunityIcons name="flash" size={28} color="#60A5FA" />
+                          <MaterialCommunityIcons name="flash" size={24} color="#60A5FA" />
                         </View>
                       </LinearGradient>
                     </View>
@@ -621,7 +627,7 @@ export function DailyScreen() {
 
         <View style={styles.sectionHeader}>
           <View style={styles.sectionHeaderIconGlow}>
-            <MaterialCommunityIcons name="silverware-fork-knife" size={22} color="#60A5FA" />
+            <MaterialCommunityIcons name="silverware-fork-knife" size={20} color="#60A5FA" />
           </View>
           <Text style={styles.sectionTitle}>{meals.length === 0 ? 'Track Nutrition' : 'Nutrition'}</Text>
         </View>
@@ -758,7 +764,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   scrollContent: {
-    paddingBottom: 100
+    paddingBottom: 72
   },
   centered: {
     alignSelf: 'center',
@@ -771,7 +777,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingBottom: 24
+    paddingBottom: 18
   },
   headerCopy: {
     flex: 1,
@@ -791,7 +797,7 @@ const styles = StyleSheet.create({
   headerDivider: {
     height: 1,
     backgroundColor: 'rgba(59,130,246,0.2)',
-    marginVertical: 16
+    marginVertical: 12
   },
   headerTitle: {
     color: '#FFFFFF',
@@ -844,8 +850,8 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop: 28
+    marginBottom: 12,
+    marginTop: 20
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -878,14 +884,14 @@ const styles = StyleSheet.create({
     shadowColor: 'rgba(96, 165, 250, 0.6)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 6
   },
   sectionTitle: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
-    lineHeight: 22,
+    lineHeight: 21,
     letterSpacing: -0.3
   },
   sectionScore: {
@@ -907,7 +913,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(59, 130, 246, 0.25)',
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 12,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -915,9 +921,9 @@ const styles = StyleSheet.create({
     elevation: 4
   },
   startCardGradient: {
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    minHeight: 104
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    minHeight: 92
   },
   cardRow: {
     flexDirection: 'row',
@@ -940,14 +946,15 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 14,
     fontWeight: '400',
-    lineHeight: 20,
+    lineHeight: 18,
     letterSpacing: 0.1
   },
   iconBadgeGlow: {
-    width: 56,
-    height: 56,
-    borderRadius: 19,
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+    position: 'relative',
     shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.4,
@@ -956,12 +963,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  iconGlowLayerOuter: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    right: -10,
+    bottom: -10,
+    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+    borderRadius: 36
+  },
+  iconGlowLayerMiddle: {
+    position: 'absolute',
+    top: -7,
+    left: -7,
+    right: -7,
+    bottom: -7,
+    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+    borderRadius: 32
+  },
+  iconGlowLayerInner: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    backgroundColor: 'rgba(59, 130, 246, 0.18)',
+    borderRadius: 28
+  },
   iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
+    width: 52,
+    height: 52,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.35)',
+    borderColor: 'rgba(59, 130, 246, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden'
@@ -980,13 +1014,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderWidth: 1,
     borderColor: 'rgba(96, 165, 250, 0.15)',
-    borderRadius: 13
+    borderRadius: 12
   },
   iconInnerGlow: {
     shadowColor: 'rgba(96, 165, 250, 1)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.7,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 6
   },
   exerciseCard: {

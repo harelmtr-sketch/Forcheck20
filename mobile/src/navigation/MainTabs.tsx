@@ -1,6 +1,7 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GlowWrapper } from '../components/GlowWrapper';
 import { DailyStack } from './DailyStack';
 import { FriendsScreen } from '../screens/FriendsScreen';
 import { CameraScreen } from '../screens/CameraScreen';
@@ -19,6 +20,12 @@ function CameraTabScreen() {
   return <CameraScreen />;
 }
 
+const renderIcon = (focused: boolean, name: keyof typeof MaterialCommunityIcons.glyphMap) => (
+  <GlowWrapper active={focused}>
+    <MaterialCommunityIcons name={name} size={22} color={focused ? '#ffffff' : '#6b7280'} />
+  </GlowWrapper>
+);
+
 export function MainTabs() {
   const insets = useSafeAreaInsets();
 
@@ -30,17 +37,17 @@ export function MainTabs() {
         tabBarStyle: {
           backgroundColor: '#1a1d23',
           borderTopColor: 'rgba(255,255,255,0.08)',
-          height: 64 + insets.bottom,
-          paddingBottom: Math.max(insets.bottom, 6),
-          paddingTop: 6
+          height: 70 + insets.bottom,
+          paddingBottom: Math.max(insets.bottom, 10),
+          paddingTop: 8
         },
         tabBarActiveTintColor: '#f8fafc',
         tabBarInactiveTintColor: '#94a3b8',
-        tabBarActiveBackgroundColor: 'rgba(59,130,246,0.25)',
+        tabBarActiveBackgroundColor: 'transparent',
         tabBarItemStyle: {
           borderRadius: 18,
-          marginHorizontal: 6,
-          paddingVertical: 6
+          marginHorizontal: 4,
+          paddingVertical: 4
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -53,28 +60,28 @@ export function MainTabs() {
         name="Daily"
         component={DailyStack}
         options={{
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="chart-bar" size={size ?? 22} color={color} />
+          tabBarIcon: ({ focused }) => renderIcon(focused, 'chart-bar')
         }}
       />
       <Tab.Screen
         name="Friends"
         component={FriendsScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-group-outline" size={size ?? 22} color={color} />
+          tabBarIcon: ({ focused }) => renderIcon(focused, 'account-group-outline')
         }}
       />
       <Tab.Screen
         name="Camera"
         component={CameraTabScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="camera-outline" size={size ?? 22} color={color} />
+          tabBarIcon: ({ focused }) => renderIcon(focused, 'camera-outline')
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-outline" size={size ?? 22} color={color} />
+          tabBarIcon: ({ focused }) => renderIcon(focused, 'account-outline')
         }}
       />
     </Tab.Navigator>

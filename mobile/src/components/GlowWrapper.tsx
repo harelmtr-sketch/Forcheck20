@@ -23,7 +23,7 @@ export function GlowWrapper({ active, children }: GlowWrapperProps) {
 
       {showBlur && (
         <BlurView
-          intensity={Platform.OS === 'ios' ? 35 : 18}
+          intensity={Platform.OS === 'ios' ? 28 : 16}
           tint="dark"
           {...(Platform.OS === 'android' ? ({ experimentalBlurMethod: 'dimezisBlurView' } as const) : {})}
           style={styles.blurPlate}
@@ -37,50 +37,50 @@ export function GlowWrapper({ active, children }: GlowWrapperProps) {
 
 const styles = StyleSheet.create({
   root: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center'
   },
   inactiveContainer: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center'
   },
   glowL1: {
     position: 'absolute',
-    width: 78,
-    height: 78,
-    borderRadius: 39,
-    backgroundColor: 'rgba(59, 130, 246, 0.10)'
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    backgroundColor: 'rgba(59, 130, 246, 0.05)'
   },
   glowL2: {
     position: 'absolute',
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    backgroundColor: 'rgba(59, 130, 246, 0.14)'
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    backgroundColor: 'rgba(59, 130, 246, 0.08)'
   },
   glowL3: {
     position: 'absolute',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: 'rgba(59, 130, 246, 0.10)'
   },
   blurPlate: {
     position: 'absolute',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     overflow: 'hidden'
   },
   iconPlate: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: 'rgba(30, 41, 59, 0.90)',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(30, 41, 59, 0.88)',
     alignItems: 'center',
     justifyContent: 'center'
   }

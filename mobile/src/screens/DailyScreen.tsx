@@ -957,28 +957,28 @@ const styles = StyleSheet.create({
     position: 'relative',
     shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
     elevation: 8,
     alignItems: 'center',
     justifyContent: 'center'
   },
   iconGlowLayerOuter: {
     position: 'absolute',
-    top: -10,
-    left: -10,
-    right: -10,
-    bottom: -10,
-    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+    top: -12,
+    left: -12,
+    right: -12,
+    bottom: -12,
+    backgroundColor: 'rgba(59, 130, 246, 0.05)',
     borderRadius: 36
   },
   iconGlowLayerMiddle: {
     position: 'absolute',
-    top: -7,
-    left: -7,
-    right: -7,
-    bottom: -7,
-    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    backgroundColor: 'rgba(59, 130, 246, 0.08)',
     borderRadius: 32
   },
   iconGlowLayerInner: {
@@ -987,7 +987,7 @@ const styles = StyleSheet.create({
     left: -4,
     right: -4,
     bottom: -4,
-    backgroundColor: 'rgba(59, 130, 246, 0.18)',
+    backgroundColor: 'rgba(59, 130, 246, 0.10)',
     borderRadius: 28
   },
   iconBadge: {
@@ -1019,8 +1019,8 @@ const styles = StyleSheet.create({
   iconInnerGlow: {
     shadowColor: 'rgba(96, 165, 250, 1)',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 10,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     elevation: 6
   },
   exerciseCard: {

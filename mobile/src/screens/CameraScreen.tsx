@@ -29,8 +29,9 @@ export function CameraScreen() {
 
   const [selectedExercise, setSelectedExercise] = useState<SelectedExercise | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
-  const [cameraType, setCameraType] = useState<'back' | 'front'>('front');
+  const [cameraType, setCameraType] = useState<'back' | 'front'>('back');
   const [isRecording, setIsRecording] = useState(false);
+  const [isCameraSessionReady, setIsCameraSessionReady] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -79,7 +80,9 @@ export function CameraScreen() {
 
   const closeCamera = async () => {
     if (isRecording) {
+      try {
       cameraRef.current?.stopRecording();
+    } catch {}
     }
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -113,7 +116,7 @@ export function CameraScreen() {
   };
 
   const startRecording = async () => {
-    if (!cameraRef.current || isRecording) return;
+    if (!cameraRef.current || isRecording || !isCameraSessionReady) return;
 
     try {
       setError(null);
@@ -154,7 +157,9 @@ export function CameraScreen() {
 
   const stopRecording = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    cameraRef.current?.stopRecording();
+    try {
+      cameraRef.current?.stopRecording();
+    } catch {}
   };
 
   const flipCamera = async () => {
@@ -200,8 +205,8 @@ export function CameraScreen() {
                 style={{ flex: 1 }}
                 facing={cameraType}
                 mode="video"
-                ratio="16:9"
                 videoQuality="720p"
+                onCameraReady={() => setIsCameraSessionReady(true)}
               />
             ) : (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -293,7 +298,11 @@ export function CameraScreen() {
               <View style={{ alignItems: 'center', paddingBottom: 20 }}>
                 <Text style={{ fontSize: 22, fontWeight: '600', color: '#fff', marginBottom: 20 }}>{isRecording ? formatTime(recordingTime) : '00:00'}</Text>
                 <Animated.View style={{ transform: [{ scale: recordScaleAnim }] }}>
-                  <Pressable onPress={isRecording ? stopRecording : startRecording} style={{ position: 'relative' }}>
+                  <Pressable
+                    onPress={isRecording ? stopRecording : startRecording}
+                    disabled={!isCameraSessionReady}
+                    style={{ position: 'relative', opacity: isCameraSessionReady ? 1 : 0.55 }}
+                  >
                     <View
                       style={{
                         position: 'absolute',
@@ -322,7 +331,7 @@ export function CameraScreen() {
                   </Pressable>
                 </Animated.View>
                 <Text style={{ fontSize: 15, fontWeight: '500', color: 'rgba(255,255,255,0.9)', marginTop: 16 }}>
-                  {isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
+                  {isCameraSessionReady ? (isRecording ? 'Tap to stop recording' : 'Tap to start recording') : 'Preparing camera...'}
                 </Text>
               </View>
             </SafeAreaView>

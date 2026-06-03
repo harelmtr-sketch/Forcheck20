@@ -28,6 +28,7 @@ import { getScoreColor, getScoreGlow, getScoreBgColor, getScoreBorderColor, getS
 
 interface ProfileScreenProps {
   onOpenSettings: () => void;
+  onOpenGame?: () => void;
   exercises: Exercise[];
   muscleStatus: MuscleStatus[];
 }
@@ -74,6 +75,7 @@ const mockHistory = [
 
 const ProfileScreenComponent = ({
   onOpenSettings,
+  onOpenGame,
   exercises,
   muscleStatus,
 }: ProfileScreenProps) => {
@@ -345,6 +347,19 @@ const ProfileScreenComponent = ({
                 </span>
                 <ChevronRight className="w-4 h-4" />
               </Button>
+              {onOpenGame && (
+                <Button
+                  onClick={onOpenGame}
+                  variant="outline"
+                  className="w-full justify-between border border-yellow-500/30 hover:border-yellow-500/60 hover:bg-yellow-500/10 hover:shadow-md hover:shadow-yellow-500/10 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-yellow-400"
+                >
+                  <span className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Reflex Game
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              )}
               <Button
                 onClick={onOpenSettings}
                 variant="outline"

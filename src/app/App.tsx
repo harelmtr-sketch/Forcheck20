@@ -9,12 +9,13 @@ import { LoginScreen } from './components/LoginScreen';
 import { SplashScreen } from './components/SplashScreen';
 import { LoginSwoosh } from './components/LoginSwoosh';
 import { ScreenTransition } from './components/ScreenTransition';
+import { ReflexGame } from './components/ReflexGame';
 import { loadWorkoutFromStorage, saveWorkoutToStorage } from './utils/workoutStorage';
 import { loadSettings, updateSetting, type AppSettings } from './utils/settingsStore';
 import { loadAuthState, login, logout, type AuthState } from './utils/auth';
 
 type Tab = 'camera' | 'daily' | 'friends' | 'profile';
-type View = Tab | 'settings';
+type View = Tab | 'settings' | 'game';
 
 // Animation direction for page transitions
 type AnimationDirection = 'left' | 'right' | 'none';
@@ -163,6 +164,14 @@ export default function App() {
     setShowLoginSwoosh(false);
   }, []);
 
+  const handleOpenGame = useCallback(() => {
+    setCurrentView('game');
+  }, []);
+
+  const handleCloseGame = useCallback(() => {
+    setCurrentView(activeTab);
+  }, [activeTab]);
+
   const handleLogout = useCallback(() => {
     logout();
     setAuthState({ isAuthenticated: false });
@@ -180,7 +189,9 @@ export default function App() {
       case 'friends':
         return <FriendsScreen />;
       case 'profile':
-        return <ProfileScreen onOpenSettings={handleOpenSettings} exercises={exercises} muscleStatus={muscleStatus} />;
+        return <ProfileScreen onOpenSettings={handleOpenSettings} onOpenGame={handleOpenGame} exercises={exercises} muscleStatus={muscleStatus} />;
+      case 'game':
+        return <ReflexGame onClose={handleCloseGame} />;
       case 'settings':
         return <SettingsScreen 
           onBack={handleBackFromSettings} 
@@ -234,7 +245,7 @@ export default function App() {
       </div>
 
       {/* Bottom Navigation */}
-      {currentView !== 'settings' && (
+      {currentView !== 'settings' && currentView !== 'game' && (
         <div className={`border-t border-white/[0.08] bg-[#1d2128]/95 backdrop-blur-xl`}>
           <nav className="flex items-center justify-around px-1 py-3 relative">
             {tabs.map((tab) => {
